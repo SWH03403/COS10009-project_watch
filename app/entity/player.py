@@ -22,5 +22,5 @@ class Player:
 
 	def step(self, direction: Vector2, delta: float) -> None:
 		distance = SPRINT_SPEED if self.sprinting else WALK_SPEED
-		movement = direction.clamp_magnitude(1.).rotate(-self.aim) * distance
+		movement = direction.clamp_magnitude(1.).rotate(self.aim) * distance
 		self.position.coord += movement

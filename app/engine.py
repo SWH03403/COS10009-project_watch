@@ -58,7 +58,7 @@ class Engine:
 		self.player.step(direction, self._delta)
 
 	def _handle_mouse(self, rel: int) -> None:
-		self.player.aim += rel * SENSITIVITY * self._delta
+		self.player.aim -= rel * SENSITIVITY * self._delta
 
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
@@ -68,7 +68,7 @@ class Engine:
 
 	def _render_wall(self, left: Vector2, right: Vector2) -> None:
 		player = self.player.position.coord
-		aim = self.player.aim
+		aim = -self.player.aim
 		rel_left = (left - player).rotate(aim)
 		rel_right = (right - player).rotate(aim)
 		self.renderer._wall(rel_left, rel_right, Color("red"), None)
