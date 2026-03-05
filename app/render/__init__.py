@@ -5,6 +5,7 @@ from pygame.math import clamp, invlerp, lerp, remap
 from app.world import Fog, Room
 
 WALL_HEIGHT: float = 30.
+NEAR_PLANE: float = 1.
 
 @dataclass
 class Renderer:
@@ -23,18 +24,30 @@ class Renderer:
 	def _wall(self, left: Vector2, right: Vector2, color: Color, fog: Fog) -> None:
 		# Only render if facing the player
 		facing = math.atan2(left[0], left[1]) - math.atan2(right[0], right[1])
-		if facing >= 0: return
+		if facing >= 0 and facing <= math.pi: return
+
+		# Only render if in front of the player
+		left_behind, right_behind = left[1] < NEAR_PLANE, right[1] < NEAR_PLANE
+		if left_behind and right_behind: return
+
+		# Cut wall to near plane
+		if left_behind or right_behind:
+			cross_fact = (NEAR_PLANE - left[1]) / (right[1] - left[1])
+			cross_x = left[0] + (right[0] - left[0]) * cross_fact
+			clamped = Vector2(cross_x, NEAR_PLANE)
+			if left_behind: left = clamped
+			else: right = clamped
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
 
 		w, h = self.surface.get_size()
-		left_x, right_x = int(l_top[0]), int(r_top[0])
+		left_x, right_x = int(clamp(l_top[0], 0., w)), int(clamp(r_top[0], 0., w))
 		left_dist, right_dist = left.length(), right.length()
 		for x in range(left_x, right_x):
-			if x < 0 or x >= w: continue
-			fact = invlerp(left_x, right_x, x)
+			fact = invlerp(l_top[0], r_top[0], x)
 			remap_x = lambda begin, end: lerp(begin, end, fact)
+
 			top = max(0., remap_x(l_top[1], r_top[1]))
 			bot = min(h, remap_x(l_bot[1], r_bot[1]))
 
