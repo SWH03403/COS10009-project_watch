@@ -8,12 +8,15 @@ from app.render import Renderer
 from app.world import Room
 
 TITLE: str = "The Game"
-RESOLUTION: tuple[int, int] = 1920, 1080
+RESOLUTION: tuple[int, int] = 800, 450
 FPS: int = 60
-SENSITIVITY: float = 2.
+SENSITIVITY: float = 8.
 
 # DEBUG:
-TEST_ROOM = Room([Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)])
+TEST_ROOM = Room(
+	[Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)],
+	Color("crimson"),
+)
 
 def default_screen() -> Surface:
 	return pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN | pygame.SCALED)

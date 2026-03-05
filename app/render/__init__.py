@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import math
 from pygame import draw, Color, Surface, Vector2
+from pygame.math import clamp, invlerp, lerp, remap
 from app.utils import map_range
 from app.world import Fog, Room
 
@@ -27,7 +28,21 @@ class Renderer:
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
-		draw.polygon(self.surface, color, [l_top, r_top, r_bot, l_bot])
+		# draw.polygon(self.surface, color, [l_top, r_top, r_bot, l_bot]) # DEBUG: REMOVE
+
+		w, h = self.surface.get_size()
+		left_x, right_x = int(l_top[0]), int(r_top[0])
+		left_dist, right_dist = left.length(), right.length()
+		for x in range(left_x, right_x):
+			if x < 0 or x >= w: continue
+			top = max(0., map_range(x, l_top[0], r_top[0], l_top[1], r_top[1]))
+			bot = min(h, map_range(x, l_top[0], r_top[0], l_bot[1], r_bot[1]))
+
+			dist = map_range(x, l_top[0], r_top[0], left_dist, right_dist)
+			fact = invlerp(fog.near, fog.far, dist)
+			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
+
+			draw.line(self.surface, blended, (x, top), (x, bot))
 
 	def room(self, room: Room, origin: Vector2, rotate: float) -> None:
 		assert len(room.corners) > 2
