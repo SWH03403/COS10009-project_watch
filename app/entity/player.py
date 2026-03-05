@@ -7,10 +7,10 @@ WALK_SPEED: float = 80.
 SPRINT_SPEED: float = 120.
 
 class Direction:
-	FORWARD = 0.
-	BACKWARD = 180.
-	LEFT = 270.
-	RIGHT = 90.
+	FORWARD = 90.
+	BACKWARD = 270.
+	LEFT = 180.
+	RIGHT = 0.
 
 @dataclass
 class Player:
