@@ -1,14 +1,16 @@
 from dataclasses import dataclass, field
 import math
 import pygame
-from pygame import Surface
+from pygame import Color, Surface, Vector2
 from pygame.time import Clock
 from app.entity import Direction, Player
 from app.world import Room
+from app.utils import map_range
 
 TITLE: str = "The Game"
 RESOLUTION: tuple[int, int] = 1920, 1080
-FPS = 60
+FPS: int = 60
+WALL_HEIGHT: float = 30.
 
 def default_screen() -> Surface:
 	return pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN | pygame.SCALED)
@@ -49,13 +51,27 @@ class Engine:
 			if event.type == pygame.QUIT: self.running = False
 			elif event.type == pygame.KEYDOWN: self._handle_keydown(event.key)
 
+	def _world_to_screen(self, p: Vector2) -> tuple[Vector2, Vector2]:
+		sw, sh = self._meta.screen.get_size()
+		x = map_range(p[0] / p[1], -1., 1., 0, sw)
+		y = map_range(WALL_HEIGHT / p[1], 0., 1., sh / 2., 0.)
+		return Vector2(x, y), Vector2(x, sh - y)
+
+	def _render_wall(self, p1: Vector2, p2: Vector2) -> None:
+		player = self.player.position.coord
+		top_left, bottom_left = self._world_to_screen(p1 - player)
+		top_right, bottom_right = self._world_to_screen(p2 - player)
+		points = [top_left, top_right, bottom_right, bottom_left]
+		pygame.draw.polygon(self._meta.screen, Color("red"), points)
+
 	def _render_room(self, room: Room) -> None: ...
 
 	def run(self) -> None:
 		while self.running:
 			self._handle_events()
-			print(f"{self.player.position}") # DEBUG:
 			self._meta.clear()
+			self._render_wall(Vector2(-50., 50.), Vector2(10., 80.)) # DEBUG:
+			self._meta.update()
 			self._delta = self._meta.tick()
 
 		pygame.quit()
