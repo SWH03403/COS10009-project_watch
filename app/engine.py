@@ -4,13 +4,12 @@ import pygame
 from pygame import Color, Surface, Vector2
 from pygame.time import Clock
 from app.entity import Direction, Player
+from app.render import Renderer
 from app.world import Room
-from app.utils import map_range
 
 TITLE: str = "The Game"
 RESOLUTION: tuple[int, int] = 1920, 1080
 FPS: int = 60
-WALL_HEIGHT: float = 30.
 SENSITIVITY: float = 2.
 
 def default_screen() -> Surface:
@@ -35,9 +34,13 @@ class Meta:
 @dataclass
 class Engine:
 	running: bool = True
+	renderer: Renderer = field(init=False)
 	player: Player = field(default_factory=Player)
 	_meta: Meta = field(default_factory=Meta)
 	_delta: float = 0.
+
+	def __post_init__(self) -> None:
+		self.renderer = Renderer(self._meta.screen)
 
 	def _handle_keydown(self, key: int) -> bool:
 		match key:
@@ -63,19 +66,12 @@ class Engine:
 			elif event.type == pygame.KEYDOWN: self._handle_keydown(event.key)
 			elif event.type == pygame.MOUSEMOTION: self._handle_mouse(event.rel[0])
 
-	def _world_to_screen(self, p: Vector2) -> tuple[Vector2, Vector2]:
-		sw, sh = self._meta.screen.get_size()
-		x = map_range(p[0] / p[1], -1., 1., 0, sw)
-		y = map_range(WALL_HEIGHT / p[1], 0., 1., sh / 2., 0.)
-		return Vector2(x, y), Vector2(x, sh - y)
-
-	def _render_wall(self, p1: Vector2, p2: Vector2) -> None:
+	def _render_wall(self, left: Vector2, right: Vector2) -> None:
 		player = self.player.position.coord
 		aim = self.player.aim
-		top_left, bottom_left = self._world_to_screen((p1 - player).rotate(aim))
-		top_right, bottom_right = self._world_to_screen((p2 - player).rotate(aim))
-		points = [top_left, top_right, bottom_right, bottom_left]
-		pygame.draw.polygon(self._meta.screen, Color("red"), points)
+		rel_left = (left - player).rotate(aim)
+		rel_right = (right - player).rotate(aim)
+		self.renderer._wall(rel_left, rel_right, Color("red"), None)
 
 	def _render_room(self, room: Room) -> None: ...
 
