@@ -12,6 +12,9 @@ RESOLUTION: tuple[int, int] = 1920, 1080
 FPS: int = 60
 SENSITIVITY: float = 2.
 
+# DEBUG:
+TEST_ROOM = Room([Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)])
+
 def default_screen() -> Surface:
 	return pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN | pygame.SCALED)
 
@@ -66,14 +69,10 @@ class Engine:
 			elif event.type == pygame.KEYDOWN: self._handle_keydown(event.key)
 			elif event.type == pygame.MOUSEMOTION: self._handle_mouse(event.rel[0])
 
-	def _render_wall(self, left: Vector2, right: Vector2) -> None:
+	def _render_room(self, room: Room) -> None:
 		player = self.player.position.coord
 		aim = -self.player.aim
-		rel_left = (left - player).rotate(aim)
-		rel_right = (right - player).rotate(aim)
-		self.renderer._wall(rel_left, rel_right, Color("red"), None)
-
-	def _render_room(self, room: Room) -> None: ...
+		self.renderer.room(room, player, aim)
 
 	def run(self) -> None:
 		while self.running:
@@ -81,8 +80,7 @@ class Engine:
 			self._handle_key()
 
 			self._meta.clear()
-			self._render_wall(Vector2(-50., 50.), Vector2(10., 80.)) # DEBUG:
-			self._render_wall(Vector2(20., 80.), Vector2(50., 40.)) # DEBUG:
+			self._render_room(TEST_ROOM) # DEBUG:
 			self._meta.update()
 			self._delta = self._meta.tick()
 

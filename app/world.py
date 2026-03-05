@@ -18,6 +18,7 @@ class Fog:
 @dataclass
 class Room:
 	corners: list[Vector2]
+	wall: Color = field(default_factory=c("red"))
 	floor: Color = field(default_factory=c("navyblue"))
 	ceiling: Color = field(default_factory=c("bisque3"))
 	fog: Fog | None = None
