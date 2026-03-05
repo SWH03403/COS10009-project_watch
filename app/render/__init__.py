@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import math
 from pygame import draw, Color, Surface, Vector2
 from pygame.math import clamp, invlerp, lerp, remap
-from app.utils import map_range
 from app.world import Fog, Room
 
 WALL_HEIGHT: float = 30.
@@ -17,8 +16,8 @@ class Renderer:
 
 	def _world_to_screen(self, p: Vector2) -> tuple[Vector2, Vector2]:
 		w, h = self.surface.get_size()
-		x = map_range(p[0] / p[1], -1., 1., 0, w)
-		y = map_range(WALL_HEIGHT / p[1], 0., 1., h / 2., 0.)
+		x = remap(-1., 1., 0, w, p[0] / p[1])
+		y = remap(0., 1., h / 2., 0., WALL_HEIGHT / p[1])
 		return Vector2(x, y), Vector2(x, h - y)
 
 	def _wall(self, left: Vector2, right: Vector2, color: Color, fog: Fog) -> None:
@@ -28,18 +27,19 @@ class Renderer:
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
-		# draw.polygon(self.surface, color, [l_top, r_top, r_bot, l_bot]) # DEBUG: REMOVE
 
 		w, h = self.surface.get_size()
 		left_x, right_x = int(l_top[0]), int(r_top[0])
 		left_dist, right_dist = left.length(), right.length()
 		for x in range(left_x, right_x):
 			if x < 0 or x >= w: continue
-			top = max(0., map_range(x, l_top[0], r_top[0], l_top[1], r_top[1]))
-			bot = min(h, map_range(x, l_top[0], r_top[0], l_bot[1], r_bot[1]))
+			fact = invlerp(left_x, right_x, x)
+			remap_x = lambda begin, end: lerp(begin, end, fact)
+			top = max(0., remap_x(l_top[1], r_top[1]))
+			bot = min(h, remap_x(l_bot[1], r_bot[1]))
 
-			dist = map_range(x, l_top[0], r_top[0], left_dist, right_dist)
-			fact = invlerp(fog.near, fog.far, dist)
+			dist = remap_x(left_dist, right_dist)
+			fact = invlerp(fog.near, fog.far, dist) # NOTE: known reused variable
 			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
 
 			draw.line(self.surface, blended, (x, top), (x, bot))
