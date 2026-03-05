@@ -41,10 +41,17 @@ class Engine:
 	def _handle_keydown(self, key: int) -> bool:
 		match key:
 			case pygame.K_ESCAPE | pygame.K_q: self.running = False
-			case pygame.K_w: self.player.step(Direction.FORWARD, self._delta)
-			case pygame.K_a: self.player.step(Direction.LEFT, self._delta)
-			case pygame.K_s: self.player.step(Direction.BACKWARD, self._delta)
-			case pygame.K_d: self.player.step(Direction.RIGHT, self._delta)
+
+	def _handle_key(self) -> bool:
+		keys = pygame.key.get_pressed()
+
+		# player movement
+		direction = Vector2()
+		if keys[pygame.K_w]: direction += Direction.FORWARD
+		if keys[pygame.K_s]: direction += Direction.BACKWARD
+		if keys[pygame.K_a]: direction += Direction.LEFT
+		if keys[pygame.K_d]: direction += Direction.RIGHT
+		self.player.step(direction, self._delta)
 
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
@@ -69,8 +76,11 @@ class Engine:
 	def run(self) -> None:
 		while self.running:
 			self._handle_events()
+			self._handle_key()
+
 			self._meta.clear()
 			self._render_wall(Vector2(-50., 50.), Vector2(10., 80.)) # DEBUG:
+			self._render_wall(Vector2(20., 80.), Vector2(50., 40.)) # DEBUG:
 			self._meta.update()
 			self._delta = self._meta.tick()
 

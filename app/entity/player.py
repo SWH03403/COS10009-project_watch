@@ -1,16 +1,17 @@
 from dataclasses import dataclass, field
 from math import pi
+import pygame
 from pygame import Vector2
 from .stats import Position, Vitality
 
-WALK_SPEED: float = 80.
-SPRINT_SPEED: float = 120.
+WALK_SPEED: float = 2.
+SPRINT_SPEED: float = 4.
 
 class Direction:
-	FORWARD = 90.
-	BACKWARD = 270.
-	LEFT = 180.
-	RIGHT = 0.
+	FORWARD = Vector2(0., 1.)
+	BACKWARD = Vector2(0., -1.)
+	LEFT = Vector2(-1., 0.)
+	RIGHT = Vector2(1., 0.)
 
 @dataclass
 class Player:
@@ -19,8 +20,10 @@ class Player:
 	vitality: Vitality = field(default_factory=Vitality)
 	sprinting: bool = False
 
-	def step(self, direction: float, delta: float) -> None:
+	def step(self, direction: Vector2, delta: float) -> None:
 		distance = SPRINT_SPEED if self.sprinting else WALK_SPEED
-		movement = Vector2()
-		movement.from_polar((distance * delta, self.aim + direction))
+		movement = direction.clamp_magnitude(1.).rotate(self.aim) * distance
 		self.position.coord += movement
+
+	def handle_key(self) -> None:
+		keys = pygame.key.get_pressed()
