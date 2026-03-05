@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
+import math
 import pygame
 from pygame import Surface
 from pygame.time import Clock
-from app.entity import Player
+from app.entity import Direction, Player
 from app.world import Room
 
 TITLE: str = "The Game"
@@ -26,16 +27,23 @@ class Meta:
 
 	def clear(self) -> None: self.screen.blit(self.background, (0, 0))
 	def update(self) -> None: pygame.display.flip()
-	def tick(self) -> float: self.clock.tick(FPS) / 1000. # miliseconds
+	def tick(self) -> float: return self.clock.tick(FPS) / 1000. # seconds
 
 @dataclass
 class Engine:
 	running: bool = True
-	meta: Meta = field(default_factory=Meta)
 	player: Player = field(default_factory=Player)
+	_meta: Meta = field(default_factory=Meta)
+	_delta: float = 0.
 
 	def _handle_keydown(self, key: int) -> bool:
-		if key in [pygame.K_ESCAPE, pygame.K_q]: self.running = False
+		match key:
+			case pygame.K_ESCAPE | pygame.K_q: self.running = False
+			case pygame.K_w: self.player.step(Direction.FORWARD, self._delta)
+			case pygame.K_a: self.player.step(Direction.LEFT, self._delta)
+			case pygame.K_s: self.player.step(Direction.BACKWARD, self._delta)
+			case pygame.K_d: self.player.step(Direction.RIGHT, self._delta)
+
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT: self.running = False
@@ -46,7 +54,8 @@ class Engine:
 	def run(self) -> None:
 		while self.running:
 			self._handle_events()
-			self.meta.clear()
-			self.meta.tick()
+			print(f"{self.player.position}") # DEBUG:
+			self._meta.clear()
+			self._delta = self._meta.tick()
 
 		pygame.quit()
