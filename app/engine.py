@@ -11,6 +11,7 @@ TITLE: str = "The Game"
 RESOLUTION: tuple[int, int] = 1920, 1080
 FPS: int = 60
 WALL_HEIGHT: float = 30.
+SENSITIVITY: float = 2.
 
 def default_screen() -> Surface:
 	return pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN | pygame.SCALED)
@@ -25,7 +26,7 @@ class Meta:
 		self.background = Surface(self.screen.get_size()).convert()
 		self.background.fill((0, 0, 0))
 		pygame.display.set_caption(TITLE)
-		pygame.mouse.set_visible(False)
+		pygame.mouse.set_relative_mode(True)
 
 	def clear(self) -> None: self.screen.blit(self.background, (0, 0))
 	def update(self) -> None: pygame.display.flip()
@@ -53,10 +54,14 @@ class Engine:
 		if keys[pygame.K_d]: direction += Direction.RIGHT
 		self.player.step(direction, self._delta)
 
+	def _handle_mouse(self, rel: int) -> None:
+		self.player.aim += rel * SENSITIVITY * self._delta
+
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT: self.running = False
 			elif event.type == pygame.KEYDOWN: self._handle_keydown(event.key)
+			elif event.type == pygame.MOUSEMOTION: self._handle_mouse(event.rel[0])
 
 	def _world_to_screen(self, p: Vector2) -> tuple[Vector2, Vector2]:
 		sw, sh = self._meta.screen.get_size()
@@ -66,8 +71,9 @@ class Engine:
 
 	def _render_wall(self, p1: Vector2, p2: Vector2) -> None:
 		player = self.player.position.coord
-		top_left, bottom_left = self._world_to_screen(p1 - player)
-		top_right, bottom_right = self._world_to_screen(p2 - player)
+		aim = self.player.aim
+		top_left, bottom_left = self._world_to_screen((p1 - player).rotate(aim))
+		top_right, bottom_right = self._world_to_screen((p2 - player).rotate(aim))
 		points = [top_left, top_right, bottom_right, bottom_left]
 		pygame.draw.polygon(self._meta.screen, Color("red"), points)
 
