@@ -4,7 +4,8 @@ from pygame import draw, Color, Surface, Vector2
 from pygame.math import clamp, invlerp, lerp, remap
 from app.world import Fog, Room
 
-WALL_HEIGHT: float = 30.
+WALL_HEIGHT: float = 60.
+PLAYER_HEIGHT: float = 20.
 NEAR_PLANE: float = 1.
 
 @dataclass
@@ -18,8 +19,9 @@ class Renderer:
 	def _world_to_screen(self, p: Vector2) -> tuple[Vector2, Vector2]:
 		w, h = self.surface.get_size()
 		x = remap(-1., 1., 0, w, p[0] / p[1])
-		y = remap(0., 1., h / 2., 0., WALL_HEIGHT / p[1])
-		return Vector2(x, y), Vector2(x, h - y)
+		y = remap(0., 1., h / 2., 0., (WALL_HEIGHT - PLAYER_HEIGHT) / p[1])
+		py = remap(0., 1., h / 2., h, PLAYER_HEIGHT / p[1])
+		return Vector2(x, y), Vector2(x, py)
 
 	def _wall(self, left: Vector2, right: Vector2, color: Color, fog: Fog) -> None:
 		# Only render if facing the player
