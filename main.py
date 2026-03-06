@@ -1,10 +1,7 @@
-import pygame
-from pygame import Surface
-from pygame.time import Clock
-from app import Engine
+from app import App
 
 def main() -> None:
-	Engine().run()
+	App().run()
 
 if __name__ == "__main__":
 	main()
