@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-import math
 import pygame
 from pygame import Color, Surface, Vector2
 from pygame.time import Clock
@@ -10,7 +9,7 @@ from app.world import Room
 TITLE: str = "The Game"
 RESOLUTION: tuple[int, int] = 800, 450
 FPS: int = 60
-SENSITIVITY: float = 8.
+SENSITIVITY: float = 16.
 
 # DEBUG:
 corners = [Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)]

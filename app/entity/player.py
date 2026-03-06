@@ -1,6 +1,4 @@
 from dataclasses import dataclass, field
-from math import pi
-import pygame
 from pygame import Vector2
 from .stats import Position, Vitality
 

@@ -26,7 +26,7 @@ class Renderer:
 	def _wall(self, left: Vector2, right: Vector2, color: Color, fog: Fog) -> None:
 		# Only render if facing the player
 		facing = math.atan2(left[0], left[1]) - math.atan2(right[0], right[1])
-		if facing >= 0 and facing <= math.pi:
+		if 0 <= facing <= math.pi:
 			return
 
 		# Only render if in front of the player
@@ -52,13 +52,11 @@ class Renderer:
 		left_dist, right_dist = left.length(), right.length()
 		for x in range(left_x, right_x):
 			fact = invlerp(l_top[0], r_top[0], x)
-			remap_x = lambda begin, end: lerp(begin, end, fact)
+			top = max(0., lerp(l_top[1], r_top[1], fact))
+			bot = min(h, lerp(l_bot[1], r_bot[1], fact))
 
-			top = max(0., remap_x(l_top[1], r_top[1]))
-			bot = min(h, remap_x(l_bot[1], r_bot[1]))
-
-			dist = remap_x(left_dist, right_dist)
-			fact = invlerp(fog.near, fog.far, dist) # NOTE: known reused variable
+			dist = lerp(left_dist, right_dist, fact)
+			fact = invlerp(fog.near, fog.far, dist)
 			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
 
 			draw.line(self.surface, blended, (x, top), (x, bot))
