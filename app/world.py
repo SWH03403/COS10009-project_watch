@@ -3,10 +3,12 @@ from typing import Callable
 from pygame import Color
 from pygame.math import Vector2
 
-def c(name: str) -> Callable[[], Color]: return lambda: Color(name)
+def c(name: str) -> Callable[[], Color]:
+	return lambda: Color(name)
 
 @dataclass
-class Skybox: ...
+class Skybox:
+	...
 
 @dataclass
 class Fog:

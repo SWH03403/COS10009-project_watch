@@ -26,19 +26,23 @@ class Renderer:
 	def _wall(self, left: Vector2, right: Vector2, color: Color, fog: Fog) -> None:
 		# Only render if facing the player
 		facing = math.atan2(left[0], left[1]) - math.atan2(right[0], right[1])
-		if facing >= 0 and facing <= math.pi: return
+		if facing >= 0 and facing <= math.pi:
+			return
 
 		# Only render if in front of the player
 		left_behind, right_behind = left[1] < NEAR_PLANE, right[1] < NEAR_PLANE
-		if left_behind and right_behind: return
+		if left_behind and right_behind:
+			return
 
 		# Cut wall to near plane
 		if left_behind or right_behind:
 			cross_fact = (NEAR_PLANE - left[1]) / (right[1] - left[1])
 			cross_x = left[0] + (right[0] - left[0]) * cross_fact
 			clamped = Vector2(cross_x, NEAR_PLANE)
-			if left_behind: left = clamped
-			else: right = clamped
+			if left_behind:
+				left = clamped
+			else:
+				right = clamped
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)

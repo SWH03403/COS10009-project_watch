@@ -13,10 +13,8 @@ FPS: int = 60
 SENSITIVITY: float = 8.
 
 # DEBUG:
-TEST_ROOM = Room(
-	[Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)],
-	Color("crimson"),
-)
+corners = [Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)]
+TEST_ROOM = Room(corners, Color("crimson"))
 
 def default_screen() -> Surface:
 	return pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN | pygame.SCALED)
@@ -33,9 +31,14 @@ class Meta:
 		pygame.display.set_caption(TITLE)
 		pygame.mouse.set_relative_mode(True)
 
-	def clear(self) -> None: self.screen.blit(self.background, (0, 0))
-	def update(self) -> None: pygame.display.flip()
-	def tick(self) -> float: return self.clock.tick(FPS) / 1000. # seconds
+	def clear(self) -> None:
+		self.screen.blit(self.background, (0, 0))
+
+	def update(self) -> None:
+		pygame.display.flip()
+
+	def tick(self) -> float:
+		return self.clock.tick(FPS) / 1000. # seconds
 
 @dataclass
 class Engine:
@@ -50,17 +53,22 @@ class Engine:
 
 	def _handle_keydown(self, key: int) -> bool:
 		match key:
-			case pygame.K_ESCAPE | pygame.K_q: self.running = False
+			case pygame.K_ESCAPE | pygame.K_q:
+				self.running = False
 
 	def _handle_key(self) -> bool:
 		keys = pygame.key.get_pressed()
 
 		# player movement
 		direction = Vector2()
-		if keys[pygame.K_w]: direction += Direction.FORWARD
-		if keys[pygame.K_s]: direction += Direction.BACKWARD
-		if keys[pygame.K_a]: direction += Direction.LEFT
-		if keys[pygame.K_d]: direction += Direction.RIGHT
+		if keys[pygame.K_w]:
+			direction += Direction.FORWARD
+		if keys[pygame.K_s]:
+			direction += Direction.BACKWARD
+		if keys[pygame.K_a]:
+			direction += Direction.LEFT
+		if keys[pygame.K_d]:
+			direction += Direction.RIGHT
 		self.player.step(direction, self._delta)
 
 	def _handle_mouse(self, rel: int) -> None:
@@ -68,9 +76,12 @@ class Engine:
 
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT: self.running = False
-			elif event.type == pygame.KEYDOWN: self._handle_keydown(event.key)
-			elif event.type == pygame.MOUSEMOTION: self._handle_mouse(event.rel[0])
+			if event.type == pygame.QUIT:
+				self.running = False
+			elif event.type == pygame.KEYDOWN:
+				self._handle_keydown(event.key)
+			elif event.type == pygame.MOUSEMOTION:
+				self._handle_mouse(event.rel[0])
 
 	def _render_room(self, room: Room) -> None:
 		player = self.player.position.coord
