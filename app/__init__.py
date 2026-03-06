@@ -4,16 +4,12 @@ from pygame import Color, Surface, Vector2
 from pygame.time import Clock
 from app.entity import Direction, Player
 from app.render import Renderer
-from app.world import Room
+from app.world import Level, LevelLoader, Room
 
 TITLE: str = "The Game"
 RESOLUTION: tuple[int, int] = 800, 450
 FPS: int = 60
 SENSITIVITY: float = 16.
-
-# DEBUG:
-corners = [Vector2(-40., 160.), Vector2(40., 180.), Vector2(40., 60.), Vector2(-40., 60.)]
-TEST_ROOM = Room(corners, Color("crimson"))
 
 def default_screen() -> Surface:
 	return pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN | pygame.SCALED)
@@ -44,11 +40,14 @@ class App:
 	running: bool = True
 	renderer: Renderer = field(init=False)
 	player: Player = field(default_factory=Player)
+	level: Level = field(init=False)
 	_backend: Backend = field(default_factory=Backend)
 	_delta: float = 0.
 
 	def __post_init__(self) -> None:
 		self.renderer = Renderer(self._backend.screen)
+		self.level = LevelLoader("test").into_level() # DEBUG:
+		self.player.position.coord = self.level.spawn
 
 	def _handle_keydown(self, key: int) -> bool:
 		match key:
@@ -93,7 +92,7 @@ class App:
 			self._handle_key()
 
 			self._backend.clear()
-			self._render_room(TEST_ROOM) # DEBUG:
+			self._render_room(self.level.rooms[0]) # DEBUG:
 			self._backend.update()
 			self._delta = self._backend.tick()
 
