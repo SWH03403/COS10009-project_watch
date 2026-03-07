@@ -63,20 +63,28 @@ class Renderer:
 			else:
 				right = clamped
 
+		# Room center for lighting
+		center = sum(self.room.corners, Vector2()) / len(self.room.corners)
+
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
 
 		w, h = self.screen.get_size()
 		left_x, right_x = int(clamp(l_top[0], 0., w)), int(clamp(r_top[0], 0., w))
-		left_dist, right_dist = left.length(), right.length()
 		for x in range(left_x, right_x):
 			fact = invlerp(l_top[0], r_top[0], x)
 			top = max(0., lerp(l_top[1], r_top[1], fact))
 			bot = min(h, lerp(l_bot[1], r_bot[1], fact))
 
-			dist = lerp(left_dist, right_dist, fact)
-			fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.) * fog.intensity
+			world_x, world_y = lerp(left[0], right[0], fact), lerp(left[1], right[1], fact)
+			world_pos = Vector2(world_x, world_y)
+			camera_dist = world_pos.length()
+			fact = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
+			fact = 0.
 			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
+			center_dist = (world_pos - center).length()
+			fact = 1. - clamp(center_dist / 500., 0., 1.)
+			blended = Color(*tuple(c * fact for c in blended))
 
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
