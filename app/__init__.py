@@ -38,16 +38,24 @@ class Backend:
 @dataclass
 class App:
 	running: bool = True
-	renderer: Renderer = field(init=False)
 	player: Player = field(default_factory=Player)
 	level: Level = field(init=False)
+	_renderers: dict[int, Renderer] = field(default_factory=dict)
 	_backend: Backend = field(default_factory=Backend)
 	_delta: float = 0.
 
+	def _update_camera_position(self) -> None:
+		player = self.player.position.coord
+		aim = -self.player.aim
+		for renderer in self._renderers.values():
+			renderer.set_position(player, aim)
+			renderer.set_redraw_wall()
+
 	def __post_init__(self) -> None:
-		self.renderer = Renderer(self._backend.screen)
 		self.level = LevelLoader("test").into_level() # DEBUG:
 		self.player.position.coord = self.level.spawn
+		self._renderers[0] = Renderer(self._backend.screen, self.level.rooms[0])
+		self._update_camera_position()
 
 	def _handle_keydown(self, key: int) -> bool:
 		match key:
@@ -69,8 +77,13 @@ class App:
 			direction += Direction.RIGHT
 		self.player.step(direction, self._delta)
 
+		if direction.length_squared() > 0:
+			self._update_camera_position()
+
 	def _handle_mouse(self, rel: int) -> None:
 		self.player.aim -= rel * SENSITIVITY * self._delta
+		if rel != 0:
+			self._update_camera_position()
 
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
@@ -81,18 +94,13 @@ class App:
 			elif event.type == pygame.MOUSEMOTION:
 				self._handle_mouse(event.rel[0])
 
-	def _render_room(self, room: Room) -> None:
-		player = self.player.position.coord
-		aim = -self.player.aim
-		self.renderer.room(room, player, aim)
-
 	def run(self) -> None:
 		while self.running:
 			self._handle_events()
 			self._handle_key()
 
 			self._backend.clear()
-			self._render_room(self.level.rooms[0]) # DEBUG:
+			self._renderers[0].render() # DEBUG:
 			self._backend.update()
 			self._delta = self._backend.tick()
 
