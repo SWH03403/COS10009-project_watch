@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import math
 from pygame import draw, Color, SRCALPHA, Surface, Vector2
 from pygame.math import clamp, invlerp, lerp, remap
+from app.utils.math import Line
 from app.world import Fog, Room
 
 WALL_HEIGHT: float = 60.
@@ -63,8 +64,13 @@ class Renderer:
 			else:
 				right = clamped
 
+		right_proj = Line.from_point(right)
+		right_proj_x = right_proj.get_x(left[1])
+		wall = Line.from_point(left, right)
+
 		# Room center for lighting
 		center = sum(self.room.corners, Vector2()) / len(self.room.corners)
+		center = self._transform(center, self._origin, self._rotate)
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
@@ -76,14 +82,14 @@ class Renderer:
 			top = max(0., lerp(l_top[1], r_top[1], fact))
 			bot = min(h, lerp(l_bot[1], r_bot[1], fact))
 
-			world_x, world_y = lerp(left[0], right[0], fact), lerp(left[1], right[1], fact)
-			world_pos = Vector2(world_x, world_y)
+			proj_x = lerp(left[0], right_proj_x, fact)
+			proj = Line.from_point(Vector2(proj_x, left[1]))
+			world_pos = proj.intersect(wall)
 			camera_dist = world_pos.length()
 			fact = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
-			fact = 0.
 			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
 			center_dist = (world_pos - center).length()
-			fact = 1. - clamp(center_dist / 500., 0., 1.)
+			fact = clamp(200. / center_dist, 0., 1.)
 			blended = Color(*tuple(c * fact for c in blended))
 
 			draw.line(self.wall, blended, (x, top), (x, bot))

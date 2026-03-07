@@ -15,7 +15,7 @@ class Fog:
 	color: Color = field(default_factory=c("black"))
 	near: float = 100.
 	far: float = 400.
-	intensity: float = .5
+	intensity: float = .8
 
 @dataclass
 class Room:
