@@ -75,7 +75,7 @@ class Renderer:
 			bot = min(h, lerp(l_bot[1], r_bot[1], fact))
 
 			dist = lerp(left_dist, right_dist, fact)
-			fact = invlerp(fog.near, fog.far, dist)
+			fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.) * fog.intensity
 			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
 
 			draw.line(self.wall, blended, (x, top), (x, bot))

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Callable, Self, TextIO
+from typing import Callable, TextIO
 from pygame import Color
 from pygame.math import Vector2
 
@@ -14,8 +14,8 @@ class Skybox:
 class Fog:
 	color: Color = field(default_factory=c("black"))
 	near: float = 100.
-	far: float = 300.
-	intensity: float = 1.
+	far: float = 400.
+	intensity: float = .8
 
 @dataclass
 class Room:
