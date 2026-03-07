@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Callable, TextIO
 from pygame import Color
-from pygame.math import Vector2
+from app.utils.math import Vec2
 
 def c(name: str) -> Callable[[], Color]:
 	return lambda: Color(name)
@@ -19,7 +19,7 @@ class Fog:
 
 @dataclass
 class Room:
-	corners: list[Vector2]
+	corners: list[Vec2]
 	wall: Color = field(default_factory=c("red"))
 	floor: Color = field(default_factory=c("navyblue"))
 	ceiling: Color = field(default_factory=c("bisque3"))
@@ -37,7 +37,7 @@ class Edge:
 
 @dataclass
 class Level:
-	spawn: Vector2 = field(default_factory=Vector2)
+	spawn: Vec2 = field(default_factory=Vec2)
 	rooms: list[Room] = field(default_factory=list)
 	doors: list[Door] = field(default_factory=list)
 	_edges: dict[int, list[Edge]] = field(default_factory=dict)
@@ -52,17 +52,17 @@ class LevelLoader:
 		self._file.close()
 
 	def _parse_spawn(self, args: list[str]) -> None:
-		self.level.spawn = Vector2(float(args[0]), float(args[1]))
+		self.level.spawn = Vec2(float(args[0]), float(args[1]))
 
 	def _parse_quad_room(self, args: list[str]) -> None:
 		br, tl = float(args[0]), float(args[1])
-		tr = Vector2()
+		tr = Vec2()
 		if len(args) < 3: # rectangular room
-			tr = Vector2(br, tl)
+			tr = Vec2(br, tl)
 		else:
 			args = args[2].split(",")
-			tr[0], tr[1] = float(args[0]), float(args[1])
-		corners = [Vector2(0., 0.), Vector2(0., tl), tr, Vector2(br, 0.)]
+			tr.x, tr.y = float(args[0]), float(args[1])
+		corners = [Vec2(0., 0.), Vec2(0., tl), tr, Vec2(br, 0.)]
 		room = Room(corners)
 		self.level.rooms.append(room)
 

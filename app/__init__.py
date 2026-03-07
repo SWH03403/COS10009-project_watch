@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 import pygame
-from pygame import Color, Surface, Vector2
+from pygame import Color, Surface
 from pygame.time import Clock
 from app.entity import Direction, Player
 from app.render import Renderer
+from app.utils.math import Vec2
 from app.world import Level, LevelLoader, Room
 
 TITLE: str = "The Game"
@@ -66,7 +67,7 @@ class App:
 		keys = pygame.key.get_pressed()
 
 		# player movement
-		direction = Vector2()
+		direction = Vec2()
 		if keys[pygame.K_w]:
 			direction += Direction.FORWARD
 		if keys[pygame.K_s]:

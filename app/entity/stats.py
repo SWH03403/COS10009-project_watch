@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
-from pygame import Vector2
+from app.utils.math import Vec2
 
 @dataclass
 class Position:
 	room: int = 0
-	coord: Vector2 = field(default_factory=Vector2)
+	coord: Vec2 = field(default_factory=Vec2)
 
 @dataclass
 class Vitality:

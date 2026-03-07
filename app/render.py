@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 import math
-from pygame import draw, Color, SRCALPHA, Surface, Vector2
+from pygame import draw, Color, SRCALPHA, Surface
 from pygame.math import clamp, invlerp, lerp, remap
-from app.utils.math import Line
+from app.utils.math import Line, Vec2
 from app.world import Fog, Room
 
 WALL_HEIGHT: float = 60.
@@ -15,7 +15,7 @@ class Renderer:
 	room: Room
 	wall: Surface = field(init=False)
 	floor: Surface = field(init=False)
-	_origin: Vector2 = field(default_factory=Vector2)
+	_origin: Vec2 = field(default_factory=Vec2)
 	_rotate: float = 0.
 	_redraw_wall: bool = False
 	_redraw_floor: bool = False
@@ -25,7 +25,7 @@ class Renderer:
 		self.wall = Surface(size, flags=SRCALPHA).convert()
 		self.floor = Surface(size, flags=SRCALPHA).convert()
 
-	def set_position(self, origin: Vector2, rotate: float) -> None:
+	def set_position(self, origin: Vec2, rotate: float) -> None:
 		self._origin = origin
 		self._rotate = rotate
 
@@ -33,57 +33,57 @@ class Renderer:
 		self._redraw_wall = True
 
 	@staticmethod
-	def _transform(target: Vector2, origin: Vector2, rotate: float) -> Vector2:
+	def _transform(target: Vec2, origin: Vec2, rotate: float) -> Vec2:
 		return (target - origin).rotate(rotate)
 
-	def _world_to_screen(self, p: Vector2) -> tuple[Vector2, Vector2]:
+	def _world_to_screen(self, p: Vec2) -> tuple[Vec2, Vec2]:
 		w, h = self.screen.get_size()
-		x = remap(-1., 1., 0, w, p[0] / p[1])
-		y = remap(0., 1., h / 2., 0., (WALL_HEIGHT - PLAYER_HEIGHT) / p[1])
-		py = remap(0., 1., h / 2., h, PLAYER_HEIGHT / p[1])
-		return Vector2(x, y), Vector2(x, py)
+		x = remap(-1., 1., 0, w, p.x / p.y)
+		y = remap(0., 1., h / 2., 0., (WALL_HEIGHT - PLAYER_HEIGHT) / p.y)
+		py = remap(0., 1., h / 2., h, PLAYER_HEIGHT / p.y)
+		return Vec2(x, y), Vec2(x, py)
 
-	def _wall(self, left: Vector2, right: Vector2, color: Color, fog: Fog) -> None:
+	def _wall(self, left: Vec2, right: Vec2, color: Color, fog: Fog) -> None:
 		# Only render if facing the player
-		facing = math.atan2(left[0], left[1]) - math.atan2(right[0], right[1])
+		facing = math.atan2(left.x, left.y) - math.atan2(right.x, right.y)
 		if 0 <= facing <= math.pi:
 			return
 
 		# Only render if in front of the player
-		left_behind, right_behind = left[1] < NEAR_PLANE, right[1] < NEAR_PLANE
+		left_behind, right_behind = left.y < NEAR_PLANE, right.y < NEAR_PLANE
 		if left_behind and right_behind:
 			return
 
 		# Cut wall to near plane
 		if left_behind or right_behind:
-			cross_fact = (NEAR_PLANE - left[1]) / (right[1] - left[1])
-			cross_x = left[0] + (right[0] - left[0]) * cross_fact
-			clamped = Vector2(cross_x, NEAR_PLANE)
+			cross_fact = (NEAR_PLANE - left.y) / (right.y - left.y)
+			cross_x = left.x + (right.x - left.x) * cross_fact
+			clamped = Vec2(cross_x, NEAR_PLANE)
 			if left_behind:
 				left = clamped
 			else:
 				right = clamped
 
 		right_proj = Line.from_point(right)
-		right_proj_x = right_proj.get_x(left[1])
+		right_proj_x = right_proj.get_x(left.y)
 		wall = Line.from_point(left, right)
 
 		# Room center for lighting
-		center = sum(self.room.corners, Vector2()) / len(self.room.corners)
+		center = sum(self.room.corners, Vec2()) / len(self.room.corners)
 		center = self._transform(center, self._origin, self._rotate)
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
 
 		w, h = self.screen.get_size()
-		left_x, right_x = int(clamp(l_top[0], 0., w)), int(clamp(r_top[0], 0., w))
+		left_x, right_x = int(clamp(l_top.x, 0., w)), int(clamp(r_top.x, 0., w))
 		for x in range(left_x, right_x):
-			fact = invlerp(l_top[0], r_top[0], x)
-			top = max(0., lerp(l_top[1], r_top[1], fact))
-			bot = min(h, lerp(l_bot[1], r_bot[1], fact))
+			fact = invlerp(l_top.x, r_top.x, x)
+			top = max(0., lerp(l_top.y, r_top.y, fact))
+			bot = min(h, lerp(l_bot.y, r_bot.y, fact))
 
-			proj_x = lerp(left[0], right_proj_x, fact)
-			proj = Line.from_point(Vector2(proj_x, left[1]))
+			proj_x = lerp(left.x, right_proj_x, fact)
+			proj = Line.from_point(Vec2(proj_x, left.y))
 			world_pos = proj.intersect(wall)
 			camera_dist = world_pos.length()
 			fact = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity

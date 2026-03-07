@@ -1,8 +1,25 @@
 from dataclasses import dataclass
 from typing import Self
-from pygame import Vector2
+import pygame
 
 # FIX: Divisions by 0
+
+class Vec2(pygame.Vector2):
+	@property
+	def x(self) -> float:
+		return self[0]
+
+	@x.setter
+	def x(self, x: float) -> None:
+		self[0] = x
+
+	@property
+	def y(self) -> float:
+		return self[1]
+
+	@y.setter
+	def y(self, y: float) -> None:
+		self[1] = y
 
 @dataclass
 class Line:
@@ -11,9 +28,9 @@ class Line:
 	c: float
 
 	@staticmethod
-	def from_point(p: Vector2, q: Vector2 = Vector2()) -> Self:
-		a, b = q[1] - p[1], p[0] - q[0]
-		c = -(a * p[0] + b * p[1])
+	def from_point(p: Vec2, q: Vec2 = Vec2()) -> Self:
+		a, b = q.y - p.y, p.x - q.x
+		c = -(a * p.x + b * p.y)
 		return Line(a, b, c)
 
 	def get_x(self, y: float) -> float:
@@ -22,11 +39,8 @@ class Line:
 	def get_y(self, x: float) -> float:
 		return -(self.a * x + self.c) / self.b
 
-	def intersect(self, other: Self) -> Vector2:
+	def intersect(self, other: Self) -> Vec2:
 		det = self.a * other.b - other.a * self.b
 		x = (self.b * other.c - other.b * self.c) / det
 		y = (other.a * self.c - self.a * other.c) / det
-		return Vector2(x, y)
-
-	def validate(self, p: Vector2) -> float: # DEBUG:
-		return self.a * p[0] + self.b * p[1] + self.c
+		return Vec2(x, y)
