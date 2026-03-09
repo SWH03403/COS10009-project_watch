@@ -5,7 +5,7 @@ from pygame.math import clamp, invlerp, lerp, remap
 from app.utils.math import Line, Vec2
 from app.world import Fog, Room
 
-WALL_HEIGHT: float = 60.
+WALL_HEIGHT: float = 80.
 PLAYER_HEIGHT: float = 20.
 NEAR_PLANE: float = 1.
 
@@ -100,15 +100,49 @@ class Renderer:
 		endpoints.extend(self._world_to_screen(Vec2(0., self.room.fog.near)))
 		endpoints.extend(self._world_to_screen(Vec2(0., self.room.fog.far)))
 		top_near, bot_near, top_far, bot_far = (int(p.y) for p in endpoints)
-
 		sw, sh = self.screen.get_size()
-		print(bot_near, sh)
+
+		# Fog right in front of camera
+		fog = self.room.fog
+		if top_far < 0 and bot_far > sh:
+			self.floor.fill(fog.color)
+			return
+		clamped_top_far = max(0, top_far)
+		clamped_bot_far = min(sh, bot_far)
+		far = Rect(0, clamped_top_far, sw, clamped_bot_far - clamped_top_far)
+		draw.rect(self.floor, fog.color, far)
+
+		# Solid regions
 		if bot_near < sh:
 			region = Rect(0, bot_near, sw, sh - bot_near)
 			draw.rect(self.floor, self.room.floor, region)
 		if top_near > 0:
 			region = Rect(0, 0, sw, top_near)
 			draw.rect(self.floor, self.room.ceiling, region)
+
+		# Gradients by distance
+		ray_top_far = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.far, WALL_HEIGHT))
+		far_on_near = ray_top_far.get_y(fog.near)
+		for y in range(top_near, clamped_top_far):
+			fact = invlerp(top_near, top_far, y)
+			proj_y = lerp(WALL_HEIGHT, far_on_near, fact)
+			proj_ceil = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.near, proj_y))
+			dist = proj_ceil.get_x(WALL_HEIGHT)
+			fog_fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.)
+			blended = Color(*tuple(lerp(c, f, fog_fact) for c, f in zip(self.room.ceiling, fog.color)))
+			draw.line(self.floor, blended, (0, y), (sw, y))
+
+		ray_bot_far = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.far, 0.))
+		far_on_near = ray_bot_far.get_y(fog.near)
+		for y in range(clamped_bot_far, bot_near):
+			fact = invlerp(bot_near, bot_far, y)
+			proj_y = lerp(0., far_on_near, fact)
+			proj_floor = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.near, proj_y))
+			print(y, fact, proj_y)
+			dist = proj_floor.get_x(0.)
+			fog_fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.)
+			blended = Color(*tuple(lerp(c, f, fog_fact) for c, f in zip(self.room.floor, fog.color)))
+			draw.line(self.floor, blended, (0, y), (sw, y))
 
 	def _render_room(self) -> None:
 		if not self._drawn_floor:
