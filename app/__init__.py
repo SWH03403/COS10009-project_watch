@@ -50,7 +50,7 @@ class App:
 		aim = -self.player.aim
 		for renderer in self._renderers.values():
 			renderer.set_position(player, aim)
-			renderer.set_redraw_wall()
+			renderer.set_redraw()
 
 	def __post_init__(self) -> None:
 		self.level = LevelLoader("test").into_level() # DEBUG:
@@ -76,6 +76,7 @@ class App:
 			direction += Direction.LEFT
 		if keys[pygame.K_d]:
 			direction += Direction.RIGHT
+		self.player.sprinting = keys[pygame.K_LSHIFT]
 		self.player.step(direction, self._delta)
 
 		if direction.length_squared() > 0:

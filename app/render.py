@@ -17,8 +17,8 @@ class Renderer:
 	floor: Surface = field(init=False)
 	_origin: Vec2 = field(default_factory=Vec2)
 	_rotate: float = 0.
-	_redraw_wall: bool = False
-	_redraw_floor: bool = False
+	_redraw: bool = False
+	_drawn_floor: bool = False
 
 	def __post_init__(self) -> None:
 		size = self.screen.get_size()
@@ -29,12 +29,11 @@ class Renderer:
 		self._origin = origin
 		self._rotate = rotate
 
-	def set_redraw_wall(self) -> None:
-		self._redraw_wall = True
+	def set_redraw(self) -> None:
+		self._redraw = True
 
-	@staticmethod
-	def _transform(target: Vec2, origin: Vec2, rotate: float) -> Vec2:
-		return (target - origin).rotate(rotate)
+	def _transform(self, target: Vec2) -> Vec2:
+		return (target - self._origin).rotate(self._rotate)
 
 	def _world_to_screen(self, p: Vec2) -> tuple[Vec2, Vec2]:
 		w, h = self.screen.get_size()
@@ -44,6 +43,8 @@ class Renderer:
 		return Vec2(x, y), Vec2(x, py)
 
 	def _wall(self, left: Vec2, right: Vec2, color: Color, fog: Fog) -> None:
+		left, right = self._transform(left), self._transform(right)
+
 		# Only render if facing the player
 		facing = math.atan2(left.x, left.y) - math.atan2(right.x, right.y)
 		if 0 <= facing <= math.pi:
@@ -70,7 +71,7 @@ class Renderer:
 
 		# Room center for lighting
 		center = sum(self.room.corners, Vec2()) / len(self.room.corners)
-		center = self._transform(center, self._origin, self._rotate)
+		center = self._transform(center)
 
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
@@ -94,18 +95,24 @@ class Renderer:
 
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
+	def _floor(self) -> None:
+		...
+
 	def _render_room(self) -> None:
-		room = self.room
-		assert len(room.corners) > 2
-		corners = [Renderer._transform(p, self._origin, self._rotate) for p in room.corners]
+		room, corners = self.room, self.room.corners
+		assert len(corners) > 2
 		self.wall.fill(Color(0, 0, 0, 0))
 		for i in range(len(corners) - 1):
 			self._wall(corners[i], corners[i + 1], room.wall, room.fog)
 		self._wall(corners[-1], corners[0], room.wall, room.fog)
-		self._redraw_wall = False
+		self._redraw = False
+
+		if not self._drawn_floor:
+			self._floor()
+			self._drawn_floor = True
 
 	def render(self) -> None:
-		if self._redraw_wall:
+		if self._redraw:
 			self._render_room()
 		self.screen.blit(self.floor, (0, 0))
 		self.screen.blit(self.wall, (0, 0))
