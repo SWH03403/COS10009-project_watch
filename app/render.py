@@ -138,7 +138,6 @@ class Renderer:
 			fact = invlerp(bot_near, bot_far, y)
 			proj_y = lerp(0., far_on_near, fact)
 			proj_floor = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.near, proj_y))
-			print(y, fact, proj_y)
 			dist = proj_floor.get_x(0.)
 			fog_fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.)
 			blended = Color(*tuple(lerp(c, f, fog_fact) for c, f in zip(self.room.floor, fog.color)))

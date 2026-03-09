@@ -12,16 +12,16 @@ class Skybox:
 
 @dataclass
 class Fog:
-	color: Color = field(default_factory=c("black"))
-	near: float = 100.
+	color: Color = field(default_factory=c("gray20"))
+	near: float = 1.
 	far: float = 400.
 	intensity: float = .8
 
 @dataclass
 class Room:
 	corners: list[Vec2]
-	wall: Color = field(default_factory=c("red"))
-	floor: Color = field(default_factory=c("navyblue"))
+	wall: Color = field(default_factory=c("bisque"))
+	floor: Color = field(default_factory=c("burlywood4"))
 	ceiling: Color = field(default_factory=c("bisque3"))
 	fog: Fog = field(default_factory=Fog)
 
