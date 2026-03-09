@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 import math
-from pygame import draw, Color, SRCALPHA, Surface
+from pygame import draw, BLEND_ALPHA_SDL2, Color, Rect, SRCALPHA, Surface
 from pygame.math import clamp, invlerp, lerp, remap
 from app.utils.math import Line, Vec2
 from app.world import Fog, Room
@@ -22,7 +22,7 @@ class Renderer:
 
 	def __post_init__(self) -> None:
 		size = self.screen.get_size()
-		self.wall = Surface(size, flags=SRCALPHA).convert()
+		self.wall = Surface(size, flags=SRCALPHA).convert_alpha()
 		self.floor = Surface(size, flags=SRCALPHA).convert()
 
 	def set_position(self, origin: Vec2, rotate: float) -> None:
@@ -42,7 +42,7 @@ class Renderer:
 		py = remap(0., 1., h / 2., h, PLAYER_HEIGHT / p.y)
 		return Vec2(x, y), Vec2(x, py)
 
-	def _wall(self, left: Vec2, right: Vec2, color: Color, fog: Fog) -> None:
+	def _render_wall(self, left: Vec2, right: Vec2, color: Color, fog: Fog) -> None:
 		left, right = self._transform(left), self._transform(right)
 
 		# Only render if facing the player
@@ -95,24 +95,42 @@ class Renderer:
 
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
-	def _floor(self) -> None:
-		...
+	def _render_floor(self) -> None:
+		endpoints = []
+		endpoints.extend(self._world_to_screen(Vec2(0., self.room.fog.near)))
+		endpoints.extend(self._world_to_screen(Vec2(0., self.room.fog.far)))
+		top_near, bot_near, top_far, bot_far = (int(p.y) for p in endpoints)
+
+		sw, sh = self.screen.get_size()
+		print(bot_near, sh)
+		if bot_near < sh:
+			region = Rect(0, bot_near, sw, sh - bot_near)
+			draw.rect(self.floor, self.room.floor, region)
+		if top_near > 0:
+			region = Rect(0, 0, sw, top_near)
+			draw.rect(self.floor, self.room.ceiling, region)
 
 	def _render_room(self) -> None:
-		room, corners = self.room, self.room.corners
-		assert len(corners) > 2
+		if not self._drawn_floor:
+			self.wall.fill(Color(0, 0, 0, 0))
+			self._render_floor()
+			self._drawn_floor = True
+
+		room, p = self.room, self.room.corners
+		assert len(p) > 2
 		self.wall.fill(Color(0, 0, 0, 0))
-		for i in range(len(corners) - 1):
-			self._wall(corners[i], corners[i + 1], room.wall, room.fog)
-		self._wall(corners[-1], corners[0], room.wall, room.fog)
+		for i in range(len(p) - 1):
+			self._render_wall(p[i], p[i + 1], room.wall, room.fog)
+		self._render_wall(p[-1], p[0], room.wall, room.fog)
 		self._redraw = False
 
 		if not self._drawn_floor:
-			self._floor()
+			self.wall.fill(Color(0, 0, 0, 0))
+			self._render_floor()
 			self._drawn_floor = True
 
 	def render(self) -> None:
 		if self._redraw:
 			self._render_room()
-		self.screen.blit(self.floor, (0, 0))
-		self.screen.blit(self.wall, (0, 0))
+		self.screen.blit(self.floor, special_flags=BLEND_ALPHA_SDL2)
+		self.screen.blit(self.wall, special_flags=BLEND_ALPHA_SDL2)
