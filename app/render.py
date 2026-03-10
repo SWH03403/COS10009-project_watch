@@ -9,6 +9,7 @@ WALL_HEIGHT: float = 80.
 PLAYER_HEIGHT: float = 20.
 NEAR_PLANE: float = 1.
 SHADE: Color = Color(0, 0, 0)
+TRANSPARENT: Color = Color(0, 0, 0, 0)
 
 @dataclass
 class Renderer:
@@ -43,7 +44,8 @@ class Renderer:
 		py = remap(0., 1., h / 2., h, PLAYER_HEIGHT / p.y)
 		return Vec2(x, y), Vec2(x, py)
 
-	def _render_wall(self, left: Vec2, right: Vec2, color: Color, fog: Fog) -> None:
+	def _render_wall(self, left: Vec2, right: Vec2) -> None:
+		fog = self.room.fog
 		left, right = self._transform(left), self._transform(right)
 
 		# Only render if facing the player
@@ -91,7 +93,7 @@ class Renderer:
 			light_dist = (world_pos - center).length()
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
 			shade_amt = 1. - clamp(200. / light_dist, 0., 1.)
-			blended = color.lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
+			blended = self.room.wall.lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
 
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
@@ -129,7 +131,7 @@ class Renderer:
 			proj_ceil = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.near, proj_y))
 			dist = proj_ceil.get_x(WALL_HEIGHT)
 			fog_fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.)
-			blended = Color(*tuple(lerp(c, f, fog_fact) for c, f in zip(self.room.ceiling, fog.color)))
+			blended = self.room.ceiling.lerp(fog.color, fog_fact)
 			draw.line(self.floor, blended, (0, y), (sw, y))
 
 		ray_bot_far = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.far, 0.))
@@ -140,30 +142,25 @@ class Renderer:
 			proj_floor = Line.from_point(Vec2(0., PLAYER_HEIGHT), Vec2(fog.near, proj_y))
 			dist = proj_floor.get_x(0.)
 			fog_fact = clamp(invlerp(fog.near, fog.far, dist), 0., 1.)
-			blended = Color(*tuple(lerp(c, f, fog_fact) for c, f in zip(self.room.floor, fog.color)))
+			blended = self.room.floor.lerp(fog.color, fog_fact)
 			draw.line(self.floor, blended, (0, y), (sw, y))
 
 	def _render_room(self) -> None:
 		if not self._drawn_floor:
-			self.wall.fill(Color(0, 0, 0, 0))
+			self.wall.fill(TRANSPARENT)
 			self._render_floor()
 			self._drawn_floor = True
 
-		room, p = self.room, self.room.corners
+		p = self.room.corners
 		assert len(p) > 2
-		self.wall.fill(Color(0, 0, 0, 0))
+		self.wall.fill(TRANSPARENT)
 		for i in range(len(p) - 1):
-			self._render_wall(p[i], p[i + 1], room.wall, room.fog)
-		self._render_wall(p[-1], p[0], room.wall, room.fog)
+			self._render_wall(p[i], p[i + 1])
+		self._render_wall(p[-1], p[0])
 		self._redraw = False
-
-		if not self._drawn_floor:
-			self.wall.fill(Color(0, 0, 0, 0))
-			self._render_floor()
-			self._drawn_floor = True
 
 	def render(self) -> None:
 		if self._redraw:
 			self._render_room()
-		self.screen.blit(self.floor, special_flags=BLEND_ALPHA_SDL2)
-		self.screen.blit(self.wall, special_flags=BLEND_ALPHA_SDL2)
+		self.screen.blit(self.floor)
+		self.screen.blit(self.wall)
