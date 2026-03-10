@@ -52,10 +52,16 @@ class App:
 			renderer.set_position(player, aim)
 			renderer.set_redraw()
 
+	def _load_room(self, idx: int) -> None:
+		if idx in self._renderers: return
+		room = self.level.rooms[idx]
+		doors = self.level.get_doors(idx)
+		self._renderers[idx] = Renderer(self._backend.screen, room, doors)
+
 	def __post_init__(self) -> None:
 		self.level = LevelLoader("test").into_level() # DEBUG:
 		self.player.position.coord = self.level.spawn
-		self._renderers[0] = Renderer(self._backend.screen, self.level.rooms[0], [self.level.doors[0]])
+		self._load_room(0)
 		self._update_camera_position()
 
 	def _handle_keydown(self, key: int) -> bool:

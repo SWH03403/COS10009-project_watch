@@ -50,7 +50,23 @@ class Level:
 	spawn: Vec2 = field(default_factory=Vec2)
 	rooms: list[Room] = field(default_factory=list)
 	doors: list[Door] = field(default_factory=list)
-	edges: dict[int, list[Edge]] = field(default_factory=dict)
+	_edges: dict[int, list[Edge]] = field(default_factory=dict)
+
+	def _add_edge(self, r1: int, r2: int, door: int) -> None:
+		if r1 not in self._edges: self._edges[r1] = []
+		self._edges[r1].append(Edge(r2, door))
+
+	def add_door(self, door: Door) -> None:
+		idx = len(self.doors)
+		self.doors.append(door)
+		self._add_edge(door.room_from.idx, door.room_to.idx, idx)
+		self._add_edge(door.room_to.idx, door.room_from.idx, idx)
+
+	def get_doors(self, room_idx: int) -> list[Door]:
+		doors = []
+		for edge in self._edges[room_idx]:
+			doors.append(self.doors[edge.door])
+		return doors
 
 @dataclass
 class LevelLoader:
@@ -60,10 +76,6 @@ class LevelLoader:
 
 	def __del__(self) -> None:
 		self._file.close()
-
-	def _add_edge(self, r1: int, r2: int, door: int) -> None:
-		if r1 not in self.level.edges: self.level.edges[r1] = []
-		self.level.edges[r1].append(Edge(r2, door))
 
 	def _parse_spawn(self, args: list[str]) -> None:
 		self.level.spawn = Vec2(float(args[0]), float(args[1]))
@@ -93,11 +105,7 @@ class LevelLoader:
 		room_from = self._parse_connection(args[1], True)
 		room_to = self._parse_connection(args[2], False)
 		door = Door(width, room_from, room_to)
-
-		idx = len(self.level.doors)
-		self.level.doors.append(door)
-		self._add_edge(room_from.idx, room_to.idx, idx)
-		self._add_edge(room_to.idx, room_from.idx, idx)
+		self.level.add_door(door)
 
 	def __post_init__(self) -> None:
 		self._file = open(f"assets/levels/{self.name}.txt", "r", encoding="utf-8")
