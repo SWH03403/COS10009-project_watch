@@ -55,7 +55,7 @@ class App:
 	def __post_init__(self) -> None:
 		self.level = LevelLoader("test").into_level() # DEBUG:
 		self.player.position.coord = self.level.spawn
-		self._renderers[0] = Renderer(self._backend.screen, self.level.rooms[0])
+		self._renderers[0] = Renderer(self._backend.screen, self.level.rooms[0], [self.level.doors[0]])
 		self._update_camera_position()
 
 	def _handle_keydown(self, key: int) -> bool:
@@ -68,14 +68,10 @@ class App:
 
 		# player movement
 		direction = Vec2()
-		if keys[pygame.K_w]:
-			direction += Direction.FORWARD
-		if keys[pygame.K_s]:
-			direction += Direction.BACKWARD
-		if keys[pygame.K_a]:
-			direction += Direction.LEFT
-		if keys[pygame.K_d]:
-			direction += Direction.RIGHT
+		if keys[pygame.K_w]: direction += Direction.FORWARD
+		if keys[pygame.K_s]: direction += Direction.BACKWARD
+		if keys[pygame.K_a]: direction += Direction.LEFT
+		if keys[pygame.K_d]: direction += Direction.RIGHT
 		self.player.sprinting = keys[pygame.K_LSHIFT]
 		self.player.step(direction, self._delta)
 
@@ -89,12 +85,9 @@ class App:
 
 	def _handle_events(self) -> bool:
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				self.running = False
-			elif event.type == pygame.KEYDOWN:
-				self._handle_keydown(event.key)
-			elif event.type == pygame.MOUSEMOTION:
-				self._handle_mouse(event.rel[0])
+			if event.type == pygame.QUIT: self.running = False
+			elif event.type == pygame.KEYDOWN: self._handle_keydown(event.key)
+			elif event.type == pygame.MOUSEMOTION: self._handle_mouse(event.rel[0])
 
 	def run(self) -> None:
 		while self.running:

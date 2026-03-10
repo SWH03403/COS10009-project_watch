@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 import math
-from pygame import draw, BLEND_ALPHA_SDL2, Color, Rect, SRCALPHA, Surface
+from pygame import draw, Color, Rect, SRCALPHA, Surface
 from pygame.math import clamp, invlerp, lerp, remap
 from app.utils.math import Line, Vec2
-from app.world import Fog, Room
+from app.world import Door, Room
 
 WALL_HEIGHT: float = 80.
 PLAYER_HEIGHT: float = 20.
@@ -15,6 +15,7 @@ TRANSPARENT: Color = Color(0, 0, 0, 0)
 class Renderer:
 	screen: Surface
 	room: Room
+	doors: list[Door]
 	wall: Surface = field(init=False)
 	floor: Surface = field(init=False)
 	_origin: Vec2 = field(default_factory=Vec2)
@@ -44,7 +45,7 @@ class Renderer:
 		py = remap(0., 1., h / 2., h, PLAYER_HEIGHT / p.y)
 		return Vec2(x, y), Vec2(x, py)
 
-	def _render_wall(self, left: Vec2, right: Vec2) -> None:
+	def _render_wall(self, left: Vec2, right: Vec2, idx: int) -> None:
 		fog = self.room.fog
 		left, right = self._transform(left), self._transform(right)
 
@@ -58,7 +59,14 @@ class Renderer:
 		if left_behind and right_behind:
 			return
 
+		# Cache door positions
+		doors = []
+		for d in self.doors:
+			if d.room_from.wall != idx: continue
+			doors.append((d.room_from.offset, d.width))
+
 		# Cut wall to near plane
+		true_left = left
 		if left_behind or right_behind:
 			cross_fact = (NEAR_PLANE - left.y) / (right.y - left.y)
 			cross_x = left.x + (right.x - left.x) * cross_fact
@@ -94,6 +102,14 @@ class Renderer:
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
 			shade_amt = 1. - clamp(200. / light_dist, 0., 1.)
 			blended = self.room.wall.lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
+
+			is_door = False
+			to_left = (world_pos - true_left).length()
+			for offset, width in doors:
+				if offset < to_left < offset + width:
+					is_door = True
+					break
+			if is_door: bot -= (bot - top) * .8
 
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
@@ -155,8 +171,8 @@ class Renderer:
 		assert len(p) > 2
 		self.wall.fill(TRANSPARENT)
 		for i in range(len(p) - 1):
-			self._render_wall(p[i], p[i + 1])
-		self._render_wall(p[-1], p[0])
+			self._render_wall(p[i], p[i + 1], i)
+		self._render_wall(p[-1], p[0], len(p) - 1)
 		self._redraw = False
 
 	def render(self) -> None:
