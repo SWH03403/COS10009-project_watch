@@ -8,6 +8,7 @@ from app.world import Fog, Room
 WALL_HEIGHT: float = 80.
 PLAYER_HEIGHT: float = 20.
 NEAR_PLANE: float = 1.
+SHADE: Color = Color(0, 0, 0)
 
 @dataclass
 class Renderer:
@@ -87,11 +88,10 @@ class Renderer:
 			proj = Line.from_point(Vec2(proj_x, left.y))
 			world_pos = proj.intersect(wall)
 			camera_dist = world_pos.length()
-			fact = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
-			blended = Color(*tuple(lerp(c, f, fact) for c, f in zip(color, fog.color)))
-			center_dist = (world_pos - center).length()
-			fact = clamp(200. / center_dist, 0., 1.)
-			blended = Color(*tuple(c * fact for c in blended))
+			light_dist = (world_pos - center).length()
+			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
+			shade_amt = 1. - clamp(200. / light_dist, 0., 1.)
+			blended = color.lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
 
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
