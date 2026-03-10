@@ -6,6 +6,7 @@ from app.utils.math import Line, Vec2
 from app.world import Door, Room
 
 WALL_HEIGHT: float = 80.
+DOOR_HEIGHT: float = 60.
 PLAYER_HEIGHT: float = 20.
 NEAR_PLANE: float = 1.
 SHADE: Color = Color(0, 0, 0)
@@ -87,30 +88,35 @@ class Renderer:
 		l_top, l_bot = self._world_to_screen(left)
 		r_top, r_bot = self._world_to_screen(right)
 
+		l_door, r_door = l_bot.copy(), r_bot.copy()
+		l_door.y -= (l_bot.y - l_top.y) * DOOR_HEIGHT / WALL_HEIGHT
+		r_door.y -= (r_bot.y - r_top.y) * DOOR_HEIGHT / WALL_HEIGHT
+
 		w, h = self.screen.get_size()
 		left_x, right_x = int(clamp(l_top.x, 0., w)), int(clamp(r_top.x, 0., w))
 		for x in range(left_x, right_x):
 			fact = invlerp(l_top.x, r_top.x, x)
-			top = max(0., lerp(l_top.y, r_top.y, fact))
-			bot = min(h, lerp(l_bot.y, r_bot.y, fact))
-
 			proj_x = lerp(left.x, right_proj_x, fact)
 			proj = Line.from_point(Vec2(proj_x, left.y))
 			world_pos = proj.intersect(wall)
+
+			is_door = False
+			dist_to_left = (world_pos - true_left).length()
+			for offset, width in doors:
+				if offset < dist_to_left < offset + width:
+					is_door = True
+					break
+			cur_l_bot = l_door if is_door else l_bot
+			cur_r_bot = r_door if is_door else r_bot
+
 			camera_dist = world_pos.length()
 			light_dist = (world_pos - center).length()
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0., 1.) * fog.intensity
 			shade_amt = 1. - clamp(200. / light_dist, 0., 1.)
 			blended = self.room.wall.lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
 
-			is_door = False
-			to_left = (world_pos - true_left).length()
-			for offset, width in doors:
-				if offset < to_left < offset + width:
-					is_door = True
-					break
-			if is_door: bot -= (bot - top) * .8
-
+			top = max(0., lerp(l_top.y, r_top.y, fact))
+			bot = min(h, lerp(cur_l_bot.y, cur_r_bot.y, fact))
 			draw.line(self.wall, blended, (x, top), (x, bot))
 
 	def _render_floor(self) -> None:
