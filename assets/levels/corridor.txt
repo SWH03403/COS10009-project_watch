@@ -1,0 +1,11 @@
+spawn 10 10 0
+vertex 0,20 0,200,220
+vertex 30,50 200,220
+vertex -100,30,50 150,170
+sector 0 30 0,1,4,3 x,1,x,x
+sector 0 30 1,2,5,4 x,x,2,0
+sector 0 30 4,5,7,6 1,x,3,x
+sector 0 30 6,7,9,8 2,x,x,4
+sector 0 30 13,6,8,15 x,3,x,5
+sector 0 30 12,13,15,14 6,4,x,x
+sector 0 30 10,11,13,12 x,x,5,x
