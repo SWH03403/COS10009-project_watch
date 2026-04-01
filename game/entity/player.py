@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+
+from game import engine
 from game.utils.math import Vec2
 
 WALK_SPEED: float = 60.
@@ -13,6 +15,8 @@ class Direction:
 @dataclass
 class Player:
 	position: Vec2
+	sector: int
+	eye: float # z coordinate
 	aim: float
 	sprint: bool
 
@@ -27,22 +31,25 @@ def init() -> None:
 	global I
 	I = Player(
 		position=Vec2(),
+		sector=0,
+		eye=10,
 		aim=0,
 		sprint=False,
 		health=200,
 		armor=0,
 	)
 
-def set_position(pos: Vec2) -> None:
-	I.position = pos
+def set_position(position: Vec2, sector: int) -> None:
+	I.position = position
+	I.sector = sector
 
 def set_sprint(sprint: bool) -> None:
 	I.sprint = sprint
 
 def turn_aim(by: float) -> None:
-	I.aim += by
+	I.aim += by * engine.get_delta()
 
-def step(direction: Vec2, delta: float) -> None:
+def step(direction: Vec2) -> None:
 	distance = SPRINT_SPEED if I.sprint else WALK_SPEED
-	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * delta
+	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * engine.get_delta()
 	I.position += movement

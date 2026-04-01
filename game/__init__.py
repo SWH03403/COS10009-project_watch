@@ -2,8 +2,10 @@ from dataclasses import dataclass, field
 import pygame
 from pygame import Color, Surface
 from . import engine
+from .assets import load_level
 from .entity import Direction, player
 from .utils.math import Vec2
+from .world import Level
 
 SENSITIVITY: float = 16
 
@@ -18,8 +20,8 @@ def init() -> None:
 	engine.init()
 	player.init()
 
-	level = LevelLoader("test").into_level() # DEBUG:
-	player.set_position(level.spawn)
+	level = load_level("test") # DEBUG: Test level
+	player.set_position(level.spawn.position, level.spawn.sector)
 
 	global I
 	I = Game(running=True, level=level)
@@ -39,13 +41,13 @@ def _handle_key() -> bool:
 	if keys[pygame.K_a]: direction += Direction.LEFT
 	if keys[pygame.K_d]: direction += Direction.RIGHT
 	player.set_sprint(keys[pygame.K_LSHIFT])
-	player.step(direction, I.delta)
+	player.step(direction)
 
 	if direction.length_squared() > 0:
 		...
 
 def _handle_mouse(diff: int) -> None:
-	player.turn_aim(-diff * SENSITIVITY * engine.get_delta())
+	player.turn_aim(-diff * SENSITIVITY)
 
 def _handle_events() -> bool:
 	for event in pygame.event.get():

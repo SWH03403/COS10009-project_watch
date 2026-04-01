@@ -31,7 +31,7 @@ def get_delta() -> float:
 	return I.delta
 
 def clear() -> None:
-	I.screen.blit(BACKGROUND, (0, 0))
+	I.screen.fill(BACKGROUND)
 
 def update() -> None:
 	pygame.display.flip()
