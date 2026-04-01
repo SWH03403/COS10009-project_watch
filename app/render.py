@@ -181,8 +181,10 @@ class Renderer:
 		self._render_wall(p[-1], p[0], len(p) - 1)
 		self._redraw = False
 
-	def render(self) -> None:
+	def blit_room(self) -> None:
 		if self._redraw:
 			self._render_room()
-		self.screen.blit(self.floor)
 		self.screen.blit(self.wall)
+
+	def blit_floor(self) -> None:
+		self.screen.blit(self.floor)

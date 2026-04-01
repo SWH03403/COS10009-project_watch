@@ -101,7 +101,11 @@ class App:
 			self._handle_key()
 
 			self._backend.clear()
-			self._renderers[0].render() # DEBUG:
+			# DEBUG:
+			for renderer in self._renderers.values():
+				renderer.blit_floor()
+			for renderer in self._renderers.values():
+				renderer.blit_room()
 			self._backend.update()
 			self._delta = self._backend.tick()
 
