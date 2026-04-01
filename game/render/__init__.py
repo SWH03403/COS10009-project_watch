@@ -83,24 +83,24 @@ def _render_sector(window: Window) -> list[Window]:
 			shade_amt = 1 - clamp(200 / light_dist, 0, 1)
 			blended = Color("crimson").lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
 			min_y, max_y = get_y_range(window, x)
-			top = max(min_y, lerp(l_top.y, r_top.y, fact))
-			bot = min(max_y, lerp(l_bot.y, r_bot.y, fact))
+			unclamped_top = lerp(l_top.y, r_top.y, fact)
+			unclamped_bot = lerp(l_bot.y, r_bot.y, fact)
+			top, bot = max(min_y, unclamped_top), min(max_y, unclamped_bot)
 
 			# FIX: Shade floor and ceiling??
 			if min_y < top: draw.line(screen, "darkgreen", (x, min_y), (x, top)) # ceiling
 			if max_y > bot: draw.line(screen, "blue", (x, bot), (x, max_y)) # floor
 			if connect is None: draw.line(screen, blended, (x, top), (x, bot)) # solid wall
 			else:
-				ntop = max(min_y, lerp(nl_top.y, nr_top.y, fact))
-				nbot = min(max_y, lerp(nl_bot.y, nr_bot.y, fact))
+				unclamped_ntop = lerp(nl_top.y, nr_top.y, fact)
+				unclamped_nbot = lerp(nl_bot.y, nr_bot.y, fact)
+				ntop, nbot = max(min_y, unclamped_ntop), min(max_y, unclamped_nbot)
 				if ntop > top: draw.line(screen, blended, (x, top), (x, ntop))
 				if nbot < bot: draw.line(screen, blended, (x, nbot), (x, bot))
 
 				if x == left_x or x == right_x - 1:
-					y = max(lerp(nl_top.y, nr_top.y, fact), lerp(l_top.y, r_top.y, fact))
-					next_window.append(Vec2(x, y))
-					y = min(lerp(nl_bot.y, nr_bot.y, fact), lerp(l_bot.y, r_bot.y, fact))
-					next_window.append(Vec2(x, y))
+					next_window.append(Vec2(x, max(unclamped_top, unclamped_ntop)))
+					next_window.append(Vec2(x, min(unclamped_bot, unclamped_nbot)))
 
 		if connect is not None and len(next_window) == 4:
 			tl, bl, tr, br = next_window
