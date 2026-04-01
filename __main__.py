@@ -1,7 +1,8 @@
-from app import App
+import game
 
 def main() -> None:
-	App().run()
+	game.init()
+	game.run()
 
 if __name__ == "__main__":
 	main()
