@@ -7,7 +7,7 @@ import game
 from game import engine
 from game.utils.math import Line, Vec2
 from game.world import Sector
-from .window import Window, current_sector
+from .window import Window, current_sector, get_y_range
 from .calc import transform_to_player, world_to_screen
 
 NEAR_PLANE: float = 1
@@ -31,7 +31,6 @@ def _render_sector(window: Window) -> None:
 	vertexes = [level.vertexes[idx] for idx in sector.vertexes]
 	vertexes = transform_to_player(vertexes)
 	screen = engine.get_screen()
-	w, h = screen.get_size()
 
 	n_walls = len(sector.vertexes)
 	walls = [(vertexes[i], vertexes[i - n_walls + 1]) for i in range(n_walls)]
@@ -59,7 +58,8 @@ def _render_sector(window: Window) -> None:
 		l_top, l_bot = world_to_screen(left, sector.floor, sector.ceiling)
 		r_top, r_bot = world_to_screen(right, sector.floor, sector.ceiling)
 
-		left_x, right_x = int(clamp(l_top.x, 0, w)), int(clamp(r_top.x, 0, w))
+		left_x = int(clamp(l_top.x, window.top_left.x, window.top_right.x))
+		right_x = int(clamp(r_top.x, window.top_left.x, window.top_right.x))
 		for x in range(left_x, right_x):
 			fact = invlerp(l_top.x, r_top.x, x)
 			proj_x = lerp(left.x, right_proj_x, fact)
@@ -72,8 +72,9 @@ def _render_sector(window: Window) -> None:
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
 			shade_amt = 1 - clamp(200 / light_dist, 0, 1)
 			blended = Color("crimson").lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
-			top = max(0, lerp(l_top.y, r_top.y, fact))
-			bot = min(h, lerp(l_bot.y, r_bot.y, fact))
+			min_y, max_y = get_y_range(window, x)
+			top = max(min_y, lerp(l_top.y, r_top.y, fact))
+			bot = min(max_y, lerp(l_bot.y, r_bot.y, fact))
 			draw.line(screen, blended, (x, top), (x, bot))
 
 def update() -> None:

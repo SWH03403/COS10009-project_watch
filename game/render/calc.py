@@ -1,4 +1,4 @@
-from pygame.math import clamp, invlerp, lerp, remap
+from pygame.math import remap
 import game
 from game import engine
 from game.entity import player
