@@ -10,21 +10,21 @@ from app.world import Level, LevelLoader
 SENSITIVITY: float = 16
 
 @dataclass
-class App:
+class Game:
 	running: bool
 	level: Level
 
-I: App
+I: Game
 
 def init() -> None:
 	engine.init()
 	player.init()
 
 	level = LevelLoader("test").into_level() # DEBUG:
-	player.position.coord = level.spawn
+	player.set_position(level.spawn)
 
 	global I
-	I = App(running=True, level=level)
+	I = Game(running=True, level=level)
 
 def _handle_keydown(key: int) -> bool:
 	match key:
