@@ -33,8 +33,8 @@ def _render_sector(window: Window) -> None:
 	screen = engine.get_screen()
 
 	n_walls = len(sector.vertexes)
-	walls = [(vertexes[i], vertexes[i - n_walls + 1]) for i in range(n_walls)]
-	for left, right in walls:
+	walls = [(vertexes[i], vertexes[i - n_walls + 1], sector.connects[i]) for i in range(n_walls)]
+	for left, right, connect in walls:
 		# only render if facing the player
 		facing = math.atan2(left.x, left.y) - math.atan2(right.x, right.y)
 		if 0 <= facing <= math.pi: continue
@@ -58,6 +58,12 @@ def _render_sector(window: Window) -> None:
 		l_top, l_bot = world_to_screen(left, sector.floor, sector.ceiling)
 		r_top, r_bot = world_to_screen(right, sector.floor, sector.ceiling)
 
+		nl_top, nl_bot, nr_top, nr_bot = None, None, None, None
+		if connect is not None:
+			neighbor = level.sectors[connect]
+			nl_top, nl_bot = world_to_screen(left, neighbor.floor, neighbor.ceiling)
+			nr_top, nr_bot = world_to_screen(right, neighbor.floor, neighbor.ceiling)
+
 		left_x = int(clamp(l_top.x, window.top_left.x, window.top_right.x))
 		right_x = int(clamp(r_top.x, window.top_left.x, window.top_right.x))
 		for x in range(left_x, right_x):
@@ -79,7 +85,12 @@ def _render_sector(window: Window) -> None:
 			# FIX: Shade floor and ceiling??
 			if min_y < top: draw.line(screen, "darkgreen", (x, min_y), (x, top)) # ceiling
 			if max_y > bot: draw.line(screen, "blue", (x, bot), (x, max_y)) # floor
-			draw.line(screen, blended, (x, top), (x, bot))
+			if connect is None: draw.line(screen, blended, (x, top), (x, bot)) # solid wall
+			else:
+				ntop = max(min_y, lerp(nl_top.y, nr_top.y, fact))
+				nbot = min(max_y, lerp(nl_bot.y, nr_bot.y, fact))
+				if ntop > top: draw.line(screen, blended, (x, top), (x, ntop))
+				if nbot < bot: draw.line(screen, blended, (x, nbot), (x, bot))
 
 def update() -> None:
 	I.queue = [current_sector()]
