@@ -8,7 +8,7 @@ from game import engine
 from game.entity import player
 from game.utils.math import Line, Vec2
 from game.world import Sector
-from .window import Window, current_sector, get_y_range
+from .window import Window, current_sector, get_x_range, get_y_range
 from .calc import transform_to_player, world_to_screen
 
 NEAR_PLANE: float = 1
@@ -33,9 +33,50 @@ def _render_sector(window: Window) -> list[Window]:
 	vertexes = transform_to_player(vertexes)
 	screen = engine.get_screen()
 
-	eye = player.get_eye_height() + sector.floor
-	render_floor = eye > sector.floor
-	render_ceiling = eye < sector.ceiling
+	eye_to_floor = player.get_eye_height()
+	eye_to_ceil = sector.ceiling - (eye_to_floor + sector.floor)
+
+	# floor/ceiling fog pre-compute
+	fog = level.fog # FIX: use sector-specific fog
+	fog_coords = []
+	fog_coords.extend(world_to_screen(Vec2(0, fog.near), sector.floor, sector.ceiling))
+	fog_coords.extend(world_to_screen(Vec2(0, fog.far), sector.floor, sector.ceiling))
+	y_fogs = [int(p.y) for p in fog_coords]
+
+	# ceiling
+	window_top = int(min(window.top_left.y, window.top_right.y))
+	window_bot = int(max(window.bottom_left.y, window.bottom_right.y))
+	y_mid = screen.get_height() // 2
+	ray_far = Line.from_point(Vec2(fog.far, eye_to_ceil))
+	far_on_near = ray_far.get_y(fog.near)
+	for y in range(window_top, min(window_bot, y_mid)):
+		x1, x2 = get_x_range(window, y)
+		fact = invlerp(y_fogs[0], y_fogs[2], y)
+		color = Color("darkgreen")
+		if fact >= 1: color = fog.color
+		else:
+			proj_y = lerp(eye_to_ceil, far_on_near, fact)
+			proj_floor = Line.from_point(Vec2(fog.near, proj_y))
+			dist = proj_floor.get_x(eye_to_ceil)
+			fog_fact = invlerp(fog.near, fog.far, dist)
+			color = color.lerp(fog.color, fog_fact)
+		draw.line(screen, color, (x1, y), (x2, y))
+
+	# floor
+	ray_far = Line.from_point(Vec2(fog.far, eye_to_floor))
+	far_on_near = ray_far.get_y(fog.near)
+	for y in range(max(window_top, y_mid), window_bot):
+		x1, x2 = get_x_range(window, y)
+		fact = invlerp(y_fogs[1], y_fogs[3], y)
+		color = Color("blue")
+		if fact >= 1: color = fog.color
+		else:
+			proj_y = lerp(eye_to_floor, far_on_near, fact)
+			proj_floor = Line.from_point(Vec2(fog.near, proj_y))
+			dist = proj_floor.get_x(eye_to_floor)
+			fog_fact = invlerp(fog.near, fog.far, dist)
+			color = color.lerp(fog.color, fog_fact)
+		draw.line(screen, color, (x1, y), (x2, y))
 
 	n_walls = len(sector.vertexes)
 	walls = [(vertexes[i], vertexes[i - n_walls + 1], sector.connects[i]) for i in range(n_walls)]
@@ -83,7 +124,6 @@ def _render_sector(window: Window) -> list[Window]:
 
 			camera_dist = world_pos.length()
 			light_dist = 20. # FIX: implement lighting
-			fog = level.fog # FIX: use sector-specific fog
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
 			shade_amt = 1 - clamp(200 / light_dist, 0, 1)
 			blended = Color("crimson").lerp(fog.color, fog_amt).lerp(SHADE, shade_amt)
@@ -92,10 +132,8 @@ def _render_sector(window: Window) -> list[Window]:
 			unclamped_bot = lerp(l_bot.y, r_bot.y, fact)
 			top, bot = max(min_y, unclamped_top), min(max_y, unclamped_bot)
 
-			# FIX: Shade floor and ceiling??
-			if render_ceiling and min_y < top: draw.line(screen, "darkgreen", (x, min_y), (x, top))
-			if render_floor and max_y > bot: draw.line(screen, "blue", (x, bot), (x, max_y))
-			if connect is None: draw.line(screen, blended, (x, top), (x, bot)) # solid wall
+			if connect is None:
+				draw.line(screen, blended, (x, top), (x, bot)) # solid wall
 			else:
 				unclamped_ntop = lerp(nl_top.y, nr_top.y, fact)
 				unclamped_nbot = lerp(nl_bot.y, nr_bot.y, fact)
