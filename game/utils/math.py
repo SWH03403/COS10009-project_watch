@@ -39,6 +39,9 @@ class Line:
 	def get_y(self, x: float) -> float:
 		return -(self.a * x + self.c) / self.b
 
+	def dist_from(self, p: Vec2) -> float:
+		return (self.a * p.x + self.b * p.y + self.c) / Vec2(self.a, self.b).length()
+
 	def intersect(self, other: Self) -> Vec2:
 		det = self.a * other.b - other.a * self.b
 		x = (self.b * other.c - other.b * self.c) / det

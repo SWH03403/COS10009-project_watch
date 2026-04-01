@@ -17,6 +17,3 @@ def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 	y1 = remap(0, 1, h / 2, 0, (ceiling - eye) / p.y)
 	y2 = remap(0, 1, h / 2, h, (eye - floor) / p.y)
 	return Vec2(x, y1), Vec2(x, y2)
-
-def transform_to_player(vertexes: list[Vec2]) -> list[Vec2]:
-	return [player.get_relative(v) for v in vertexes]

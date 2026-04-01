@@ -8,8 +8,9 @@ from game import engine
 from game.entity import player
 from game.utils.math import Line, Vec2
 from game.world import Sector
+from game.world.level import get_walls
 from .window import Window, current_sector, get_x_range, get_y_range
-from .calc import transform_to_player, world_to_screen
+from .calc import world_to_screen
 
 NEAR_PLANE: float = 1
 SHADE: Color = Color("black")
@@ -29,8 +30,6 @@ def init() -> None:
 def _render_sector(window: Window) -> list[Window]:
 	level = game.get_level()
 	sector = level.sectors[window.sector]
-	vertexes = [level.vertexes[idx] for idx in sector.vertexes]
-	vertexes = transform_to_player(vertexes)
 	screen = engine.get_screen()
 
 	eye_to_floor = player.get_eye_height()
@@ -78,8 +77,7 @@ def _render_sector(window: Window) -> list[Window]:
 			color = color.lerp(fog.color, fog_fact)
 		draw.line(screen, color, (x1, y), (x2, y))
 
-	n_walls = len(sector.vertexes)
-	walls = [(vertexes[i], vertexes[i - n_walls + 1], sector.connects[i]) for i in range(n_walls)]
+	walls = get_walls(level, window.sector, True)
 	queued_neighbors = []
 	for left, right, connect in walls:
 		# only render if facing the player
