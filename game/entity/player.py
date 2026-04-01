@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from app.utils.math import Vec2
+from game.utils.math import Vec2
 
 WALK_SPEED: float = 60.
 SPRINT_SPEED: float = 100.

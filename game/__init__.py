@@ -3,9 +3,7 @@ import pygame
 from pygame import Color, Surface
 from . import engine
 from .entity import Direction, player
-from app.render import Renderer
-from app.utils.math import Vec2
-from app.world import Level, LevelLoader
+from .utils.math import Vec2
 
 SENSITIVITY: float = 16
 
