@@ -5,6 +5,7 @@ from pygame.math import clamp, invlerp, lerp, remap
 
 import game
 from game import engine
+from game.entity import player
 from game.utils.math import Line, Vec2
 from game.world import Sector
 from .window import Window, current_sector, get_y_range
@@ -31,6 +32,10 @@ def _render_sector(window: Window) -> list[Window]:
 	vertexes = [level.vertexes[idx] for idx in sector.vertexes]
 	vertexes = transform_to_player(vertexes)
 	screen = engine.get_screen()
+
+	eye = player.get_eye_height() + sector.floor
+	render_floor = eye > sector.floor
+	render_ceiling = eye < sector.ceiling
 
 	n_walls = len(sector.vertexes)
 	walls = [(vertexes[i], vertexes[i - n_walls + 1], sector.connects[i]) for i in range(n_walls)]
@@ -88,8 +93,8 @@ def _render_sector(window: Window) -> list[Window]:
 			top, bot = max(min_y, unclamped_top), min(max_y, unclamped_bot)
 
 			# FIX: Shade floor and ceiling??
-			if min_y < top: draw.line(screen, "darkgreen", (x, min_y), (x, top)) # ceiling
-			if max_y > bot: draw.line(screen, "blue", (x, bot), (x, max_y)) # floor
+			if render_ceiling and min_y < top: draw.line(screen, "darkgreen", (x, min_y), (x, top))
+			if render_floor and max_y > bot: draw.line(screen, "blue", (x, bot), (x, max_y))
 			if connect is None: draw.line(screen, blended, (x, top), (x, bot)) # solid wall
 			else:
 				unclamped_ntop = lerp(nl_top.y, nr_top.y, fact)
