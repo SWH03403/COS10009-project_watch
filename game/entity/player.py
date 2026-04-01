@@ -39,6 +39,15 @@ def init() -> None:
 		armor=0,
 	)
 
+def get_position() -> tuple[Vec2, int]:
+	return I.position, I.sector
+
+def get_eye_height() -> float:
+	return I.eye
+
+def get_relative(target: Vec2) -> Vec2:
+	return (target - I.position).rotate(-I.aim)
+
 def set_position(position: Vec2, sector: int) -> None:
 	I.position = position
 	I.sector = sector
@@ -47,7 +56,7 @@ def set_sprint(sprint: bool) -> None:
 	I.sprint = sprint
 
 def turn_aim(by: float) -> None:
-	I.aim += by * engine.get_delta()
+	I.aim -= by * engine.get_delta()
 
 def step(direction: Vec2) -> None:
 	distance = SPRINT_SPEED if I.sprint else WALK_SPEED

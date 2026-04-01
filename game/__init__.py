@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import pygame
 from pygame import Color, Surface
-from . import engine
+from . import engine, render
 from .assets import load_level
 from .entity import Direction, player
 from .utils.math import Vec2
@@ -18,6 +18,7 @@ I: Game
 
 def init() -> None:
 	engine.init()
+	render.init()
 	player.init()
 
 	level = load_level("test") # DEBUG: Test level
@@ -25,6 +26,9 @@ def init() -> None:
 
 	global I
 	I = Game(running=True, level=level)
+
+def get_level() -> Level:
+	return I.level
 
 def _handle_keydown(key: int) -> bool:
 	match key:
@@ -46,8 +50,8 @@ def _handle_key() -> bool:
 	if direction.length_squared() > 0:
 		...
 
-def _handle_mouse(diff: int) -> None:
-	player.turn_aim(-diff * SENSITIVITY)
+def _handle_mouse(diff: float) -> None:
+	player.turn_aim(diff * SENSITIVITY)
 
 def _handle_events() -> bool:
 	for event in pygame.event.get():
@@ -61,6 +65,7 @@ def run() -> None:
 		_handle_key()
 
 		engine.clear()
+		render.update()
 		engine.update()
 		engine.tick()
 

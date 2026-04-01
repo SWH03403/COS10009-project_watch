@@ -1,4 +1,4 @@
 spawn 5 2 0
-vertex 0,10,20 0,10
-sector 0 20 0,2,3,1 x,1,x,x
-sector 5 30 2,4,5,3 x,x,x,0
+vertex 0,50,100 0,50
+sector 0 30 3,2,0,1 x,1,x,x
+sector 5 80 5,4,2,3 x,x,x,0

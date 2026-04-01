@@ -37,4 +37,4 @@ def update() -> None:
 	pygame.display.flip()
 
 def tick() -> None:
-	return I.clock.tick(FPS) / 1000 # seconds
+	I.delta = I.clock.tick(FPS) / 1000 # seconds
