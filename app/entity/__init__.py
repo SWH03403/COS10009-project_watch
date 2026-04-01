@@ -1,1 +1,1 @@
-from .player import Direction, Player
+from .player import Direction

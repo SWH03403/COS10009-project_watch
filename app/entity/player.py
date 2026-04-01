@@ -1,5 +1,4 @@
-from dataclasses import dataclass, field
-from .stats import Position, Vitality
+from dataclasses import dataclass
 from app.utils.math import Vec2
 
 WALK_SPEED: float = 60.
@@ -13,12 +12,37 @@ class Direction:
 
 @dataclass
 class Player:
-	position: Position = field(default_factory=Position)
-	aim: float = 0. # degree
-	vitality: Vitality = field(default_factory=Vitality)
-	sprinting: bool = False
+	position: Vec2
+	aim: float
+	sprint: bool
 
-	def step(self, direction: Vec2, delta: float) -> None:
-		distance = SPRINT_SPEED if self.sprinting else WALK_SPEED
-		movement = direction.clamp_magnitude(1.).rotate(self.aim) * distance * delta
-		self.position.coord += movement
+	# Vitality
+	health: float = 200.
+	armor: float = 0.
+	invulnerable: bool = False
+
+I: Player
+
+def init() -> None:
+	global I
+	I = Player(
+		position=Vec2(),
+		aim=0,
+		sprint=False,
+		health=200,
+		armor=0,
+	)
+
+def set_position(pos: Vec2) -> None:
+	I.position = pos
+
+def set_sprint(sprint: bool) -> None:
+	I.sprint = sprint
+
+def turn_aim(by: float) -> None:
+	I.aim += by
+
+def step(direction: Vec2, delta: float) -> None:
+	distance = SPRINT_SPEED if I.sprint else WALK_SPEED
+	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * delta
+	I.position += movement
