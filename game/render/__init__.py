@@ -116,7 +116,7 @@ def _render_sector(window: Window) -> list[Window]:
 			nl_top, nl_bot = world_to_screen(left, queued.floor, queued.ceiling)
 			nr_top, nr_bot = world_to_screen(right, queued.floor, queued.ceiling)
 
-		for x in range(left_x, right_x):
+		for x in range(left_x, right_x + 1):
 			fact = invlerp(l_top.x, r_top.x, x)
 			proj_x = lerp(left.x, right_proj_x, fact)
 			proj = Line.from_point(Vec2(proj_x, left.y))
@@ -141,14 +141,12 @@ def _render_sector(window: Window) -> list[Window]:
 				if ntop > top: draw.line(screen, blended, (x, top), (x, ntop))
 				if nbot < bot: draw.line(screen, blended, (x, nbot), (x, bot))
 
-				if x == left_x or x == right_x - 1:
+				if x == left_x or x == right_x:
 					next_window.append(Vec2(x, max(unclamped_top, unclamped_ntop)))
 					next_window.append(Vec2(x, min(unclamped_bot, unclamped_nbot)))
 
 		if connect is not None and len(next_window) == 4:
 			tl, bl, tr, br = next_window
-			tr.x += 1
-			br.x += 1
 			queued = Window(sector=connect, top_left=tl, top_right=tr, bottom_left=bl, bottom_right=br)
 			queued_neighbors.append(queued)
 
