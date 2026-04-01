@@ -75,6 +75,10 @@ def _render_sector(window: Window) -> None:
 			min_y, max_y = get_y_range(window, x)
 			top = max(min_y, lerp(l_top.y, r_top.y, fact))
 			bot = min(max_y, lerp(l_bot.y, r_bot.y, fact))
+
+			# FIX: Shade floor and ceiling??
+			if min_y < top: draw.line(screen, "darkgreen", (x, min_y), (x, top)) # ceiling
+			if max_y > bot: draw.line(screen, "blue", (x, bot), (x, max_y)) # floor
 			draw.line(screen, blended, (x, top), (x, bot))
 
 def update() -> None:
