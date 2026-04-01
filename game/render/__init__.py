@@ -104,6 +104,8 @@ def _render_sector(window: Window) -> list[Window]:
 
 		if connect is not None and len(next_window) == 4:
 			tl, bl, tr, br = next_window
+			tr.x += 1
+			br.x += 1
 			queued = Window(sector=connect, top_left=tl, top_right=tr, bottom_left=bl, bottom_right=br)
 			queued_neighbors.append(queued)
 
