@@ -33,6 +33,9 @@ class Line:
 		c = -(a * p.x + b * p.y)
 		return Line(a, b, c)
 
+	def is_horz(self) -> bool:
+		return self.a == 0
+
 	def get_x(self, y: float) -> float:
 		return -(self.b * y + self.c) / self.a
 

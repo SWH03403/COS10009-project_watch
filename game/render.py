@@ -1,5 +1,6 @@
 from copy import copy
 from dataclasses import dataclass
+from itertools import chain
 import math
 from pygame import Color, draw
 from pygame.math import clamp, invlerp, lerp, remap
@@ -26,12 +27,7 @@ def init() -> None:
 
 def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 	w, h = engine.get_screen().get_size()
-	_, sector_idx = player.get_position()
-
-	level = game.get_level()
-	# get eye height aelative to current sector
-	sector = level.sectors[sector_idx]
-	eye = player.get_eye_height() + sector.floor
+	eye = player.get_absolute_eye_height()
 
 	x = remap(-1, 1, 0, w, p.x / p.y)
 	y1 = remap(0, 1, h / 2, 0, (ceiling - eye) / p.y)
@@ -51,8 +47,9 @@ def render_sector(sector_id: int) -> None:
 	screen = engine.get_screen()
 	w, h = screen.get_size()
 
-	eye_to_floor = player.get_eye_height()
-	eye_to_ceil = sector.ceiling - (eye_to_floor + sector.floor)
+	eye = player.get_absolute_eye_height()
+	eye_to_floor = eye - sector.floor
+	eye_to_ceil = sector.ceiling - eye
 	fog = level.fog # FIX: use sector-specific fog
 	fog_coords = []
 	fog_coords.extend(world_to_screen(Vec2(0, fog.near), sector.floor, sector.ceiling))
@@ -91,9 +88,8 @@ def render_sector(sector_id: int) -> None:
 			nr_top, nr_bot = world_to_screen(right, neighbor.floor, neighbor.ceiling)
 			I.queue.append(connect)
 
-		premask = copy(I.mask)
-		ceil_first_y = h
-		ceil_last_y = 0
+		last_mask = copy(I.mask)
+		flrs = [h, 0, h, 0]
 
 		left_x = int(clamp(l_top.x, 0, w))
 		right_x = int(clamp(r_top.x, 0, w))
@@ -122,34 +118,44 @@ def render_sector(sector_id: int) -> None:
 				if ntop > top: line(blended, x, top, ntop)
 				if nbot < bot: line(blended, x, nbot, bot)
 
-			ceil_ys = int(min_y), int(top)
-			ceil_first_y = min(ceil_first_y, ceil_ys[0])
-			ceil_last_y = max(ceil_last_y, ceil_ys[1])
+			flrs[0] = min(flrs[0], int(min_y))
+			flrs[1] = max(flrs[1], int(top))
+			flrs[2] = min(flrs[2], int(bot))
+			flrs[3] = max(flrs[3], int(max_y))
 
-		ray_far = Line.from_point(Vec2(fog.far, eye_to_ceil))
-		far_on_near = ray_far.get_y(fog.near)
+		nof_ceil = Line.from_point(Vec2(fog.far, eye_to_ceil)).get_y(fog.near)
+		nof_floor = Line.from_point(Vec2(fog.far, eye_to_floor)).get_y(fog.near)
 		wall_top = Line.from_point(l_top, r_top)
-		for y in range(ceil_first_y, ceil_last_y):
+		wall_bot = Line.from_point(l_bot, r_bot)
+
+		ceil_range = range(flrs[0], flrs[1]) if eye_to_ceil > 0 else []
+		floor_range = range(flrs[2], flrs[3]) if eye_to_floor > 0 else []
+		for y in chain(ceil_range, floor_range):
 			for min_x in range(left_x, len(I.mask)):
-				min_y, max_y = premask[min_x]
+				min_y, max_y = last_mask[min_x]
 				if min_y <= y <= max_y: break
 			for max_x in range(right_x - 1, -1, -1):
-				min_y, max_y = premask[max_x]
+				min_y, max_y = last_mask[max_x]
 				if min_y <= y <= max_y: break
 
-			if l_top.y != r_top.y:
-				intersect_x = wall_top.get_x(y)
+			is_ceil = y < flrs[2]
+			wall = wall_top if is_ceil else wall_bot
+			if not wall.is_horz():
+				intersect_x = wall.get_x(y)
 				if right_further: min_x = max(min_x, intersect_x)
 				else: max_x = min(max_x, intersect_x)
 			if min_x >= max_x: continue
 
-			fact = invlerp(fog_ys[0], fog_ys[2], y)
-			color = Color("green")
+			fog_markers = (fog_ys[0], fog_ys[2]) if is_ceil else (fog_ys[1], fog_ys[3])
+			fact = invlerp(*fog_markers, y)
+			color = Color("green" if is_ceil else "blue")
 			if fact >= 1: color = fog.color
 			elif fact > 0:
-				proj_y = lerp(eye_to_ceil, far_on_near, fact)
-				proj_floor = Line.from_point(Vec2(fog.near, proj_y))
-				dist = proj_floor.get_x(eye_to_ceil)
+				eye_diff = eye_to_ceil if is_ceil else eye_to_floor
+				near_on_far = nof_ceil if is_ceil else nof_floor
+				proj_y = lerp(eye_diff, near_on_far, fact)
+				ray = Line.from_point(Vec2(fog.near, proj_y))
+				dist = ray.get_x(eye_diff)
 				fog_fact = invlerp(fog.near, fog.far, dist)
 				color = color.lerp(fog.color, fog_fact)
 			draw.line(screen, color, (min_x, y), (max_x, y))
