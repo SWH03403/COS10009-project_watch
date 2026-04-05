@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pygame.math import clamp, invlerp
 
 import game
 from game import engine
@@ -7,7 +8,7 @@ from game.world.level import get_walls
 
 WALK_SPEED: float = 20
 SPRINT_SPEED: float = 50
-COLLISION_RADIUS: float = 3
+HITBOX_SIZE: float = 3
 
 class Direction:
 	FORWARD = Vec2(0, 1)
@@ -57,16 +58,32 @@ def turn_aim(by: float) -> None:
 def step(direction: Vec2) -> None:
 	distance = SPRINT_SPEED if I.sprint else WALK_SPEED
 	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * engine.get_delta()
+	new_position = I.position + movement
+	new_sector = None
+
+	# Get walls of current sector and immediate neighbors
+	level = game.get_level()
+	walls = get_walls(level, I.sector, False)
+	neighbors = [c for _, _, c in walls if c is not None]
+	for neighbor in neighbors:
+		walls.extend(get_walls(level, neighbor, False))
 
 	# collision check against wall
-	walls = get_walls(game.get_level(), I.sector, False)
 	for left, right, neighbor in walls:
-		wall = Line.from_point(left, right)
-		wall_vec = left - right
-		dist = wall.dist_from(I.position + movement)
-		if dist < COLLISION_RADIUS and neighbor is None:
-			movement = movement.project(wall_vec)
-		elif dist < 0 and neighbor is not None:
-			I.sector = neighbor
+		wall = left - right
+		to_left = left - new_position
 
-	I.position += movement
+		nearest = left
+		if left != right:
+			fact = clamp(to_left.dot(wall) / wall.length_squared(), 0, 1)
+			nearest = left.lerp(right, fact)
+		dist_vec = new_position - nearest
+		dist = dist_vec.length()
+		if dist > 0: dist_vec.normalize_ip()
+		if dist < HITBOX_SIZE and neighbor is None:
+			new_position = nearest + dist_vec * HITBOX_SIZE
+		elif neighbor is not None and Line.from_point(left, right).cross(new_position) < 0:
+			if new_sector is None: new_sector = neighbor
+
+	I.position = new_position
+	if new_sector is not None: I.sector = new_sector
