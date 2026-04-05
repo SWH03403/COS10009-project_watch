@@ -14,16 +14,21 @@ from game.world.level import get_walls
 NEAR_PLANE: float = .001
 
 @dataclass
+class ScopedSector:
+	id: int
+	min_x: int
+	max_x: int
+
+@dataclass
 class Renderer:
-	queue: list[int]
-	rendered: set[int]
+	queue: list[ScopedSector]
 	mask: list[tuple[int, int]]
 
 I: Renderer
 
 def init() -> None:
 	global I
-	I = Renderer(queue=[], rendered=set(), mask=[])
+	I = Renderer(queue=[], mask=[])
 
 def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 	w, h = engine.get_screen().get_size()
@@ -34,18 +39,15 @@ def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 	y2 = remap(0, 1, h / 2, h, (eye - floor) / p.y)
 	return Vec2(x, y1), Vec2(x, y2)
 
-def push_queue(sector_id: int) -> None:
-	I.queue.append(sector_id)
-
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
 	draw.line(screen, color, (x, y1), (x, y2))
 
-def render_sector(sector_id: int) -> None:
+def render_sector(scoped: ScopedSector) -> None:
 	level = game.get_level()
-	sector = level.sectors[sector_id]
+	sector = level.sectors[scoped.id]
 	screen = engine.get_screen()
-	w, h = screen.get_size()
+	h = screen.get_height()
 
 	eye = player.get_absolute_eye_height()
 	eye_to_floor = eye - sector.floor
@@ -56,7 +58,7 @@ def render_sector(sector_id: int) -> None:
 	fog_coords.extend(world_to_screen(Vec2(0, fog.far), sector.floor, sector.ceiling))
 	fog_ys = [int(p.y) for p in fog_coords]
 
-	walls = get_walls(level, sector_id, True)
+	walls = get_walls(level, scoped.id, True)
 	for left, right, connect in walls:
 		# only render if facing the player
 		facing = math.atan2(left.x, left.y) - math.atan2(right.x, right.y)
@@ -80,19 +82,20 @@ def render_sector(sector_id: int) -> None:
 		r_top, r_bot = world_to_screen(right, sector.floor, sector.ceiling)
 		right_further = l_top.y < r_top.y
 
+		left_x = int(clamp(l_top.x, scoped.min_x, scoped.max_x))
+		right_x = int(clamp(r_top.x, scoped.min_x, scoped.max_x))
+
 		# get screen coordinate for window to neighbor sector
 		nl_top, nl_bot, nr_top, nr_bot = None, None, None, None
 		if connect is not None:
 			neighbor = level.sectors[connect]
 			nl_top, nl_bot = world_to_screen(left, neighbor.floor, neighbor.ceiling)
 			nr_top, nr_bot = world_to_screen(right, neighbor.floor, neighbor.ceiling)
-			I.queue.append(connect)
+			I.queue.append(ScopedSector(connect, left_x, right_x))
 
 		last_mask = copy(I.mask)
 		flrs = [h, 0, h, 0]
 
-		left_x = int(clamp(l_top.x, 0, w))
-		right_x = int(clamp(r_top.x, 0, w))
 		for x in range(left_x, right_x):
 			fact = invlerp(l_top.x, r_top.x, x)
 			proj_x = lerp(left.x, right_proj_x, fact)
@@ -161,16 +164,14 @@ def render_sector(sector_id: int) -> None:
 			draw.line(screen, color, (min_x, y), (max_x, y))
 
 def update() -> None:
+	w, h = engine.get_screen().get_size()
 	_, current_sector = player.get_position()
-	I.queue = [current_sector]
-	I.rendered.clear()
+	I.queue = [ScopedSector(current_sector, 0, w)]
 
 	# reset render mask
-	w, h = engine.get_screen().get_size()
 	I.mask = [(0, h) for _ in range(w)]
 
 	while len(I.queue) > 0:
-		sector_id = I.queue.pop(0)
-		if sector_id in I.rendered: continue
-		I.rendered.add(sector_id)
-		render_sector(sector_id)
+		scoped = I.queue.pop(0)
+		if scoped.min_x >= scoped.max_x: continue
+		render_sector(scoped)
