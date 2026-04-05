@@ -105,23 +105,23 @@ def render_sector(sector_id: int) -> None:
 			camera_dist = world_pos.length()
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
 			blended = Color("crimson").lerp(fog.color, fog_amt)
-			top = max(min_y, lerp(l_top.y, r_top.y, fact))
-			bot = min(max_y, lerp(l_bot.y, r_bot.y, fact))
+			top = int(max(min_y, lerp(l_top.y, r_top.y, fact)))
+			bot = int(min(max_y, lerp(l_bot.y, r_bot.y, fact)))
 
 			if connect is None:
 				line(blended, x, top, bot) # solid wall
 				I.mask[x] = (-1, -1)
 			else:
-				ntop = max(min_y, lerp(nl_top.y, nr_top.y, fact))
-				nbot = min(max_y, lerp(nl_bot.y, nr_bot.y, fact))
+				ntop = int(max(min_y, lerp(nl_top.y, nr_top.y, fact)))
+				nbot = int(min(max_y, lerp(nl_bot.y, nr_bot.y, fact)))
 				I.mask[x] = (max(top, ntop), min(bot, nbot))
 				if ntop > top: line(blended, x, top, ntop)
 				if nbot < bot: line(blended, x, nbot, bot)
 
-			flrs[0] = min(flrs[0], int(min_y))
-			flrs[1] = max(flrs[1], int(top))
-			flrs[2] = min(flrs[2], int(bot))
-			flrs[3] = max(flrs[3], int(max_y))
+			flrs[0] = min(flrs[0], min_y)
+			flrs[1] = max(flrs[1], top)
+			flrs[2] = min(flrs[2], bot)
+			flrs[3] = max(flrs[3], max_y)
 
 		nof_ceil = Line.from_point(Vec2(fog.far, eye_to_ceil)).get_y(fog.near)
 		nof_floor = Line.from_point(Vec2(fog.far, eye_to_floor)).get_y(fog.near)
@@ -129,7 +129,7 @@ def render_sector(sector_id: int) -> None:
 		wall_bot = Line.from_point(l_bot, r_bot)
 
 		ceil_range = range(flrs[0], flrs[1]) if eye_to_ceil > 0 else []
-		floor_range = range(flrs[2], flrs[3]) if eye_to_floor > 0 else []
+		floor_range = range(flrs[2], flrs[3] + 1) if eye_to_floor > 0 else []
 		for y in chain(ceil_range, floor_range):
 			for min_x in range(left_x, len(I.mask)):
 				min_y, max_y = last_mask[min_x]
