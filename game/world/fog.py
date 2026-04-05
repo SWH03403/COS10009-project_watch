@@ -9,4 +9,4 @@ class Fog:
 	intensity: float
 
 def default() -> Fog:
-	return Fog(color="gray10", near=1, far=200, intensity=1)
+	return Fog(color="gray10", near=1, far=100, intensity=1)

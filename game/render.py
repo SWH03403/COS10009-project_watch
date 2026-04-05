@@ -148,7 +148,7 @@ def render_sector(sector_id: int) -> None:
 
 			fog_markers = (fog_ys[0], fog_ys[2]) if is_ceil else (fog_ys[1], fog_ys[3])
 			fact = invlerp(*fog_markers, y)
-			color = Color("green" if is_ceil else "blue")
+			color = Color("darkgreen" if is_ceil else "navyblue")
 			if fact >= 1: color = fog.color
 			elif fact > 0:
 				eye_diff = eye_to_ceil if is_ceil else eye_to_floor
