@@ -5,8 +5,8 @@ from game import engine
 from game.utils.math import Line, Vec2
 from game.world.level import get_walls
 
-WALK_SPEED: float = 60
-SPRINT_SPEED: float = 100
+WALK_SPEED: float = 20
+SPRINT_SPEED: float = 50
 COLLISION_RADIUS: float = 3
 
 class Direction:
@@ -37,8 +37,9 @@ def init() -> None:
 def get_position() -> tuple[Vec2, int]:
 	return I.position, I.sector
 
-def get_eye_height() -> float:
-	return I.eye
+def get_absolute_eye_height() -> float:
+	sector = game.get_level().sectors[I.sector]
+	return I.eye + sector.floor
 
 def get_relative(target: Vec2) -> Vec2:
 	return (target - I.position).rotate(-I.aim)
