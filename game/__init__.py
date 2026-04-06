@@ -21,7 +21,7 @@ def init() -> None:
 	render.init()
 	player.init()
 
-	level = load_level("stairs") # DEBUG: Test level
+	level = load_level("cliff") # DEBUG: Test level
 	player.set_position(level.spawn.position, level.spawn.sector)
 
 	global I
