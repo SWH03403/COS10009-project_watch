@@ -14,6 +14,8 @@ class Game:
 	running: bool
 	level: Level
 
+	scan_frame: bool = False
+
 I: Game
 
 def init() -> None:
@@ -30,10 +32,15 @@ def init() -> None:
 def get_level() -> Level:
 	return I.level
 
+def is_scan_mode() -> bool:
+	return I.scan_frame
+
 def _handle_keydown(key: int) -> bool:
 	match key:
 		case pygame.K_ESCAPE | pygame.K_q:
 			I.running = False
+		case pygame.K_p:
+			I.scan_frame = True
 
 def _handle_key() -> bool:
 	keys = pygame.key.get_pressed()
@@ -54,6 +61,7 @@ def _handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)
 
 def _handle_events() -> bool:
+	I.scan_frame = False # reset next frame
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT: I.running = False
 		elif event.type == pygame.KEYDOWN: _handle_keydown(event.key)

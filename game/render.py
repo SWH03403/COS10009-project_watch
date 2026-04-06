@@ -1,6 +1,8 @@
 from copy import copy
 from dataclasses import dataclass
 import math
+from time import sleep
+import pygame
 from pygame import Color, draw
 from pygame.math import clamp, invlerp, lerp, remap
 from pygame.typing import ColorLike
@@ -31,6 +33,11 @@ def init() -> None:
 	global I
 	I = Renderer(queue=[], mask=[])
 
+def debug_delay() -> None:
+	if game.is_scan_mode():
+		sleep(5e-3)
+		pygame.display.update()
+
 def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 	w, h = engine.get_screen().get_size()
 	eye = player.get_absolute_eye_height()
@@ -43,6 +50,7 @@ def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
 	draw.line(screen, color, (x, y1), (x, y2))
+	debug_delay()
 
 def render_floor(
 	eye_diff: float,
@@ -82,6 +90,7 @@ def render_floor(
 			fog_fact = invlerp(fog.near, fog.far, dist)
 			blended = blended.lerp(fog.color, fog_fact)
 		draw.line(screen, blended, (min_x, y), (max_x, y))
+		debug_delay()
 
 def render_sector(scoped: ScopedSector) -> None:
 	level = game.get_level()
@@ -168,6 +177,7 @@ def render_sector(scoped: ScopedSector) -> None:
 				ntop = int(clamp(lerp(nl_top.y, nr_top.y, fact), min_y, max_y))
 				nbot = int(clamp(lerp(nl_bot.y, nr_bot.y, fact), min_y, max_y))
 				I.mask[x] = (max(top, ntop), min(bot, nbot))
+				if game.is_scan_mode(): line("crimson", x, *I.mask[x])
 				if ntop > top: line(blended, x, top, ntop)
 				if nbot < bot: line(blended, x, nbot, bot)
 
