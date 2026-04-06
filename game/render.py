@@ -158,15 +158,15 @@ def render_sector(scoped: ScopedSector) -> None:
 
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
 			blended = Color("darkkhaki").lerp(fog.color, fog_amt)
-			top = int(max(min_y, lerp(l_top.y, r_top.y, fact)))
-			bot = int(min(max_y, lerp(l_bot.y, r_bot.y, fact)))
+			top = int(clamp(lerp(l_top.y, r_top.y, fact), min_y, max_y))
+			bot = int(clamp(lerp(l_bot.y, r_bot.y, fact), min_y, max_y))
 
 			if connect is None:
 				line(blended, x, top, bot) # solid wall
 				I.mask[x] = (-1, -1)
 			else:
-				ntop = int(max(min_y, lerp(nl_top.y, nr_top.y, fact)))
-				nbot = int(min(max_y, lerp(nl_bot.y, nr_bot.y, fact)))
+				ntop = int(clamp(lerp(nl_top.y, nr_top.y, fact), min_y, max_y))
+				nbot = int(clamp(lerp(nl_bot.y, nr_bot.y, fact), min_y, max_y))
 				I.mask[x] = (max(top, ntop), min(bot, nbot))
 				if ntop > top: line(blended, x, top, ntop)
 				if nbot < bot: line(blended, x, nbot, bot)
