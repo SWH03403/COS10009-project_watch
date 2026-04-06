@@ -11,7 +11,8 @@ from game.entity import player
 from game.utils.math import Line, Vec2
 from game.world.level import get_walls
 
-NEAR_PLANE: float = .001
+NEAR_PLANE: float = 1e-3
+EXTEND_THRESHOLD: float = 1e6
 
 @dataclass
 class ScopedSector:
@@ -85,6 +86,10 @@ def render_sector(scoped: ScopedSector) -> None:
 		left_x = int(clamp(l_top.x, scoped.min_x, scoped.max_x))
 		right_x = int(clamp(r_top.x, scoped.min_x, scoped.max_x))
 
+		# extend to edge of scope if wall plane cuts through eye
+		if abs(l_top.y) >= EXTEND_THRESHOLD: left_x = scoped.min_x
+		if abs(r_top.y) >= EXTEND_THRESHOLD: right_x = scoped.max_x
+
 		# get screen coordinate for window to neighbor sector
 		nl_top, nl_bot, nr_top, nr_bot = None, None, None, None
 		if connect is not None:
@@ -97,15 +102,21 @@ def render_sector(scoped: ScopedSector) -> None:
 		flrs = [h, 0, h, 0]
 
 		for x in range(left_x, right_x):
-			fact = invlerp(l_top.x, r_top.x, x)
-			proj_x = lerp(left.x, right_proj_x, fact)
-			proj = Line.from_point(Vec2(proj_x, left.y))
-			world_pos = proj.intersect(wall)
-
 			min_y, max_y = I.mask[x]
 			if min_y >= max_y: continue
 
-			camera_dist = world_pos.length()
+			camera_dist = 0
+			if l_top.x != r_top.x:
+				fact = invlerp(l_top.x, r_top.x, x)
+				proj_x = lerp(left.x, right_proj_x, fact)
+				proj_vec = Vec2(proj_x, left.y)
+				if abs(proj_vec.cross(left - right)) > proj_vec.epsilon:
+					proj = Line.from_point(proj_vec)
+					world_pos = proj.intersect(wall)
+					camera_dist = world_pos.length()
+			else:
+				fact = 1 if x > l_top.x else 0
+
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
 			blended = Color("crimson").lerp(fog.color, fog_amt)
 			top = int(max(min_y, lerp(l_top.y, r_top.y, fact)))

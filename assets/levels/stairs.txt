@@ -1,8 +1,6 @@
 spawn 60 15 0
 
 vertex 0,100 0
-vertex 30,35,65,70 30
-vertex 30,35,65,70 35
 vertex 30,35,65,70 40
 vertex 30,35,65,70 45
 vertex 30,35,65,70 50
@@ -10,7 +8,9 @@ vertex 30,35,65,70 55
 vertex 30,35,65,70 60
 vertex 30,35,65,70 65
 vertex 30,35,65,70 70
-vertex 0,100 100
+vertex 30,35,65,70 75
+vertex 30,35,65,70 80
+vertex 0,100 110
 
 sector 0 30 0,2,3,4,5,1 1,x,4,x,2,x
 sector 0 30 0,38,34,2 x,3,x,0
