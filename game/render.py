@@ -1,15 +1,15 @@
 from copy import copy
 from dataclasses import dataclass
-from itertools import chain
 import math
 from pygame import Color, draw
 from pygame.math import clamp, invlerp, lerp, remap
+from pygame.typing import ColorLike
 
 import game
 from game import engine
 from game.entity import player
 from game.utils.math import Line, Vec2
-from game.world.level import get_walls
+from game.world.level import Fog, get_walls
 
 NEAR_PLANE: float = 1e-3
 EXTEND_THRESHOLD: float = 1e6
@@ -43,6 +43,45 @@ def world_to_screen(p: Vec2, floor: float, ceiling: float) -> tuple[Vec2, Vec2]:
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
 	draw.line(screen, color, (x, y1), (x, y2))
+
+def render_floor(
+	eye_diff: float,
+	color: ColorLike,
+	fog: Fog,
+	mask: list[tuple[int, int]],
+	wall: Line,
+	right_further: bool,
+	x_range: tuple[int, int],
+	y_range: tuple[int, int],
+	y_fog_levels: tuple[float, float], # screen coordinate of near & far
+) -> None:
+	screen = engine.get_screen()
+	left, right = x_range
+	near_on_far = Line.from_point(Vec2(fog.far, eye_diff)).get_y(fog.near)
+	for y in range(*y_range):
+		for min_x in range(left, len(I.mask)):
+			min_y, max_y = mask[min_x]
+			if min_y <= y <= max_y: break
+		for max_x in range(right - 1, -1, -1):
+			min_y, max_y = mask[max_x]
+			if min_y <= y <= max_y: break
+
+		if not wall.is_horz():
+			intersect = wall.get_x(y)
+			if right_further: min_x = max(min_x, intersect)
+			else: max_x = min(max_x, intersect)
+		if min_x >= max_x: continue
+
+		fact = invlerp(*y_fog_levels, y)
+		blended = Color(color)
+		if fact >= 1: blended = fog.color
+		elif fact > 0:
+			proj_y = lerp(eye_diff, near_on_far, fact)
+			ray = Line.from_point(Vec2(fog.near, proj_y))
+			dist = ray.get_x(eye_diff)
+			fog_fact = invlerp(fog.near, fog.far, dist)
+			blended = blended.lerp(fog.color, fog_fact)
+		draw.line(screen, blended, (min_x, y), (max_x, y))
 
 def render_sector(scoped: ScopedSector) -> None:
 	level = game.get_level()
@@ -137,42 +176,16 @@ def render_sector(scoped: ScopedSector) -> None:
 			flrs[2] = min(flrs[2], bot)
 			flrs[3] = max(flrs[3], max_y)
 
-		nof_ceil = Line.from_point(Vec2(fog.far, eye_to_ceil)).get_y(fog.near)
-		nof_floor = Line.from_point(Vec2(fog.far, eye_to_floor)).get_y(fog.near)
-		wall_top = Line.from_point(l_top, r_top)
-		wall_bot = Line.from_point(l_bot, r_bot)
-
-		ceil_range = range(flrs[0], flrs[1]) if eye_to_ceil > 0 else []
-		floor_range = range(flrs[2], flrs[3] + 1) if eye_to_floor > 0 else []
-		for y in chain(ceil_range, floor_range):
-			for min_x in range(left_x, len(I.mask)):
-				min_y, max_y = last_mask[min_x]
-				if min_y <= y <= max_y: break
-			for max_x in range(right_x - 1, -1, -1):
-				min_y, max_y = last_mask[max_x]
-				if min_y <= y <= max_y: break
-
-			is_ceil = y < flrs[2]
-			wall = wall_top if is_ceil else wall_bot
-			if not wall.is_horz():
-				intersect_x = wall.get_x(y)
-				if right_further: min_x = max(min_x, intersect_x)
-				else: max_x = min(max_x, intersect_x)
-			if min_x >= max_x: continue
-
-			fog_markers = (fog_ys[0], fog_ys[2]) if is_ceil else (fog_ys[1], fog_ys[3])
-			fact = invlerp(*fog_markers, y)
-			color = Color("khaki4" if is_ceil else "darkslategrey")
-			if fact >= 1: color = fog.color
-			elif fact > 0:
-				eye_diff = eye_to_ceil if is_ceil else eye_to_floor
-				near_on_far = nof_ceil if is_ceil else nof_floor
-				proj_y = lerp(eye_diff, near_on_far, fact)
-				ray = Line.from_point(Vec2(fog.near, proj_y))
-				dist = ray.get_x(eye_diff)
-				fog_fact = invlerp(fog.near, fog.far, dist)
-				color = color.lerp(fog.color, fog_fact)
-			draw.line(screen, color, (min_x, y), (max_x, y))
+		if eye_to_ceil > 0:
+			render_floor(
+				eye_to_ceil, "khaki4", fog, last_mask, Line.from_point(l_top, r_top), right_further,
+				(left_x, right_x), (flrs[0], flrs[1]), (fog_ys[0], fog_ys[2])
+			)
+		if eye_to_floor > 0:
+			render_floor(
+				eye_to_floor, "darkslategrey", fog, last_mask, Line.from_point(l_bot, r_bot), right_further,
+				(left_x, right_x), (flrs[2], flrs[3] + 1), (fog_ys[1], fog_ys[3])
+			)
 
 def update() -> None:
 	w, h = engine.get_screen().get_size()
