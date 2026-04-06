@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from game.entity import player
 from game.utils.math import Vec2
-from .fog import Fog
 from .sector import Sector
 from .spawn import Spawn
 
@@ -11,7 +10,6 @@ class Level:
 	spawn: Spawn
 	vertexes: list[Vec2]
 	sectors: list[Sector]
-	fog: Fog
 
 def get_walls(level: Level, sector: int, relative: bool) -> list[tuple[Vec2, Vec2]]:
 	s = level.sectors[sector]

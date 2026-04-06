@@ -15,17 +15,20 @@ def parse_vertex(args: list[str]) -> list[Vec2]:
 			vertexes.append(Vec2(x, y))
 	return vertexes
 
+def parse_fog(args: list[str]) -> Fog:
+	raise NotImplementedError() # TODO:
+
 def parse_sector(args: list[str]) -> Sector:
 	floor, ceiling = float(args[1]), float(args[2])
 	vertexes = [int(num) for num in args[3].split(",")]
 	connects = [None if num == "x" else int(num) for num in args[4].split(",")]
-	return Sector(floor=floor, ceiling=ceiling, vertexes=vertexes, connects=connects)
+	fog = default_fog() if len(args) < 6 else parse_fog(args[5].split(","))
+	return Sector(floor=floor, ceiling=ceiling, vertexes=vertexes, connects=connects, fog=fog)
 
 def load(name: str) -> Level:
 	vertexes = []
 	sectors = []
 	spawn: Spawn | None = None
-	fog: Fog | None = None
 
 	with open(f"assets/levels/{name}.txt", "r", encoding="utf-8") as file:
 		for line in file.readlines():
@@ -39,6 +42,5 @@ def load(name: str) -> Level:
 					sectors.append(parse_sector(args))
 
 	if spawn is None:
-		raise Exception("Level does not define a spawn point!")
-	fog = default_fog() if fog is None else fog
-	return Level(spawn=spawn, vertexes=vertexes, sectors=sectors, fog=fog)
+		raise RuntimeError("Level does not define a spawn point!")
+	return Level(spawn=spawn, vertexes=vertexes, sectors=sectors)

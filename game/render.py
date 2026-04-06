@@ -11,7 +11,8 @@ import game
 from game import engine
 from game.entity import player
 from game.utils.math import Line, Vec2
-from game.world.level import Fog, get_walls
+from game.world import Fog
+from game.world.level import get_walls
 
 NEAR_PLANE: float = 1e-3
 EXTEND_THRESHOLD: float = 1e6
@@ -102,7 +103,7 @@ def render_sector(scoped: ScopedSector) -> None:
 	z_player = player.get_absolute_eye_height()
 	z_floor = sector.floor - z_player
 	z_ceil = sector.ceiling - z_player
-	fog = level.fog # FIX: use sector-specific fog
+	fog = sector.fog
 
 	walls = get_walls(level, scoped.id, True)
 	for left, right, neighbor_id in walls:

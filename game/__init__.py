@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 import pygame
 from pygame import Color, Surface
 from . import engine, render
-from .assets import load_level
 from .entity import Direction, player
+from .loaders import load_level
 from .utils.math import Vec2
 from .world import Level
 
