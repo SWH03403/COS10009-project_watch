@@ -118,7 +118,7 @@ def render_sector(scoped: ScopedSector) -> None:
 				fact = 1 if x > l_top.x else 0
 
 			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
-			blended = Color("crimson").lerp(fog.color, fog_amt)
+			blended = Color("darkkhaki").lerp(fog.color, fog_amt)
 			top = int(max(min_y, lerp(l_top.y, r_top.y, fact)))
 			bot = int(min(max_y, lerp(l_bot.y, r_bot.y, fact)))
 
@@ -162,7 +162,7 @@ def render_sector(scoped: ScopedSector) -> None:
 
 			fog_markers = (fog_ys[0], fog_ys[2]) if is_ceil else (fog_ys[1], fog_ys[3])
 			fact = invlerp(*fog_markers, y)
-			color = Color("darkgreen" if is_ceil else "navyblue")
+			color = Color("khaki4" if is_ceil else "darkslategrey")
 			if fact >= 1: color = fog.color
 			elif fact > 0:
 				eye_diff = eye_to_ceil if is_ceil else eye_to_floor
