@@ -64,7 +64,20 @@ def init() -> None:
 	I = Renderer(queue=[], mask=[], skybox=skybox)
 
 def render_sky() -> None:
-	...
+	screen = engine.get_screen()
+	width = I.skybox.get_width()
+	scroll = (1 - player.get_aim() / 360) * width
+	if scroll + R.w < width:
+		sky = I.skybox.subsurface((scroll, 0, R.w, R.h))
+		screen.blit(sky, offset(0, 0))
+		return
+
+	left = width - scroll
+	right = R.w - left
+	s1 = I.skybox.subsurface((scroll, 0, left, R.h))
+	s2 = I.skybox.subsurface((0, 0, right, R.h))
+	screen.blit(s1, offset(0, 0))
+	screen.blit(s2, offset(left, 0))
 
 def debug_delay() -> None:
 	if game.is_scan_mode():
