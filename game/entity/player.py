@@ -53,7 +53,7 @@ def set_sprint(sprint: bool) -> None:
 	I.sprint = sprint
 
 def turn_aim(by: float) -> None:
-	I.aim -= by * engine.get_delta()
+	I.aim -= by
 
 def step(direction: Vec2) -> None:
 	distance = SPRINT_SPEED if I.sprint else WALK_SPEED

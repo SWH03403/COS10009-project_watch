@@ -7,7 +7,7 @@ from .entity import Direction, player
 from .utils.math import Vec2
 from .world import Level
 
-SENSITIVITY: float = 16
+SENSITIVITY: float = .5
 
 @dataclass
 class Game:
