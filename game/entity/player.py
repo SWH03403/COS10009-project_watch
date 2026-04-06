@@ -38,6 +38,15 @@ def init() -> None:
 def get_position() -> tuple[Vec2, int]:
 	return I.position, I.sector
 
+# return degree angle in [0; 360) range
+def get_aim() -> float:
+	aim = I.aim % 360
+	while aim >= 360:
+		aim -= 360
+	while aim < 0:
+		aim += 360
+	return aim
+
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
 	return I.eye + sector.floor
