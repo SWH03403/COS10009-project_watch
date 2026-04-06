@@ -9,6 +9,7 @@ from pygame.typing import ColorLike
 
 import game
 from game import engine
+from game.engine import RESOLUTION
 from game.entity import player
 from game.utils.math import Line, Vec2
 from game.world import Fog
@@ -16,6 +17,18 @@ from game.world.level import get_walls
 
 NEAR_PLANE: float = 1e-3
 EXTEND_THRESHOLD: float = 1e6
+
+@dataclass
+class RenderRegion:
+	w: int
+	h: int
+	offset_x: int
+	offset_y: int
+
+R: RenderRegion
+
+def offset(x: int, y: int) -> tuple[int, int]:
+	return (x + R.offset_x, y + R.offset_y)
 
 @dataclass
 class ScopedSector:
@@ -31,8 +44,14 @@ class Renderer:
 I: Renderer
 
 def init() -> None:
-	global I
+	global I, R
 	I = Renderer(queue=[], mask=[])
+
+	# render into a 3:4 region on a 16:9 surface for special effect
+	sw, sh = RESOLUTION
+	w = int(sh / 3 * 4)
+	x = int((sw - w) / 2)
+	R = RenderRegion(w=w, h=sh, offset_x=x, offset_y=0)
 
 def debug_delay() -> None:
 	if game.is_scan_mode():
@@ -40,16 +59,14 @@ def debug_delay() -> None:
 		pygame.display.update()
 
 def world_y_to_screen(y: float, z: float) -> float:
-	h = engine.get_screen().get_height()
-	return remap(0, 1, h / 2, 0, z / y)
+	return remap(0, 1, R.h / 2, 0, z / y)
 
 def world_to_screen(p: Vec2, z: float) -> Vec2:
-	w = engine.get_screen().get_width()
-	return Vec2(remap(-1, 1, 0, w, p.x / p.y), world_y_to_screen(p.y, z))
+	return Vec2(remap(-1, 1, 0, R.w, p.x / p.y), world_y_to_screen(p.y, z))
 
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
-	draw.line(screen, color, (x, y1), (x, y2))
+	draw.line(screen, color, offset(x, y1), offset(x, y2))
 	debug_delay()
 
 def render_floor(
@@ -91,14 +108,12 @@ def render_floor(
 			dist = ray.get_x(eye_diff)
 			fog_fact = invlerp(fog.near, fog.far, dist)
 			blended = blended.lerp(fog.color, fog_fact)
-		draw.line(screen, blended, (min_x, y), (max_x, y))
+		draw.line(screen, blended, offset(min_x, y), offset(max_x, y))
 		debug_delay()
 
 def render_sector(scoped: ScopedSector) -> None:
 	level = game.get_level()
 	sector = level.sectors[scoped.id]
-	screen = engine.get_screen()
-	h = screen.get_height()
 
 	z_player = player.get_absolute_eye_height()
 	z_floor = sector.floor - z_player
@@ -152,7 +167,7 @@ def render_sector(scoped: ScopedSector) -> None:
 			I.queue.append(ScopedSector(neighbor_id, left_x, right_x))
 
 		last_mask = copy(I.mask)
-		flrs = [h, 0, h, 0]
+		flrs = [R.h, 0, R.h, 0]
 
 		xs = range(left_x, right_x)
 		for x in xs:
@@ -198,12 +213,11 @@ def render_sector(scoped: ScopedSector) -> None:
 			render_floor(z_floor, "darkslategrey", fog, last_mask, left_bottom, right_bottom, xs, ys)
 
 def update() -> None:
-	w, h = engine.get_screen().get_size()
 	_, current_sector = player.get_position()
-	I.queue = [ScopedSector(current_sector, 0, w)]
+	I.queue = [ScopedSector(current_sector, 0, R.w)]
 
 	# reset render mask
-	I.mask = [(0, h) for _ in range(w)]
+	I.mask = [(0, R.h) for _ in range(R.w)]
 
 	while len(I.queue) > 0:
 		scoped = I.queue.pop(0)

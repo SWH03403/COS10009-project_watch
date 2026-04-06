@@ -4,7 +4,7 @@ from pygame import FULLSCREEN, SCALED, Surface
 from pygame.time import Clock
 
 TITLE: str = "The Game"
-RESOLUTION: tuple[int, int] = 400, 300
+RESOLUTION: tuple[int, int] = 800, 450
 FPS: int = 60
 BACKGROUND: str = "black"
 
