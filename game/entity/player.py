@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from pygame.math import clamp, invlerp
+from pygame.math import clamp
 
 import game
 from game import engine
@@ -64,15 +64,15 @@ def step(direction: Vec2) -> None:
 	# Get walls of current sector and immediate neighbors
 	level = game.get_level()
 	walls = get_walls(level, I.sector, False)
+	psector_walls = len(walls)
 	neighbors = [c for _, _, c in walls if c is not None]
 	for neighbor in neighbors:
 		walls.extend(get_walls(level, neighbor, False))
 
 	# collision check against wall
-	for left, right, neighbor in walls:
+	for idx, (left, right, neighbor) in enumerate(walls):
 		wall = left - right
 		to_left = left - new_position
-
 		nearest = left
 		if left != right:
 			fact = clamp(to_left.dot(wall) / wall.length_squared(), 0, 1)
@@ -83,7 +83,7 @@ def step(direction: Vec2) -> None:
 		if dist < HITBOX_SIZE and neighbor is None:
 			new_position = nearest + dist_vec * HITBOX_SIZE
 		elif neighbor is not None and Line.from_point(left, right).cross(new_position) < 0:
-			if new_sector is None: new_sector = neighbor
+			if new_sector is None and idx < psector_walls: new_sector = neighbor
 
 	I.position = new_position
 	if new_sector is not None: I.sector = new_sector
