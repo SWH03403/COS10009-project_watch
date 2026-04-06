@@ -129,7 +129,6 @@ def render_sector(scoped: ScopedSector) -> None:
 
 		l_top, l_bot = world_to_screen(left, sector.floor, sector.ceiling)
 		r_top, r_bot = world_to_screen(right, sector.floor, sector.ceiling)
-		right_further = l_top.y < r_top.y
 
 		left_x = int(clamp(l_top.x, scoped.min_x, scoped.max_x))
 		right_x = int(clamp(r_top.x, scoped.min_x, scoped.max_x))
@@ -187,11 +186,13 @@ def render_sector(scoped: ScopedSector) -> None:
 			flrs[3] = max(flrs[3], max_y)
 
 		if eye_to_ceil > 0:
+			right_further = l_top.y < r_top.y
 			render_floor(
 				eye_to_ceil, "khaki4", fog, last_mask, Line.from_point(l_top, r_top), right_further,
 				(left_x, right_x), (flrs[0], flrs[1]), (fog_ys[0], fog_ys[2])
 			)
 		if eye_to_floor > 0:
+			right_further = l_bot.y > r_bot.y
 			render_floor(
 				eye_to_floor, "darkslategrey", fog, last_mask, Line.from_point(l_bot, r_bot), right_further,
 				(left_x, right_x), (flrs[2], flrs[3] + 1), (fog_ys[1], fog_ys[3])
