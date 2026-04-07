@@ -3,7 +3,7 @@ import pygame
 from pygame import Color, Surface, Vector2
 from . import engine, render
 from .entity import Direction, MovementState, player
-from .loaders import load_level
+from .loaders import load_level, load_music
 from .world import Level
 
 SENSITIVITY: float = .5
@@ -21,6 +21,12 @@ def init() -> None:
 	engine.init()
 	render.init()
 	player.init()
+
+	# music
+	pygame.mixer.init()
+	load_music("void")
+	pygame.mixer.music.play(-1)
+	pygame.mixer.music.set_volume(.5)
 
 	level = load_level("stairs") # DEBUG: Test level
 	player.set_position(level.spawn.position, level.spawn.sector)

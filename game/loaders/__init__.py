@@ -8,3 +8,6 @@ def load_image(path: str, alpha: bool) -> Surface:
 
 def load_skybox(name: str) -> Surface:
 	return load_image(f"skybox/{name}", False)
+
+def load_music(name: str) -> None:
+	pygame.mixer.music.load(f"assets/music/{name}.mp3")
