@@ -7,7 +7,7 @@ from .spawn import Spawn
 
 @dataclass
 class Level:
-	spawn: Spawn
+	spawns: list[Spawn]
 	vertexes: list[Vector2]
 	sectors: list[Sector]
 

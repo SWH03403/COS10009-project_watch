@@ -1,4 +1,4 @@
-from .fog import Fog, default as default_fog
+from .fog import Fog, default_fog
 from .level import Level
-from .sector import Sector
+from .sector import Sector, Plane, Wall, default_sector
 from .spawn import Spawn
