@@ -5,6 +5,7 @@ from pygame import Surface
 
 from game import engine
 from game.entity import player
+from game.loaders import load_skybox
 from . import region
 from .region import ASPECT, offset
 
@@ -24,8 +25,7 @@ def init() -> None:
 	vertical_fov = 2 * math.atan(math.tan(math.radians(HORIZONTAL_FOV) / 2) / ASPECT)
 	width = height / math.degrees(vertical_fov) * 360
 
-	image = pygame.image.load("assets/skybox/cloudy.png").convert()
-	image = pygame.transform.scale(image, (width, height))
+	image = pygame.transform.scale(load_skybox("cloudy"), (width, height))
 	I = SkyRenderer(image=image)
 
 def render() -> None:
