@@ -21,6 +21,9 @@ def init() -> None:
 def get_size() -> tuple[int, int]:
 	return I.w, I.h
 
+def get_origin() -> tuple[int, int]:
+	return I.topleft
+
 def get_width() -> int:
 	return I.w
 

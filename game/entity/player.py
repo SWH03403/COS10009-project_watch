@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from time import monotonic
 import math
 from pygame.math import Vector2, clamp
 
@@ -10,6 +11,12 @@ from game.world.level import get_walls
 WALK_SPEED: float = 20
 SPRINT_SPEED: float = 50
 HITBOX_SIZE: float = 3
+
+STAMINA_DECAY: float = .1
+STAMINA_REGEN: float = .15
+STAMINA_REGEN_DELAY: float = 2
+STAMINA_TIRED_DELAY: float = 3 # extra time penalty if running out of stamina
+STAMINA_REGEN_PENALTY: float = .35 # applied when walking
 
 class Direction:
 	FORWARD = Vector2(0, 1)
@@ -34,6 +41,7 @@ class Player:
 	eye: float # z coordinate
 	aim: float
 	stamina: float
+	last_sprint: float # the last time the player sprints
 	state: MovementState
 	bob_phase: float
 
@@ -47,6 +55,7 @@ def init() -> None:
 		eye=10,
 		aim=0,
 		stamina=1,
+		last_sprint=0,
 		state=MovementState.STANDING,
 		bob_phase=0,
 	)
@@ -71,24 +80,43 @@ def get_absolute_eye_height() -> float:
 def get_relative(target: Vector2) -> Vector2:
 	return (target - I.position).rotate(-I.aim)
 
+def get_stamina() -> float:
+	return I.stamina
+
 def set_position(position: Vector2, sector: int) -> None:
 	I.position = position
 	I.sector = sector
 
 def set_state(state: MovementState) -> None:
+	if state == MovementState.SPRINTING:
+		if I.stamina == 0: state = MovementState.WALKING
+		else: I.last_sprint = monotonic()
 	I.state = state
 
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
 def step(direction: Vector2) -> None:
-	distance = SPRINT_SPEED if I.state == MovementState.SPRINTING else WALK_SPEED
+	is_sprinting = I.state == MovementState.SPRINTING
+	distance = SPRINT_SPEED if is_sprinting else WALK_SPEED
 	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * engine.get_delta()
 	new_position = I.position + movement
 	new_sector = None
 
 	# update view bobbing
-	I.bob_phase += I.state.frequency * engine.get_delta()
+	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if I.state == MovementState.STANDING else 1
+	I.bob_phase += I.state.frequency * heavy_breathing * engine.get_delta()
+
+	# update stamina
+	last_stamina = I.stamina
+	stamina_rate = 0
+	if is_sprinting: stamina_rate = -STAMINA_DECAY
+	elif monotonic() >= I.last_sprint + STAMINA_REGEN_DELAY:
+		stamina_rate = STAMINA_REGEN
+		if I.state == MovementState.WALKING: stamina_rate *= STAMINA_REGEN_PENALTY
+	I.stamina = clamp(I.stamina + stamina_rate * engine.get_delta(), 0, 1)
+	# apply extra delay if stamina reaches 0 this frame
+	if last_stamina > 0 and I.stamina == 0: I.last_sprint += STAMINA_TIRED_DELAY
 
 	# Get walls of current sector and immediate neighbors
 	level = game.get_level()
