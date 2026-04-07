@@ -3,14 +3,14 @@ from dataclasses import dataclass
 import math
 from time import sleep
 import pygame
-from pygame import Color, draw
+from pygame import Color, Vector2, draw
 from pygame.math import clamp, invlerp, lerp, remap
 from pygame.typing import ColorLike
 
 import game
 from game import engine
 from game.entity import player
-from game.utils.math import Line, Vec2
+from game.utils.math import Line
 from game.world import Fog
 from game.world.level import get_walls
 from . import region
@@ -44,8 +44,8 @@ def debug_delay() -> None:
 def world_y_to_screen(y: float, z: float) -> float:
 	return remap(0, 1, region.get_height() / 2, 0, z / y)
 
-def world_to_screen(p: Vec2, z: float) -> Vec2:
-	return Vec2(remap(-1, 1, 0, region.get_width(), p.x / p.y), world_y_to_screen(p.y, z))
+def world_to_screen(p: Vector2, z: float) -> Vector2:
+	return Vector2(remap(-1, 1, 0, region.get_width(), p.x / p.y), world_y_to_screen(p.y, z))
 
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
@@ -57,13 +57,13 @@ def render_floor(
 	color: ColorLike,
 	fog: Fog,
 	mask: list[tuple[int, int]],
-	left: Vec2,
-	right: Vec2,
+	left: Vector2,
+	right: Vector2,
 	x_range: tuple[int, int],
 	y_range: range,
 ) -> None:
 	screen = engine.get_screen()
-	near_on_far = Line.from_point(Vec2(fog.far, eye_diff)).get_y(fog.near)
+	near_on_far = Line.from_point(Vector2(fog.far, eye_diff)).get_y(fog.near)
 	y_fog_near = world_y_to_screen(fog.near, eye_diff)
 	y_fog_far = world_y_to_screen(fog.far, eye_diff)
 	right_further = left.y * eye_diff < right.y * eye_diff # multiply for sign only
@@ -87,7 +87,7 @@ def render_floor(
 		if fact >= 1: blended = fog.color
 		elif fact > 0:
 			proj_y = lerp(eye_diff, near_on_far, fact)
-			ray = Line.from_point(Vec2(fog.near, proj_y))
+			ray = Line.from_point(Vector2(fog.near, proj_y))
 			dist = ray.get_x(eye_diff)
 			fog_fact = invlerp(fog.near, fog.far, dist)
 			blended = blended.lerp(fog.color, fog_fact)
@@ -116,7 +116,7 @@ def render_sector(scoped: ScopedSector) -> None:
 		# cut wall to near plane
 		wall = Line.from_point(left, right)
 		if left_behind or right_behind:
-			intersection = Vec2(wall.get_x(NEAR_PLANE), NEAR_PLANE)
+			intersection = Vector2(wall.get_x(NEAR_PLANE), NEAR_PLANE)
 			if left_behind: left = intersection
 			else: right = intersection
 
@@ -160,7 +160,7 @@ def render_sector(scoped: ScopedSector) -> None:
 			camera_dist = 0
 			if left_top.x != right_top.x:
 				fact = invlerp(left_top.x, right_top.x, x)
-				projection = Vec2(lerp(left.x, right_proj_x, fact), left.y)
+				projection = Vector2(lerp(left.x, right_proj_x, fact), left.y)
 				if abs(projection.cross(left - right)) > projection.epsilon:
 					world_pos = Line.from_point(projection).intersect(wall)
 					camera_dist = world_pos.length()

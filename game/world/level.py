@@ -1,17 +1,17 @@
 from dataclasses import dataclass
+from pygame import Vector2
 
 from game.entity import player
-from game.utils.math import Vec2
 from .sector import Sector
 from .spawn import Spawn
 
 @dataclass
 class Level:
 	spawn: Spawn
-	vertexes: list[Vec2]
+	vertexes: list[Vector2]
 	sectors: list[Sector]
 
-def get_walls(level: Level, sector: int, relative: bool) -> list[tuple[Vec2, Vec2]]:
+def get_walls(level: Level, sector: int, relative: bool) -> list[tuple[Vector2, Vector2]]:
 	s = level.sectors[sector]
 	n = len(s.vertexes)
 	v = [level.vertexes[idx] for idx in s.vertexes]

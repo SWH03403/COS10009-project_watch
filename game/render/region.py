@@ -1,21 +1,13 @@
-from dataclasses import dataclass
-
+"""limit rendering for most elements"""
+from pygame import Rect
 from game.engine import RESOLUTION
 
 ASPECT: float = 4 / 3
 
-# limit rendering for most elements
-@dataclass
-class RenderRegion:
-	w: int
-	h: int
-	offset_x: int
-	offset_y: int
-
-I: RenderRegion
+I: Rect
 
 def offset(x: int, y: int) -> tuple[int, int]:
-	return (x + I.offset_x, y + I.offset_y)
+	return (x + I.x, y + I.y)
 
 def init() -> None:
 	global I
@@ -24,7 +16,7 @@ def init() -> None:
 	sw, sh = RESOLUTION
 	w = int(sh * ASPECT)
 	x = int((sw - w) / 2)
-	I = RenderRegion(w=w, h=sh, offset_x=x, offset_y=0)
+	I = Rect(x, 0, w, sh)
 
 def get_size() -> tuple[int, int]:
 	return I.w, I.h

@@ -1,18 +1,18 @@
+from pygame import Vector2
 from game.world import Fog, Level, Sector, Spawn, default_fog
-from game.utils.math import Vec2
 
 def parse_spawn(args: list[str]) -> Spawn:
-	position = Vec2(float(args[1]), float(args[2]))
+	position = Vector2(float(args[1]), float(args[2]))
 	sector = int(args[3])
 	return Spawn(position=position, sector=sector)
 
-def parse_vertex(args: list[str]) -> list[Vec2]:
+def parse_vertex(args: list[str]) -> list[Vector2]:
 	vertexes = []
 	xs = [float(num) for num in args[1].split(",")]
 	ys = [float(num) for num in args[2].split(",")]
 	for x in xs:
 		for y in ys:
-			vertexes.append(Vec2(x, y))
+			vertexes.append(Vector2(x, y))
 	return vertexes
 
 def parse_fog(args: list[str]) -> Fog:

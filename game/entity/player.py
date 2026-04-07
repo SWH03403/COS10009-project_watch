@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 import math
-from pygame.math import clamp
+from pygame.math import Vector2, clamp
 
 import game
 from game import engine
-from game.utils.math import Line, Vec2
+from game.utils.math import Line
 from game.world.level import get_walls
 
 WALK_SPEED: float = 20
@@ -12,10 +12,10 @@ SPRINT_SPEED: float = 50
 HITBOX_SIZE: float = 3
 
 class Direction:
-	FORWARD = Vec2(0, 1)
-	BACKWARD = Vec2(0, -1)
-	LEFT = Vec2(-1, 0)
-	RIGHT = Vec2(1, 0)
+	FORWARD = Vector2(0, 1)
+	BACKWARD = Vector2(0, -1)
+	LEFT = Vector2(-1, 0)
+	RIGHT = Vector2(1, 0)
 
 @dataclass
 class Bobbing:
@@ -29,10 +29,11 @@ class MovementState:
 
 @dataclass
 class Player:
-	position: Vec2
+	position: Vector2
 	sector: int
 	eye: float # z coordinate
 	aim: float
+	stamina: float
 	state: MovementState
 	bob_phase: float
 
@@ -41,15 +42,16 @@ I: Player
 def init() -> None:
 	global I
 	I = Player(
-		position=Vec2(),
+		position=Vector2(),
 		sector=0,
 		eye=10,
 		aim=0,
+		stamina=1,
 		state=MovementState.STANDING,
 		bob_phase=0,
 	)
 
-def get_position() -> tuple[Vec2, int]:
+def get_position() -> tuple[Vector2, int]:
 	return I.position, I.sector
 
 # return degree angle in [0; 360) range
@@ -66,10 +68,10 @@ def get_absolute_eye_height() -> float:
 	zbob = math.cos(I.bob_phase) * I.state.magnitude
 	return I.eye + sector.floor + zbob
 
-def get_relative(target: Vec2) -> Vec2:
+def get_relative(target: Vector2) -> Vector2:
 	return (target - I.position).rotate(-I.aim)
 
-def set_position(position: Vec2, sector: int) -> None:
+def set_position(position: Vector2, sector: int) -> None:
 	I.position = position
 	I.sector = sector
 
@@ -79,7 +81,7 @@ def set_state(state: MovementState) -> None:
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
-def step(direction: Vec2) -> None:
+def step(direction: Vector2) -> None:
 	distance = SPRINT_SPEED if I.state == MovementState.SPRINTING else WALK_SPEED
 	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * engine.get_delta()
 	new_position = I.position + movement

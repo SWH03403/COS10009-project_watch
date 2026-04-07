@@ -1,10 +1,9 @@
 from dataclasses import dataclass, field
 import pygame
-from pygame import Color, Surface
+from pygame import Color, Surface, Vector2
 from . import engine, render
 from .entity import Direction, MovementState, player
 from .loaders import load_level
-from .utils.math import Vec2
 from .world import Level
 
 SENSITIVITY: float = .5
@@ -46,7 +45,7 @@ def _handle_key() -> bool:
 	keys = pygame.key.get_pressed()
 
 	# player movement
-	direction = Vec2()
+	direction = Vector2()
 	if keys[pygame.K_w]: direction += Direction.FORWARD
 	if keys[pygame.K_s]: direction += Direction.BACKWARD
 	if keys[pygame.K_a]: direction += Direction.LEFT

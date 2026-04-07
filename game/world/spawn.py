@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-
-from game.utils.math import Vec2
+from pygame import Vector2
 
 @dataclass
 class Spawn:
-	position: Vec2
+	position: Vector2
 	sector: int
