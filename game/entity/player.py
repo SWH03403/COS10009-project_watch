@@ -143,4 +143,11 @@ def step(direction: Vector2) -> None:
 			if new_sector is None and idx < psector_walls: new_sector = neighbor
 
 	I.position = new_position
-	if new_sector is not None: I.sector = new_sector
+	if new_sector is not None:
+		# reset bob when floor height changes
+		z_new = level.sectors[new_sector].floor
+		z_cur = level.sectors[I.sector].floor
+		if z_new > z_cur: I.bob_phase = math.pi # lowest point
+		elif z_new < z_cur: I.bob_phase = 0 # highest point
+
+		I.sector = new_sector
