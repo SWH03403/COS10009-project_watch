@@ -23,7 +23,6 @@ def init() -> None:
 	player.init()
 
 	# music
-	pygame.mixer.init()
 	load_music("void")
 	pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(.5)

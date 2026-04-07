@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 from time import monotonic
 import math
+from random import randrange
+from pygame import Sound
 from pygame.math import Vector2, clamp
 
 import game
 from game import engine
+from game.loaders import load_sounds_suffix
 from game.utils.math import Line
 from game.world.level import get_walls
 
@@ -44,6 +47,7 @@ class Player:
 	last_sprint: float # the last time the player sprints
 	state: MovementState
 	bob_phase: float
+	footstep: list[Sound]
 
 I: Player
 
@@ -58,6 +62,7 @@ def init() -> None:
 		last_sprint=0,
 		state=MovementState.STANDING,
 		bob_phase=0,
+		footstep=load_sounds_suffix("footsteps/tile")
 	)
 
 def get_position() -> tuple[Vector2, int]:
@@ -101,6 +106,9 @@ def set_state(state: MovementState) -> None:
 
 def turn_aim(by: float) -> None:
 	I.aim -= by
+
+def play_footstep() -> Sound:
+	I.footstep[randrange(len(I.footstep))].play()
 
 def step(direction: Vector2) -> None:
 	is_sprinting = I.state == MovementState.SPRINTING
@@ -155,5 +163,6 @@ def step(direction: Vector2) -> None:
 		z_cur = level.sectors[I.sector].floor
 		if z_new > z_cur: I.bob_phase = math.pi # lowest point
 		elif z_new < z_cur: I.bob_phase = 0 # highest point
+		if z_new != z_cur: play_footstep()
 
 		I.sector = new_sector
