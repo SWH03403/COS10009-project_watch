@@ -3,8 +3,8 @@ from .fog import Fog
 
 # default colors
 WALL_COLOR: str = "darkkhaki"
-CEILING_COLOR: str = "darkslategrey"
-FLOOR_COLOR: str = "khaki4"
+CEILING_COLOR: str = "khaki4"
+FLOOR_COLOR: str = "darkslategrey"
 
 @dataclass
 class Plane:
