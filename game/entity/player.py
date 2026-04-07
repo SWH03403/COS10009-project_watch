@@ -13,10 +13,10 @@ SPRINT_SPEED: float = 50
 HITBOX_SIZE: float = 3
 
 STAMINA_DECAY: float = .1
-STAMINA_REGEN: float = .06
+STAMINA_REGEN: float = .15
 STAMINA_REGEN_DELAY: float = 2
 STAMINA_TIRED_DELAY: float = 3 # extra time penalty if running out of stamina
-STAMINA_REGEN_PENALTY: float = .75 # applied when walking
+STAMINA_REGEN_PENALTY: float = .35 # applied when walking
 
 class Direction:
 	FORWARD = Vector2(0, 1)
