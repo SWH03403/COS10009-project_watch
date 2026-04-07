@@ -3,5 +3,6 @@ from pygame import Vector2
 
 @dataclass
 class Spawn:
-	position: Vector2
 	sector: int
+	position: Vector2
+	angle: float

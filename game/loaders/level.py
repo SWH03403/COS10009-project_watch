@@ -3,9 +3,10 @@ from game.world import Fog, Level, Plane, Sector, Spawn, Wall, default_fog
 from game.world.sector import CEILING_COLOR, FLOOR_COLOR, WALL_COLOR
 
 def parse_spawn(args: list[str]) -> Spawn:
-	position = Vector2(float(args[1]), float(args[2]))
-	sector = int(args[3])
-	return Spawn(position=position, sector=sector)
+	sector = int(args[1])
+	position = Vector2(float(args[2]), float(args[3]))
+	angle = float(args[4]) if len(args) > 4 else 0
+	return Spawn(sector=sector, position=position, angle=angle)
 
 def parse_vertex(args: list[str]) -> list[Vector2]:
 	vertexes = []

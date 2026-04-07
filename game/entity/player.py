@@ -98,6 +98,9 @@ def set_position(position: Vector2, sector: int) -> None:
 	I.position = position
 	I.sector = sector
 
+def set_aim(aim: float) -> None:
+	I.aim = aim
+
 def set_state(state: MovementState) -> None:
 	if state == MovementState.SPRINTING:
 		if I.stamina == 0: state = MovementState.WALKING
