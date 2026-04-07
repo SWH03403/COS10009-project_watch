@@ -3,34 +3,21 @@ from dataclasses import dataclass
 import math
 from time import sleep
 import pygame
-from pygame import Color, Surface, draw
+from pygame import Color, draw
 from pygame.math import clamp, invlerp, lerp, remap
 from pygame.typing import ColorLike
 
 import game
 from game import engine
-from game.engine import RESOLUTION
 from game.entity import player
 from game.utils.math import Line, Vec2
 from game.world import Fog
 from game.world.level import get_walls
+from . import region
+from .region import offset
 
 NEAR_PLANE: float = 1e-3
 EXTEND_THRESHOLD: float = 1e6
-ASPECT: float = 4 / 3
-FOV: float = 90 # because of y-division
-
-@dataclass
-class RenderRegion:
-	w: int
-	h: int
-	offset_x: int
-	offset_y: int
-
-R: RenderRegion
-
-def offset(x: int, y: int) -> tuple[int, int]:
-	return (x + R.offset_x, y + R.offset_y)
 
 @dataclass
 class ScopedSector:
@@ -39,45 +26,15 @@ class ScopedSector:
 	max_x: int
 
 @dataclass
-class Renderer:
+class WorldRenderer:
 	queue: list[ScopedSector]
 	mask: list[tuple[int, int]]
-	skybox: Surface
 
-I: Renderer
+I: WorldRenderer
 
 def init() -> None:
-	global I, R
-
-	# render into a 3:4 region on a 16:9 surface for special effect
-	sw, sh = RESOLUTION
-	w = int(sh * ASPECT)
-	x = int((sw - w) / 2)
-	R = RenderRegion(w=w, h=sh, offset_x=x, offset_y=0)
-
-	# find vertical fov to correctly stretch skybox image
-	v_fov = math.degrees(2 * math.atan(math.tan(math.radians(FOV) / 2) / ASPECT))
-	skybox_width = R.h / v_fov * 360
-
-	skybox = pygame.image.load("assets/skybox/cloudy.png").convert()
-	skybox = pygame.transform.scale(skybox, (skybox_width, R.h))
-	I = Renderer(queue=[], mask=[], skybox=skybox)
-
-def render_sky() -> None:
-	screen = engine.get_screen()
-	width = I.skybox.get_width()
-	scroll = (1 - player.get_aim() / 360) * width
-	if scroll + R.w < width:
-		sky = I.skybox.subsurface((scroll, 0, R.w, R.h))
-		screen.blit(sky, offset(0, 0))
-		return
-
-	left = width - scroll
-	right = R.w - left
-	s1 = I.skybox.subsurface((scroll, 0, left, R.h))
-	s2 = I.skybox.subsurface((0, 0, right, R.h))
-	screen.blit(s1, offset(0, 0))
-	screen.blit(s2, offset(left, 0))
+	global I
+	I = WorldRenderer(queue=[], mask=[])
 
 def debug_delay() -> None:
 	if game.is_scan_mode():
@@ -85,10 +42,10 @@ def debug_delay() -> None:
 		pygame.display.update()
 
 def world_y_to_screen(y: float, z: float) -> float:
-	return remap(0, 1, R.h / 2, 0, z / y)
+	return remap(0, 1, region.get_height() / 2, 0, z / y)
 
 def world_to_screen(p: Vec2, z: float) -> Vec2:
-	return Vec2(remap(-1, 1, 0, R.w, p.x / p.y), world_y_to_screen(p.y, z))
+	return Vec2(remap(-1, 1, 0, region.get_width(), p.x / p.y), world_y_to_screen(p.y, z))
 
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
@@ -193,7 +150,7 @@ def render_sector(scoped: ScopedSector) -> None:
 			I.queue.append(ScopedSector(neighbor_id, left_x, right_x))
 
 		last_mask = copy(I.mask)
-		flrs = [R.h, 0, R.h, 0]
+		flrs = [region.get_height(), 0] * 2
 
 		xs = range(left_x, right_x)
 		for x in xs:
@@ -238,14 +195,14 @@ def render_sector(scoped: ScopedSector) -> None:
 			ys = range(flrs[2], flrs[3] + 1)
 			render_floor(z_floor, "darkslategrey", fog, last_mask, left_bottom, right_bottom, xs, ys)
 
-def update() -> None:
+def render() -> None:
 	_, current_sector = player.get_position()
-	I.queue = [ScopedSector(current_sector, 0, R.w)]
+	w, h = region.get_size()
+	I.queue = [ScopedSector(current_sector, 0, w)]
 
 	# reset render mask
-	I.mask = [(0, R.h) for _ in range(R.w)]
+	I.mask = [(0, h) for _ in range(w)]
 
-	render_sky()
 	while len(I.queue) > 0:
 		scoped = I.queue.pop(0)
 		if scoped.min_x >= scoped.max_x: continue
