@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import math
 from time import sleep
 import pygame
-from pygame import Color, draw
+from pygame import Color, Surface, draw
 from pygame.math import clamp, invlerp, lerp, remap
 from pygame.typing import ColorLike
 
@@ -17,6 +17,8 @@ from game.world.level import get_walls
 
 NEAR_PLANE: float = 1e-3
 EXTEND_THRESHOLD: float = 1e6
+ASPECT: float = 4 / 3
+FOV: float = 90 # because of y-division
 
 @dataclass
 class RenderRegion:
@@ -40,18 +42,42 @@ class ScopedSector:
 class Renderer:
 	queue: list[ScopedSector]
 	mask: list[tuple[int, int]]
+	skybox: Surface
 
 I: Renderer
 
 def init() -> None:
 	global I, R
-	I = Renderer(queue=[], mask=[])
 
 	# render into a 3:4 region on a 16:9 surface for special effect
 	sw, sh = RESOLUTION
-	w = int(sh / 3 * 4)
+	w = int(sh * ASPECT)
 	x = int((sw - w) / 2)
 	R = RenderRegion(w=w, h=sh, offset_x=x, offset_y=0)
+
+	# find vertical fov to correctly stretch skybox image
+	v_fov = math.degrees(2 * math.atan(math.tan(math.radians(FOV) / 2) / ASPECT))
+	skybox_width = R.h / v_fov * 360
+
+	skybox = pygame.image.load("assets/skybox/cloudy.png").convert()
+	skybox = pygame.transform.scale(skybox, (skybox_width, R.h))
+	I = Renderer(queue=[], mask=[], skybox=skybox)
+
+def render_sky() -> None:
+	screen = engine.get_screen()
+	width = I.skybox.get_width()
+	scroll = (1 - player.get_aim() / 360) * width
+	if scroll + R.w < width:
+		sky = I.skybox.subsurface((scroll, 0, R.w, R.h))
+		screen.blit(sky, offset(0, 0))
+		return
+
+	left = width - scroll
+	right = R.w - left
+	s1 = I.skybox.subsurface((scroll, 0, left, R.h))
+	s2 = I.skybox.subsurface((0, 0, right, R.h))
+	screen.blit(s1, offset(0, 0))
+	screen.blit(s2, offset(left, 0))
 
 def debug_delay() -> None:
 	if game.is_scan_mode():
@@ -219,6 +245,7 @@ def update() -> None:
 	# reset render mask
 	I.mask = [(0, R.h) for _ in range(R.w)]
 
+	render_sky()
 	while len(I.queue) > 0:
 		scoped = I.queue.pop(0)
 		if scoped.min_x >= scoped.max_x: continue
