@@ -10,7 +10,8 @@ from . import region
 
 COLOR: str = "gray80"
 COLOR_LOW: str = "red3"
-LOW_THRESHOLD = .4
+LOW_THRESHOLD: float = .5
+FLASH_SPEED: float = 2
 FADE: float = 2 # time to disappear after bar stays full
 
 @dataclass
@@ -44,12 +45,16 @@ def render() -> None:
 	if stamina < 1: I.stamina.last_full = now
 	transparency = min((now - I.stamina.last_full) / FADE, 1)
 	if transparency >= 1: return
-	fill_color = Color(COLOR_LOW if stamina <= LOW_THRESHOLD else COLOR)
-	fill_color.a = int(255 * (1 - transparency))
+	is_low = stamina <= LOW_THRESHOLD
+	faster = 4 if stamina == 0 else 1
+	flash = abs(math.sin(now * FLASH_SPEED * faster)) if is_low else 1
+	fill_color = Color(COLOR_LOW if is_low else COLOR)
+	fill_color.a = int(255 * (1 - transparency) * flash)
 	bar.fill(fill_color)
 
 	bw, bh = bar.size
-	bar = I.stamina.surface.subsurface((0, 0, bw * stamina, bh))
+	proportion = 1 if stamina == 0 else stamina
+	bar = I.stamina.surface.subsurface((0, 0, bw * proportion, bh))
 	pos = I.stamina.position.copy()
-	pos.x += bw * (1 - stamina) / 2
+	pos.x += bw * (1 - proportion) / 2
 	screen.blit(bar, pos)
