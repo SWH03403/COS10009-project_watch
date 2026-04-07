@@ -104,7 +104,8 @@ def step(direction: Vector2) -> None:
 	new_sector = None
 
 	# update view bobbing
-	I.bob_phase += I.state.frequency * engine.get_delta()
+	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if I.state == MovementState.STANDING else 1
+	I.bob_phase += I.state.frequency * heavy_breathing * engine.get_delta()
 
 	# update stamina
 	last_stamina = I.stamina
