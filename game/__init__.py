@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from random import randrange
 import pygame
 from pygame import Color, Surface, Vector2
 from . import engine, render
@@ -27,8 +28,9 @@ def init() -> None:
 	pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(.5)
 
-	level = load_level("stairs") # DEBUG: Test level
-	player.set_position(level.spawn.position, level.spawn.sector)
+	level = load_level("cliff") # DEBUG: Test level
+	spawn = level.spawns[randrange(len(level.spawns))]
+	player.set_position(spawn.position, spawn.sector)
 
 	global I
 	I = Game(running=True, level=level)
