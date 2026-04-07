@@ -1,10 +1,12 @@
 from pygame import Vector2
-from game.world import Fog, Level, Sector, Spawn, default_fog
+from game.world import Fog, Level, Plane, Sector, Spawn, Wall, default_fog
+from game.world.sector import CEILING_COLOR, FLOOR_COLOR, WALL_COLOR
 
 def parse_spawn(args: list[str]) -> Spawn:
-	position = Vector2(float(args[1]), float(args[2]))
-	sector = int(args[3])
-	return Spawn(position=position, sector=sector)
+	sector = int(args[1])
+	position = Vector2(float(args[2]), float(args[3]))
+	angle = float(args[4]) if len(args) > 4 else 0
+	return Spawn(sector=sector, position=position, angle=angle)
 
 def parse_vertex(args: list[str]) -> list[Vector2]:
 	vertexes = []
@@ -15,32 +17,50 @@ def parse_vertex(args: list[str]) -> list[Vector2]:
 			vertexes.append(Vector2(x, y))
 	return vertexes
 
+def parse_plane(arg: str, default_color: str) -> Plane:
+	if ":" not in arg:
+		return Plane(height=float(arg), color=default_color)
+	height, color = arg.split(":", 1)
+	return Plane(height=float(height), color=None if color == "-" else color)
+
+def parse_wall(data: tuple[str, str]) -> Wall:
+	vertex, neighbor = data
+	color = WALL_COLOR
+	if ":" in vertex: vertex, color = vertex.split(":", 1)
+	color = None if neighbor == "-" else color
+	neighbor = None if neighbor in ["-", "x"] else int(neighbor)
+	return Wall(vertex=int(vertex), neighbor=neighbor, color=color)
+
 def parse_fog(args: list[str]) -> Fog:
 	raise NotImplementedError() # TODO:
 
 def parse_sector(args: list[str]) -> Sector:
-	floor, ceiling = float(args[1]), float(args[2])
-	vertexes = [int(num) for num in args[3].split(",")]
-	connects = [None if num == "x" else int(num) for num in args[4].split(",")]
+	floor = parse_plane(args[1], FLOOR_COLOR)
+	ceiling = parse_plane(args[2], CEILING_COLOR)
+	walls = [parse_wall(data) for data in zip(args[3].split(","), args[4].split(","))]
 	fog = default_fog() if len(args) < 6 else parse_fog(args[5].split(","))
-	return Sector(floor=floor, ceiling=ceiling, vertexes=vertexes, connects=connects, fog=fog)
+	return Sector(floor=floor, ceiling=ceiling, walls=walls, fog=fog)
 
 def load(name: str) -> Level:
+	spawns = []
 	vertexes = []
 	sectors = []
-	spawn: Spawn | None = None
 
 	with open(f"assets/levels/{name}.txt", "r", encoding="utf-8") as file:
-		for line in file.readlines():
-			args = line.strip().split(" ")
+		for num, line in enumerate(file.readlines()):
+			line = line.split("#", 1)[0].strip()
+			if len(line) == 0: continue
+			args = [w for w in line.split(" ") if len(w) > 0]
 			match args[0]:
-				case "spawn":
-					spawn = parse_spawn(args)
-				case "vertex":
+				case "s" | "spawn":
+					spawns.append(parse_spawn(args))
+				case "v" | "vertex":
 					vertexes.extend(parse_vertex(args))
-				case "sector":
+				case "r" | "room" | "sector":
 					sectors.append(parse_sector(args))
+				case cmd:
+					raise RuntimeError(f"Unknown command {cmd} in level \"{name}\" on line {num + 1}")
 
-	if spawn is None:
+	if len(spawns) == 0:
 		raise RuntimeError("Level does not define a spawn point!")
-	return Level(spawn=spawn, vertexes=vertexes, sectors=sectors)
+	return Level(spawns=spawns, vertexes=vertexes, sectors=sectors)

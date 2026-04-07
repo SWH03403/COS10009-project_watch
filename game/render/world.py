@@ -99,12 +99,11 @@ def render_sector(scoped: ScopedSector) -> None:
 	sector = level.sectors[scoped.id]
 
 	z_player = player.get_absolute_eye_height()
-	z_floor = sector.floor - z_player
-	z_ceil = sector.ceiling - z_player
+	z_floor = sector.floor.z - z_player
+	z_ceil = sector.ceiling.z - z_player
 	fog = sector.fog
 
-	walls = get_walls(level, scoped.id, True)
-	for left, right, neighbor_id in walls:
+	for left, right, info in get_walls(level, scoped.id, True):
 		# only render if facing the player
 		facing = math.atan2(left.x, left.y) - math.atan2(right.x, right.y)
 		if 0 <= facing <= math.pi: continue
@@ -139,15 +138,15 @@ def render_sector(scoped: ScopedSector) -> None:
 
 		# get screen coordinate for window to neighbor sector
 		nb_left_top, nb_left_bottom, nb_right_top, nb_right_bottom = None, None, None, None
-		if neighbor_id is not None:
-			neighbor = level.sectors[neighbor_id]
-			z_nb_floor = neighbor.floor - z_player
-			z_nb_ceil = neighbor.ceiling - z_player
+		if info.neighbor is not None:
+			neighbor = level.sectors[info.neighbor]
+			z_nb_floor = neighbor.floor.z - z_player
+			z_nb_ceil = neighbor.ceiling.z - z_player
 			nb_left_top = world_to_screen(left, z_nb_ceil)
 			nb_left_bottom = world_to_screen(left, z_nb_floor)
 			nb_right_top = world_to_screen(right, z_nb_ceil)
 			nb_right_bottom = world_to_screen(right, z_nb_floor)
-			I.queue.append(ScopedSector(neighbor_id, left_x, right_x))
+			I.queue.append(ScopedSector(info.neighbor, left_x, right_x))
 
 		last_mask = copy(I.mask)
 		flrs = [region.get_height(), 0] * 2
@@ -167,33 +166,36 @@ def render_sector(scoped: ScopedSector) -> None:
 			else: # wall plane cut through eye, becoming infinitely thin
 				fact = 1 if x > left_top.x else 0
 
-			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
-			blended = Color("darkkhaki").lerp(fog.color, fog_amt)
 			top = int(clamp(lerp(left_top.y, right_top.y, fact), min_y, max_y))
 			bottom = int(clamp(lerp(left_bottom.y, right_bottom.y, fact), min_y, max_y))
-
-			if neighbor_id is None:
-				line(blended, x, top, bottom) # solid wall
-				I.mask[x] = (-1, -1)
-			else:
-				nb_top = int(clamp(lerp(nb_left_top.y, nb_right_top.y, fact), min_y, max_y))
-				nb_bottom = int(clamp(lerp(nb_left_bottom.y, nb_right_bottom.y, fact), min_y, max_y))
-				I.mask[x] = (max(top, nb_top), min(bottom, nb_bottom))
-				if game.is_scan_mode(): line("crimson", x, *I.mask[x])
-				if nb_top > top: line(blended, x, top, nb_top)
-				if nb_bottom < bottom: line(blended, x, nb_bottom, bottom)
-
 			flrs[0] = min(flrs[0], min_y)
 			flrs[1] = max(flrs[1], top)
 			flrs[2] = min(flrs[2], bottom)
 			flrs[3] = max(flrs[3], max_y)
 
-		if z_ceil > 0:
+			I.mask[x] = (-1, -1)
+			if info.color is None: continue # transparent wall
+
+			fog_amt = clamp(invlerp(fog.near, fog.far, camera_dist), 0, 1) * fog.intensity
+			blended = Color(info.color).lerp(fog.color, fog_amt)
+
+			if info.neighbor is None: # solid wall
+				line(blended, x, top, bottom)
+				continue
+
+			nb_top = int(clamp(lerp(nb_left_top.y, nb_right_top.y, fact), min_y, max_y))
+			nb_bottom = int(clamp(lerp(nb_left_bottom.y, nb_right_bottom.y, fact), min_y, max_y))
+			I.mask[x] = (max(top, nb_top), min(bottom, nb_bottom))
+			if game.is_scan_mode(): line("crimson", x, *I.mask[x])
+			if nb_top > top: line(blended, x, top, nb_top)
+			if nb_bottom < bottom: line(blended, x, nb_bottom, bottom)
+
+		if z_ceil > 0 and sector.ceiling.color is not None:
 			ys = range(flrs[0], flrs[1])
-			render_floor(z_ceil, "khaki4", fog, last_mask, left_top, right_top, xs, ys)
-		if z_floor < 0:
+			render_floor(z_ceil, sector.ceiling.color, fog, last_mask, left_top, right_top, xs, ys)
+		if z_floor < 0 and sector.floor.color is not None:
 			ys = range(flrs[2], flrs[3] + 1)
-			render_floor(z_floor, "darkslategrey", fog, last_mask, left_bottom, right_bottom, xs, ys)
+			render_floor(z_floor, sector.floor.color, fog, last_mask, left_bottom, right_bottom, xs, ys)
 
 def render() -> None:
 	_, current_sector = player.get_position()

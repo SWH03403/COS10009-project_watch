@@ -86,7 +86,7 @@ def get_bob_factor() -> float:
 
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
-	return I.eye + sector.floor + get_bob_factor()
+	return I.eye + sector.floor.z + get_bob_factor()
 
 def get_relative(target: Vector2) -> Vector2:
 	return (target - I.position).rotate(-I.aim)
@@ -97,6 +97,9 @@ def get_stamina() -> float:
 def set_position(position: Vector2, sector: int) -> None:
 	I.position = position
 	I.sector = sector
+
+def set_aim(aim: float) -> None:
+	I.aim = aim
 
 def set_state(state: MovementState) -> None:
 	if state == MovementState.SPRINTING:
@@ -141,13 +144,14 @@ def step(direction: Vector2) -> None:
 	# Get walls of current sector and immediate neighbors
 	level = game.get_level()
 	walls = get_walls(level, I.sector, False)
-	psector_walls = len(walls)
-	neighbors = [c for _, _, c in walls if c is not None]
+	n_crossable_walls = len(walls)
+	# NOTE: `neighbors` must be separated to prevent iterating to extension
+	neighbors = [info.neighbor for _, _, info in walls if info.neighbor is not None]
 	for neighbor in neighbors:
 		walls.extend(get_walls(level, neighbor, False))
 
 	# collision check against wall
-	for idx, (left, right, neighbor) in enumerate(walls):
+	for idx, (left, right, info) in enumerate(walls):
 		wall = left - right
 		to_left = left - new_position
 		nearest = left
@@ -157,16 +161,16 @@ def step(direction: Vector2) -> None:
 		dist_vec = new_position - nearest
 		dist = dist_vec.length()
 		if dist > 0: dist_vec.normalize_ip()
-		if dist < HITBOX_SIZE and neighbor is None:
+		if dist < HITBOX_SIZE and info.neighbor is None:
 			new_position = nearest + dist_vec * HITBOX_SIZE
-		elif neighbor is not None and Line.from_point(left, right).cross(new_position) < 0:
-			if new_sector is None and idx < psector_walls: new_sector = neighbor
+		elif info.neighbor is not None and Line.from_point(left, right).cross(new_position) < 0:
+			if new_sector is None and idx < n_crossable_walls: new_sector = info.neighbor
 
 	I.position = new_position
 	if new_sector is not None:
 		# reset bob when floor height changes
-		z_new = level.sectors[new_sector].floor
-		z_cur = level.sectors[I.sector].floor
+		z_new = level.sectors[new_sector].floor.z
+		z_cur = level.sectors[I.sector].floor.z
 		if z_new > z_cur: I.bob_phase = -math.pi # lowest point
 		elif z_new < z_cur: I.bob_phase = 0 # highest point
 		if z_new != z_cur: play_footstep()
