@@ -15,6 +15,7 @@ HITBOX_SIZE: float = 3
 STAMINA_DECAY: float = .1
 STAMINA_REGEN: float = .06
 STAMINA_REGEN_DELAY: float = 2
+STAMINA_TIRED_DELAY: float = 3 # extra time penalty if running out of stamina
 STAMINA_REGEN_PENALTY: float = .75 # applied when walking
 
 class Direction:
@@ -104,13 +105,17 @@ def step(direction: Vector2) -> None:
 
 	# update view bobbing
 	I.bob_phase += I.state.frequency * engine.get_delta()
+
 	# update stamina
+	last_stamina = I.stamina
 	stamina_rate = 0
 	if is_sprinting: stamina_rate = -STAMINA_DECAY
 	elif monotonic() >= I.last_sprint + STAMINA_REGEN_DELAY:
 		stamina_rate = STAMINA_REGEN
 		if I.state == MovementState.WALKING: stamina_rate *= STAMINA_REGEN_PENALTY
 	I.stamina = clamp(I.stamina + stamina_rate * engine.get_delta(), 0, 1)
+	# apply extra delay if stamina reaches 0 this frame
+	if last_stamina > 0 and I.stamina == 0: I.last_sprint += STAMINA_TIRED_DELAY
 
 	# Get walls of current sector and immediate neighbors
 	level = game.get_level()
