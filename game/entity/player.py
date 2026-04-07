@@ -36,11 +36,6 @@ class Player:
 	state: MovementState
 	bob_phase: float
 
-	# Vitality
-	health: float = 200
-	armor: float = 0
-	invulnerable: bool = False
-
 I: Player
 
 def init() -> None:
