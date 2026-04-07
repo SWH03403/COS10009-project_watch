@@ -118,8 +118,14 @@ def step(direction: Vector2) -> None:
 	new_sector = None
 
 	# update view bobbing
-	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if I.state == MovementState.STANDING else 1
+	is_standing = I.state == MovementState.STANDING
+	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if is_standing else 1
 	I.bob_phase += I.state.frequency * heavy_breathing * engine.get_delta()
+	# play sound after lowest bob
+	if I.bob_phase > math.pi:
+		I.bob_phase %= 2 * math.pi
+		if I.bob_phase > math.pi and not is_standing: play_footstep()
+		I.bob_phase -= 2 * math.pi
 
 	# update stamina
 	last_stamina = I.stamina
@@ -161,7 +167,7 @@ def step(direction: Vector2) -> None:
 		# reset bob when floor height changes
 		z_new = level.sectors[new_sector].floor
 		z_cur = level.sectors[I.sector].floor
-		if z_new > z_cur: I.bob_phase = math.pi # lowest point
+		if z_new > z_cur: I.bob_phase = -math.pi # lowest point
 		elif z_new < z_cur: I.bob_phase = 0 # highest point
 		if z_new != z_cur: play_footstep()
 
