@@ -41,11 +41,11 @@ def debug_delay() -> None:
 		sleep(5e-3)
 		pygame.display.update()
 
-def world_y_to_screen(y: float, z: float) -> float:
+def yz_to_screen(y: float, z: float) -> float:
 	return remap(0, 1, region.get_height() / 2, 0, z / y)
 
-def world_to_screen(p: Vector2, z: float) -> Vector2:
-	return Vector2(remap(-1, 1, 0, region.get_width(), p.x / p.y), world_y_to_screen(p.y, z))
+def xyz_to_screen(p: Vector2, z: float) -> Vector2:
+	return Vector2(remap(-1, 1, 0, region.get_width(), p.x / p.y), yz_to_screen(p.y, z))
 
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
@@ -64,8 +64,8 @@ def render_floor(
 ) -> None:
 	screen = engine.get_screen()
 	near_on_far = Line.from_point(Vector2(fog.far, eye_diff)).get_y(fog.near)
-	y_fog_near = world_y_to_screen(fog.near, eye_diff)
-	y_fog_far = world_y_to_screen(fog.far, eye_diff)
+	y_fog_near = yz_to_screen(fog.near, eye_diff)
+	y_fog_far = yz_to_screen(fog.far, eye_diff)
 	right_further = left.y * eye_diff < right.y * eye_diff # multiply for sign only
 
 	for y in y_range:
@@ -123,10 +123,10 @@ def render_sector(scoped: ScopedSector) -> None:
 		right_proj_x = right_proj.get_x(left.y)
 
 		# wall corners
-		left_top = world_to_screen(left, z_ceil)
-		left_bottom = world_to_screen(left, z_floor)
-		right_top = world_to_screen(right, z_ceil)
-		right_bottom = world_to_screen(right, z_floor)
+		left_top = xyz_to_screen(left, z_ceil)
+		left_bottom = xyz_to_screen(left, z_floor)
+		right_top = xyz_to_screen(right, z_ceil)
+		right_bottom = xyz_to_screen(right, z_floor)
 
 		# range of visible x
 		left_x = int(clamp(left_top.x, scoped.min_x, scoped.max_x))
@@ -142,10 +142,10 @@ def render_sector(scoped: ScopedSector) -> None:
 			neighbor = level.sectors[info.neighbor]
 			z_nb_floor = neighbor.floor.z - z_player
 			z_nb_ceil = neighbor.ceiling.z - z_player
-			nb_left_top = world_to_screen(left, z_nb_ceil)
-			nb_left_bottom = world_to_screen(left, z_nb_floor)
-			nb_right_top = world_to_screen(right, z_nb_ceil)
-			nb_right_bottom = world_to_screen(right, z_nb_floor)
+			nb_left_top = xyz_to_screen(left, z_nb_ceil)
+			nb_left_bottom = xyz_to_screen(left, z_nb_floor)
+			nb_right_top = xyz_to_screen(right, z_nb_ceil)
+			nb_right_bottom = xyz_to_screen(right, z_nb_floor)
 			I.queue.append(ScopedSector(info.neighbor, left_x, right_x))
 
 		last_mask = copy(I.mask)
