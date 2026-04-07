@@ -72,10 +72,16 @@ def get_aim() -> float:
 		aim += 360
 	return aim
 
+def get_bob_factor() -> float:
+	if I.state == MovementState.STANDING:
+		# smooth highest and lowest
+		return math.cos(I.bob_phase) * I.state.magnitude
+	# smooth only highest
+	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.state.magnitude
+
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
-	zbob = math.cos(I.bob_phase) * I.state.magnitude
-	return I.eye + sector.floor + zbob
+	return I.eye + sector.floor + get_bob_factor()
 
 def get_relative(target: Vector2) -> Vector2:
 	return (target - I.position).rotate(-I.aim)
