@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import pygame
 from pygame import Color, Surface
 from . import engine, render
-from .entity import Direction, player
+from .entity import Direction, MovementState, player
 from .loaders import load_level
 from .utils.math import Vec2
 from .world import Level
@@ -51,11 +51,11 @@ def _handle_key() -> bool:
 	if keys[pygame.K_s]: direction += Direction.BACKWARD
 	if keys[pygame.K_a]: direction += Direction.LEFT
 	if keys[pygame.K_d]: direction += Direction.RIGHT
-	player.set_sprint(keys[pygame.K_LSHIFT])
-	player.step(direction)
-
+	state = MovementState.STANDING
 	if direction.length_squared() > 0:
-		...
+		state = MovementState.SPRINTING if keys[pygame.K_LSHIFT] else MovementState.WALKING
+	player.set_state(state)
+	player.step(direction)
 
 def _handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)

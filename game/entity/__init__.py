@@ -1,1 +1,1 @@
-from .player import Direction
+from .player import Direction, MovementState

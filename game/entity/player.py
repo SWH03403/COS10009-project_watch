@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 from pygame.math import clamp
 
 import game
@@ -17,12 +18,23 @@ class Direction:
 	RIGHT = Vec2(1, 0)
 
 @dataclass
+class Bobbing:
+	frequency: float
+	magnitude: float
+
+class MovementState:
+	STANDING = Bobbing(1, 1)
+	WALKING = Bobbing(8, 1)
+	SPRINTING = Bobbing(16, 2)
+
+@dataclass
 class Player:
 	position: Vec2
 	sector: int
 	eye: float # z coordinate
 	aim: float
-	sprint: bool
+	state: MovementState
+	bob_phase: float
 
 	# Vitality
 	health: float = 200
@@ -33,7 +45,14 @@ I: Player
 
 def init() -> None:
 	global I
-	I = Player(position=Vec2(), sector=0, eye=10, aim=0, sprint=False)
+	I = Player(
+		position=Vec2(),
+		sector=0,
+		eye=10,
+		aim=0,
+		state=MovementState.STANDING,
+		bob_phase=0,
+	)
 
 def get_position() -> tuple[Vec2, int]:
 	return I.position, I.sector
@@ -49,7 +68,8 @@ def get_aim() -> float:
 
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
-	return I.eye + sector.floor
+	zbob = math.cos(I.bob_phase) * I.state.magnitude
+	return I.eye + sector.floor + zbob
 
 def get_relative(target: Vec2) -> Vec2:
 	return (target - I.position).rotate(-I.aim)
@@ -58,17 +78,20 @@ def set_position(position: Vec2, sector: int) -> None:
 	I.position = position
 	I.sector = sector
 
-def set_sprint(sprint: bool) -> None:
-	I.sprint = sprint
+def set_state(state: MovementState) -> None:
+	I.state = state
 
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
 def step(direction: Vec2) -> None:
-	distance = SPRINT_SPEED if I.sprint else WALK_SPEED
+	distance = SPRINT_SPEED if I.state == MovementState.SPRINTING else WALK_SPEED
 	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * engine.get_delta()
 	new_position = I.position + movement
 	new_sector = None
+
+	# update view bobbing
+	I.bob_phase += I.state.frequency * engine.get_delta()
 
 	# Get walls of current sector and immediate neighbors
 	level = game.get_level()
