@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from pygame.typing import ColorLike
 
 @dataclass
 class Fog:
-	color: ColorLike
+	color: str
 	near: float
 	far: float
 	intensity: float

@@ -1,5 +1,10 @@
 from dataclasses import dataclass
-from .fog import Fog, default_fog
+from .fog import Fog
+
+# default colors
+WALL_COLOR: str = "darkkhaki"
+CEILING_COLOR: str = "darkslategrey"
+FLOOR_COLOR: str = "khaki4"
 
 @dataclass
 class Plane:
@@ -22,11 +27,3 @@ class Sector:
 	ceiling: Plane
 	walls: list[Wall]
 	fog: Fog
-
-def default_sector() -> Sector:
-	return Sector(
-		floor=Plane(0, "khaki4"),
-		ceiling=Plane(0, "darkslategrey"),
-		walls=[],
-		fog=default_fog(),
-	)
