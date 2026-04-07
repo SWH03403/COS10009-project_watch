@@ -26,21 +26,25 @@ def parse_sector(args: list[str]) -> Sector:
 	return Sector(floor=floor, ceiling=ceiling, vertexes=vertexes, connects=connects, fog=fog)
 
 def load(name: str) -> Level:
+	spawns = []
 	vertexes = []
 	sectors = []
-	spawn: Spawn | None = None
 
 	with open(f"assets/levels/{name}.txt", "r", encoding="utf-8") as file:
-		for line in file.readlines():
-			args = line.strip().split(" ")
+		for num, line in enumerate(file.readlines()):
+			line = line.split("#", 1)[0].strip()
+			if len(line) == 0: continue
+			args = [w for w in line.split(" ") if len(w) > 0]
 			match args[0]:
-				case "spawn":
-					spawn = parse_spawn(args)
-				case "vertex":
+				case "s" | "spawn":
+					spawns.append(parse_spawn(args))
+				case "v" | "vertex":
 					vertexes.extend(parse_vertex(args))
-				case "sector":
+				case "r" | "room" | "sector":
 					sectors.append(parse_sector(args))
+				case cmd:
+					raise RuntimeError(f"Unknown command {cmd} in level \"{name}\" on line {num + 1}")
 
-	if spawn is None:
+	if len(spawns) == 0:
 		raise RuntimeError("Level does not define a spawn point!")
-	return Level(spawn=spawn, vertexes=vertexes, sectors=sectors)
+	return Level(spawns=spawns, vertexes=vertexes, sectors=sectors)
