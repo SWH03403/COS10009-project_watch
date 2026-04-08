@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from random import randrange
+from time import monotonic
 import pygame
 from pygame import Surface, Vector2
 
@@ -9,12 +10,14 @@ from . import region, world
 
 VARIANTS: int = 5
 ENLARGE: float = 10
+MIN_UNSEEN_DURATION: float = 3 # for the sprite to change
 
 @dataclass
 class CreatureRenderer:
 	sprites: list[Surface]
 	visible: bool
 	variant: int
+	last_change: int # variant change
 
 I: CreatureRenderer
 
@@ -25,7 +28,7 @@ def init() -> None:
 	for i in range(VARIANTS):
 		sprites.append(load_image(f"creature/float{i}", True))
 		sprites.append(load_image(f"creature/grab{i}", True))
-	I = CreatureRenderer(sprites=sprites, visible=False, variant=0)
+	I = CreatureRenderer(sprites=sprites, visible=False, variant=0, last_change=0)
 
 def get_size() -> Vector2:
 	idx = 1 if creature.is_aggressive() else 0
@@ -62,8 +65,11 @@ def render() -> None:
 		sub_x = max(right - pos.x, 0)
 		if sub_x > 0: pos.x = right
 
-	if not I.visible:
-		I.visible = True
+	now = monotonic()
+	if not I.visible and now >= I.last_change + MIN_UNSEEN_DURATION:
 		I.variant = randrange(VARIANTS)
+	I.visible = True
+	I.last_change = now
+
 	sprite = get_sprite(scaling_factor)
 	screen.blit(sprite.subsurface((sub_x, 0, sub_width, size.y)), pos)
