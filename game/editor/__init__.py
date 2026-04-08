@@ -74,11 +74,14 @@ def zoom(pos: tuple[int, int], enlarge: bool) -> None:
 	I.origin += (pos - I.origin) * (1 - fact)
 
 def handle_event(event: Event) -> None:
+	keys = pygame.key.get_pressed()
+	space = keys[pygame.K_SPACE]
+
 	match event.type:
 		case pygame.MOUSEBUTTONDOWN:
 			match event.button:
 				case pygame.BUTTON_LEFT:
-					pan(event.pos, True, False)
+					if space: pan(event.pos, True, False)
 				case pygame.BUTTON_WHEELDOWN:
 					zoom(event.pos, False)
 				case pygame.BUTTON_WHEELUP:
@@ -86,8 +89,8 @@ def handle_event(event: Event) -> None:
 		case pygame.MOUSEBUTTONUP:
 			match event.button:
 				case pygame.BUTTON_LEFT:
-					pan(event.pos, False, True)
+					if space: pan(event.pos, False, True)
 		case pygame.MOUSEMOTION:
-			pan(event.pos, False, False)
+			pan(event.pos, False, not space)
 		case pygame.KEYDOWN:
 			handle_keydown(event.key)
