@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum, auto
 import pygame
 from pygame import Vector2
@@ -10,7 +10,7 @@ from game import engine
 from game.utils import unscale_mouse_position
 from game.world import Level
 from . import render
-from .selection import Selection, find_nearest_item
+from .selection import Selection, find_nearest_item, get_all_vertexes
 
 ZOOM_STEP: float = .2
 MIN_ZOOM: float = -1
@@ -63,6 +63,15 @@ def handle_keydown(key: int) -> None:
 def handle_keys() -> None:
 	keys = pygame.key.get_pressed()
 
+def move_selection(mouse: Vector2) -> None:
+	diff = mouse - I.drag_origin
+	diff.y *= -1
+	diff /= get_scale()
+	vertexes = get_all_vertexes(I.selection)
+	for v in vertexes:
+		v.update((v + diff))
+	I.drag_origin = mouse
+
 def drag(pos: tuple[int, int], /, start: DragMode | None = None, end: bool = False) -> None:
 	pos = Vector2(pos)
 	if start is not None:
@@ -75,7 +84,7 @@ def drag(pos: tuple[int, int], /, start: DragMode | None = None, end: bool = Fal
 		case DragMode.PANNING:
 			I.origin = (pos - I.drag_origin) + I.pan_origin
 		case DragMode.MOVING:
-			print("Moving object triggered!") # DEBUG:
+			move_selection(pos)
 	if not end: return
 	I.drag_mode = None
 	I.drag_origin = None
