@@ -42,7 +42,7 @@ def get_sprite(scaling_factor: float) -> Surface:
 def render() -> None:
 	screen = engine.get_screen()
 	world_pos = player.get_relative(creature.get_position())
-	if world_pos.y < world.NEAR_PLANE: return
+	if world_pos.y < creature.KILL_DIST: return
 	pos = world.xyz_to_screen(world_pos, -player.get_bob_factor() / 2)
 	pos = Vector2(region.offset(*pos))
 	scaling_factor = ENLARGE / world_pos.y
@@ -50,7 +50,7 @@ def render() -> None:
 	pos -= size / 2
 
 	rx, _ = region.get_origin()
-	rw, _ = region.get_size()
+	rw, rh = region.get_size()
 	xs = (-size.x, rx, rx + rw - size.x, screen.width)
 	if pos.x < xs[0] or xs[3] < pos.x or xs[1] < pos.x < xs[2]:
 		I.visible = False
@@ -65,11 +65,15 @@ def render() -> None:
 		sub_x = max(right - pos.x, 0)
 		if sub_x > 0: pos.x = right
 
+	sub_y = max(-pos.y, 0)
+	sub_height = min(size.y - sub_y, rh)
+	if sub_y > 0: pos.y += sub_y
+
 	now = monotonic()
-	if not I.visible and now >= I.last_change + MIN_UNSEEN_DURATION:
-		I.variant = randrange(VARIANTS)
+	should_change = now >= I.last_change + MIN_UNSEEN_DURATION or creature.is_aggressive()
+	if not I.visible and should_change: I.variant = randrange(VARIANTS)
 	I.visible = True
 	I.last_change = now
 
 	sprite = get_sprite(scaling_factor)
-	screen.blit(sprite.subsurface((sub_x, 0, sub_width, size.y)), pos)
+	screen.blit(sprite.subsurface((sub_x, sub_y, sub_width, sub_height)), pos)
