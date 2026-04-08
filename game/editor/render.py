@@ -1,12 +1,13 @@
 import math
 import pygame
-from pygame import Vector2
+from pygame import Rect, Vector2
 from pygame.typing import ColorLike
 
 import game
 from game import engine
 from game.entity import player
 from .. import editor
+from . import selection
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
@@ -14,6 +15,8 @@ LINE_SPACING: float = 50
 DASH_LENGTH: float = 8
 MIN_PLAYER_SIZE: float = 10
 SPAWNPOINT_SIZE: float = 8
+SELECTION_PADDING: float = 10
+SELECTION_COLOR: str = "honeydew3"
 
 def get_line_width(adhoc_scale: float = 1) -> int:
 	return max(round(editor.get_scale() * adhoc_scale), 1)
@@ -113,7 +116,37 @@ def render_player() -> None:
 	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
 	pygame.draw.circle(screen, color, pos, size, lw)
 
+def render_box_around(points: list[Vector2]) -> None:
+	screen = engine.get_screen()
+	w, h = screen.size
+	points = [xy_to_screen(p) for p in points]
+	min_x, min_y = max_x, max_y = points.pop()
+	pad = SELECTION_PADDING
+	for x, y in points:
+		min_x, max_x = min(x, min_x), max(x, max_x)
+		min_y, max_y = min(y, min_y), max(y, max_y)
+	if min_x > w or max_x < 0 or min_y > h or max_y < 0: return # not visible
+	rect = Rect(min_x - pad, min_y - pad, max_x - min_x + pad * 2, max_y - min_y + pad * 2)
+	pygame.draw.rect(screen, SELECTION_COLOR, rect, 2, int(pad / 2))
+
+def render_selection() -> None:
+	level = game.get_level()
+	sel = editor.get_selection()
+
+	if isinstance(sel, selection.Sector):
+		sector = level.sectors[sel.id]
+		vertexes = [level.vertexes[wall.vertex] for wall in sector.walls]
+		render_box_around(vertexes)
+	elif isinstance(sel, selection.Wall):
+		sector = level.sectors[sel.sector_id]
+		left = level.vertexes[sector.walls[sel.wall_idx].vertex]
+		right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
+		render_box_around([left, right])
+	elif isinstance(sel, selection.Vertex):
+		render_box_around([level.vertexes[sel.id]])
+
 def perform() -> None:
 	render_grid()
 	render_level()
 	render_player()
+	render_selection()

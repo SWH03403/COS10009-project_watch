@@ -49,9 +49,9 @@ def get_selection() -> Selection:
 
 def handle_keydown(key: int) -> None:
 	match key:
-		case pygame.K_ESCAPE:
+		case pygame.K_q | pygame.K_ESCAPE:
 			game.die()
-		case pygame.K_q | pygame.K_LEFTBRACKET:
+		case pygame.K_LEFTBRACKET:
 			game.set_editor(False)
 
 def handle_keys() -> None:
@@ -61,7 +61,6 @@ def select(pos: tuple[int, int]) -> None:
 	I.selection = find_nearest_item(Vector2(pos))
 
 def pan(pos: tuple[int, int], start: bool, end: bool) -> None:
-	I.selection = None
 	pos = Vector2(pos)
 	if start:
 		I.pan_start = pos
