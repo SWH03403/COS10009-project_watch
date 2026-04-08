@@ -8,7 +8,7 @@ def init() -> None:
 	ui.init()
 	world.init()
 
-def update() -> None:
+def perform() -> None:
 	sky.render()
 	world.render()
 	ui.render()

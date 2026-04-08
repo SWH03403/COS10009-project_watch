@@ -42,14 +42,14 @@ def get_level() -> Level:
 def is_scan_mode() -> bool:
 	return I.scan_frame
 
-def _handle_keydown(key: int) -> bool:
+def handle_keydown(key: int) -> None:
 	match key:
 		case pygame.K_ESCAPE | pygame.K_q:
 			I.running = False
 		case pygame.K_p:
 			I.scan_frame = True
 
-def _handle_key() -> bool:
+def handle_keys() -> None:
 	keys = pygame.key.get_pressed()
 
 	# player movement
@@ -64,25 +64,25 @@ def _handle_key() -> bool:
 	player.set_state(state)
 	player.set_direction(direction)
 
-def _handle_mouse(diff: float) -> None:
+def handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)
 
-def _handle_events() -> bool:
+def handle_events() -> None:
 	I.scan_frame = False # reset next frame
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT: I.running = False
-		elif event.type == pygame.KEYDOWN: _handle_keydown(event.key)
-		elif event.type == pygame.MOUSEMOTION: _handle_mouse(event.rel[0])
+		elif event.type == pygame.KEYDOWN: handle_keydown(event.key)
+		elif event.type == pygame.MOUSEMOTION: handle_mouse(event.rel[0])
 
 def run() -> None:
 	while I.running:
-		_handle_events()
-		_handle_key()
+		handle_events()
+		handle_keys()
 
 		entity.update()
 
 		engine.clear()
-		render.update()
+		render.perform()
 		engine.update()
 		engine.tick()
 
