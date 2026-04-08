@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from random import randrange
 import pygame
 from pygame import Color, Surface, Vector2
-from . import engine, entity, render
+from . import editor, engine, entity, render
 from .entity import Direction, MovementState, player
 from .loaders import load_level, load_music
 from .world import Level
@@ -14,7 +14,8 @@ class Game:
 	running: bool
 	level: Level
 
-	scan_frame: bool = False
+	scan_frame: bool
+	editor_mode: bool
 
 I: Game
 
@@ -34,7 +35,7 @@ def init() -> None:
 	player.set_aim(spawn.angle)
 
 	global I
-	I = Game(running=True, level=level)
+	I = Game(running=True, level=level, scan_frame=False, editor_mode=False)
 
 def get_level() -> Level:
 	return I.level
@@ -42,14 +43,23 @@ def get_level() -> Level:
 def is_scan_mode() -> bool:
 	return I.scan_frame
 
+def set_editor(enabled: bool) -> None:
+	I.editor_mode = enabled
+	if enabled and not editor.get_init(): editor.init()
+	pygame.mouse.set_relative_mode(not enabled)
+
 def handle_keydown(key: int) -> None:
+	if I.editor_mode: return editor.handle_keydown(key)
 	match key:
 		case pygame.K_ESCAPE | pygame.K_q:
 			I.running = False
 		case pygame.K_p:
 			I.scan_frame = True
+		case pygame.K_LEFTBRACKET:
+			set_editor(True)
 
 def handle_keys() -> None:
+	if I.editor_mode: return editor.handle_keys()
 	keys = pygame.key.get_pressed()
 
 	# player movement
@@ -73,16 +83,19 @@ def handle_events() -> None:
 		if event.type == pygame.QUIT: I.running = False
 		elif event.type == pygame.KEYDOWN: handle_keydown(event.key)
 		elif event.type == pygame.MOUSEMOTION: handle_mouse(event.rel[0])
+		elif I.editor_mode: editor.handle_event(event)
 
 def run() -> None:
 	while I.running:
 		handle_events()
 		handle_keys()
 
-		entity.update()
-
 		engine.clear()
-		render.perform()
+		if I.editor_mode:
+			editor.render.perform()
+		else:
+			entity.update()
+			render.perform()
 		engine.update()
 		engine.tick()
 
