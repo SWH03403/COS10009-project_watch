@@ -28,7 +28,6 @@ class MapEditor:
 
 	drag_mode: DragMode | None = None
 	drag_origin: Vector2 | None = None
-	pan_origin: Vector2 | None = None
 	selection: Selection | int | None = None
 
 I: MapEditor = None
@@ -77,12 +76,12 @@ def drag(pos: tuple[int, int], /, start: DragMode | None = None, end: bool = Fal
 	if start is not None:
 		I.drag_mode = start
 		I.drag_origin = pos
-		I.pan_origin = I.origin.copy()
 		return
 	if not isinstance(I.drag_origin, Vector2): return
 	match I.drag_mode:
 		case DragMode.PANNING:
-			I.origin = (pos - I.drag_origin) + I.pan_origin
+			I.origin += pos - I.drag_origin
+			I.drag_origin = pos
 		case DragMode.MOVING:
 			move_selection(pos)
 	if not end: return
