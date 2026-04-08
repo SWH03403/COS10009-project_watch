@@ -5,12 +5,14 @@ from pygame.typing import ColorLike
 
 import game
 from game import engine
+from game.entity import player
 from .. import editor
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
 LINE_SPACING: float = 50
 DASH_LENGTH: float = 8
+MIN_PLAYER_SIZE: float = 10
 
 def get_line_width(adhoc_scale: float = 1) -> int:
 	return max(round(editor.get_scale() * adhoc_scale), 1)
@@ -91,6 +93,19 @@ def render_level() -> None:
 			elif wall.neighbor is None: pygame.draw.line(screen, "white", left, right, solid_wall)
 			else: line_dashes("goldenrod3", left, right, connect_wall)
 
+def render_player() -> None:
+	screen = engine.get_screen()
+	lw = get_line_width(.8)
+	scale = editor.get_scale()
+	size = player.HITBOX_SIZE * scale
+	color = "goldenrod1" if size < MIN_PLAYER_SIZE else "white"
+	size = max(size, MIN_PLAYER_SIZE)
+	pos = xy_to_screen(player.get_position()[0])
+	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
+	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
+	pygame.draw.circle(screen, color, pos, size, lw)
+
 def perform() -> None:
 	render_grid()
 	render_level()
+	render_player()
