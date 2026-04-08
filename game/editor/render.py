@@ -9,6 +9,7 @@ from game import engine
 from game.entity import player
 from .. import editor
 from . import selection
+from .keys import EditMode
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
@@ -19,6 +20,7 @@ SPAWNPOINT_SIZE: float = 8
 SELECTION_PADDING: float = 10
 SELECTION_COLOR: str = "honeydew3"
 SELECTION_HOVER_COLOR: str = "lightsteelblue4"
+CONNECT_COLOR: str = "lightskyblue1"
 
 @dataclass
 class Renderer:
@@ -114,6 +116,25 @@ def render_level() -> None:
 		pygame.draw.line(screen, "springgreen2", (x - hlen, y), (x + hlen, y), spawn_lw)
 		pygame.draw.line(screen, "springgreen2", (x, y - hlen), (x, y + hlen), spawn_lw)
 
+def render_new_walls() -> None:
+	sel = editor.get_selection()
+	points = []
+	match editor.get_mode():
+		case EditMode.CONNECT:
+			if not isinstance(sel, selection.Vertex): return
+			level = game.get_level()
+			points.append(xy_to_screen(level.vertexes[sel.id]))
+	if len(points) == 0: return
+
+	mouse = pygame.mouse.get_pos()
+	hovered = selection.get_nearest(mouse)
+	if not isinstance(hovered, selection.Vertex): points.append(mouse)
+	else: points.append(xy_to_screen(level.vertexes[hovered.id]))
+
+	screen = engine.get_screen()
+	lw = get_line_width()
+	pygame.draw.lines(screen, CONNECT_COLOR, False, points, lw)
+
 def render_player() -> None:
 	screen = engine.get_screen()
 	lw = get_line_width(.8)
@@ -158,6 +179,7 @@ def render_hover() -> None:
 def perform() -> None:
 	render_grid()
 	render_level()
+	render_new_walls()
 	render_player()
 	render_selection()
 	render_hover()

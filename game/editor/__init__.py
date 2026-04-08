@@ -10,7 +10,7 @@ from game import engine
 from game.utils import unscale_mouse_position
 from game.world import Level
 from . import render, selection
-from .keys import handle_keydown
+from .keys import EditMode, handle_keydown
 from .selection import Selection
 
 ZOOM_STEP: float = .2
@@ -20,10 +20,6 @@ MAX_ZOOM: float = 3
 class DragMode(IntEnum):
 	PANNING = auto()
 	MOVING = auto()
-
-class EditMode(IntEnum):
-	NORMAL = auto()
-	CREATE = auto()
 
 @dataclass
 class MapEditor:
@@ -68,6 +64,9 @@ def get_mode() -> EditMode:
 def set_selection(sel: Selection) -> None:
 	I.selection = sel
 
+def set_mode(mode: EditMode) -> None:
+	I.mode = mode
+
 def move_selection(mouse: Vector2) -> None:
 	diff = mouse - I.drag_origin
 	diff.y *= -1
@@ -104,9 +103,10 @@ def zoom(mouse: Vector2, enlarge: bool) -> None:
 	I.origin += (pos - I.origin) * (1 - fact)
 
 def select(mouse: Vector2) -> None:
-	I.selection = selection.get_nearest(mouse)
-	if I.selection is not None:
+	sel = selection.get_nearest(mouse)
+	if sel is not None:
 		drag(mouse, start=DragMode.MOVING)
+	I.selection = sel
 
 def handle_event(event: Event) -> None:
 	keys = pygame.key.get_pressed()

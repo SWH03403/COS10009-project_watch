@@ -1,9 +1,15 @@
+from enum import IntEnum, auto
 import pygame
 
 import game
 from game.world import Wall
 from .. import editor
 from . import selection
+
+class EditMode(IntEnum):
+	NORMAL = auto()
+	CREATE = auto()
+	CONNECT = auto()
 
 def insert_vertex() -> None:
 	sel = editor.get_selection()
@@ -39,8 +45,16 @@ def insert_vertex() -> None:
 def handle_keydown(key: int) -> None:
 	match key:
 		case pygame.K_q | pygame.K_ESCAPE:
-			game.die()
+			if editor.get_mode() == EditMode.NORMAL:
+				game.die()
+				return
+			editor.set_mode(EditMode.NORMAL)
+
 		case pygame.K_LEFTBRACKET:
 			game.set_editor(False)
 		case pygame.K_i:
 			insert_vertex()
+		case pygame.K_c:
+			editor.set_mode(EditMode.CONNECT)
+		case pygame.K_n:
+			editor.set_mode(EditMode.CREATE)
