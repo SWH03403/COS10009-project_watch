@@ -36,6 +36,7 @@ def init() -> None:
 
 	global I
 	I = Game(running=True, level=level, scan_frame=False, editor_mode=False)
+	set_editor(True)
 
 def get_level() -> Level:
 	return I.level
@@ -48,11 +49,14 @@ def set_editor(enabled: bool) -> None:
 	if enabled and not editor.get_init(): editor.init()
 	pygame.mouse.set_relative_mode(not enabled)
 
+def die() -> None:
+	I.running = False
+
 def handle_keydown(key: int) -> None:
 	if I.editor_mode: return editor.handle_keydown(key)
 	match key:
 		case pygame.K_ESCAPE | pygame.K_q:
-			I.running = False
+			die()
 		case pygame.K_p:
 			I.scan_frame = True
 		case pygame.K_LEFTBRACKET:
@@ -80,7 +84,7 @@ def handle_mouse(diff: float) -> None:
 def handle_events() -> None:
 	I.scan_frame = False # reset next frame
 	for event in pygame.event.get():
-		if event.type == pygame.QUIT: I.running = False
+		if event.type == pygame.QUIT: die()
 		elif event.type == pygame.KEYDOWN: handle_keydown(event.key)
 		elif event.type == pygame.MOUSEMOTION: handle_mouse(event.rel[0])
 		elif I.editor_mode: editor.handle_event(event)
