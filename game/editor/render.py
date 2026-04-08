@@ -13,6 +13,7 @@ GRID_COLOR_ORIGIN: str = "gray36"
 LINE_SPACING: float = 50
 DASH_LENGTH: float = 8
 MIN_PLAYER_SIZE: float = 10
+SPAWNPOINT_SIZE: float = 8
 
 def get_line_width(adhoc_scale: float = 1) -> int:
 	return max(round(editor.get_scale() * adhoc_scale), 1)
@@ -92,6 +93,13 @@ def render_level() -> None:
 			if wall.color is None: line_dashes("firebrick3", left, right, no_wall)
 			elif wall.neighbor is None: pygame.draw.line(screen, "white", left, right, solid_wall)
 			else: line_dashes("goldenrod3", left, right, connect_wall)
+
+	hlen = SPAWNPOINT_SIZE * editor.get_scale() / 2
+	spawn_lw = connect_wall
+	for spawn in level.spawns:
+		x, y = xy_to_screen(spawn.position)
+		pygame.draw.line(screen, "springgreen2", (x - hlen, y), (x + hlen, y), spawn_lw)
+		pygame.draw.line(screen, "springgreen2", (x, y - hlen), (x, y + hlen), spawn_lw)
 
 def render_player() -> None:
 	screen = engine.get_screen()
