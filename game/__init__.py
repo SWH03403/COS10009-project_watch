@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from random import randrange
 import pygame
 from pygame import Color, Surface, Vector2
-from . import engine, render
+from . import engine, entity, render
 from .entity import Direction, MovementState, player
 from .loaders import load_level, load_music
 from .world import Level
@@ -21,7 +21,7 @@ I: Game
 def init() -> None:
 	engine.init()
 	render.init()
-	player.init()
+	entity.init()
 
 	# music
 	load_music("void")
@@ -62,7 +62,7 @@ def _handle_key() -> bool:
 	if direction.length_squared() > 0:
 		state = MovementState.SPRINTING if keys[pygame.K_LSHIFT] else MovementState.WALKING
 	player.set_state(state)
-	player.step(direction)
+	player.set_direction(direction)
 
 def _handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)
@@ -78,6 +78,8 @@ def run() -> None:
 	while I.running:
 		_handle_events()
 		_handle_key()
+
+		entity.update()
 
 		engine.clear()
 		render.update()
