@@ -9,8 +9,9 @@ import game
 from game import engine
 from game.utils import unscale_mouse_position
 from game.world import Level
-from . import render
-from .selection import Selection, find_nearest_item, get_all_vertexes
+from . import render, selection
+from .keys import handle_keydown
+from .selection import Selection
 
 ZOOM_STEP: float = .2
 MIN_ZOOM: float = -1
@@ -20,15 +21,24 @@ class DragMode(IntEnum):
 	PANNING = auto()
 	MOVING = auto()
 
+class EditMode(IntEnum):
+	NORMAL = auto()
+	CREATE = auto()
+
 @dataclass
 class MapEditor:
 	level: Level
 	zoom: float
 	origin: Vector2 # position of world coordinate (0, 0) on the screen
 
+	mode: EditMode = EditMode.NORMAL
 	drag_mode: DragMode | None = None
 	drag_origin: Vector2 | None = None
 	selection: Selection | int | None = None
+
+	# "create" mode
+	origin_vertex: int = 0
+	pending_create: list[Vector2] = field(default_factory=list)
 
 I: MapEditor = None
 
@@ -52,18 +62,11 @@ def get_origin() -> Vector2:
 def get_selection() -> Selection:
 	return I.selection
 
-def handle_keydown(key: int) -> None:
-	match key:
-		case pygame.K_q | pygame.K_ESCAPE:
-			game.die()
-		case pygame.K_LEFTBRACKET:
-			game.set_editor(False)
-
 def move_selection(mouse: Vector2) -> None:
 	diff = mouse - I.drag_origin
 	diff.y *= -1
 	diff /= get_scale()
-	vertexes = get_all_vertexes(I.selection)
+	vertexes = selection.get_vertexes(I.selection)
 	for v in vertexes:
 		v.update((v + diff))
 	I.drag_origin = mouse
@@ -95,7 +98,7 @@ def zoom(mouse: Vector2, enlarge: bool) -> None:
 	I.origin += (pos - I.origin) * (1 - fact)
 
 def select(mouse: Vector2) -> None:
-	new_selection = find_nearest_item(mouse)
+	new_selection = selection.get_nearest(mouse)
 	if I.selection == new_selection and new_selection is not None:
 		drag(mouse, start=DragMode.MOVING)
 	I.selection = new_selection

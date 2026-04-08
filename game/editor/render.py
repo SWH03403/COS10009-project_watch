@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 import math
 import pygame
 from pygame import Rect, Vector2
@@ -7,7 +8,7 @@ import game
 from game import engine
 from game.entity import player
 from .. import editor
-from .selection import get_all_vertexes
+from . import selection
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
@@ -17,6 +18,15 @@ MIN_PLAYER_SIZE: float = 10
 SPAWNPOINT_SIZE: float = 8
 SELECTION_PADDING: float = 10
 SELECTION_COLOR: str = "honeydew3"
+SELECTION_HOVER_COLOR: str = "lightsteelblue4"
+
+@dataclass
+class Renderer:
+	# prevent iterating through everything every frame
+	hover_position: tuple[int, int] = (0, 0)
+	hover_points: list[Vector2] = field(default_factory=list)
+
+I = Renderer()
 
 def get_line_width(adhoc_scale: float = 1) -> int:
 	return max(round(editor.get_scale() * adhoc_scale), 1)
@@ -116,26 +126,38 @@ def render_player() -> None:
 	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
 	pygame.draw.circle(screen, color, pos, size, lw)
 
-def render_box_around(points: list[Vector2]) -> None:
+def render_box_around(points: list[Vector2], selected: bool) -> None:
 	screen = engine.get_screen()
 	w, h = screen.size
 	points = [xy_to_screen(p) for p in points]
 	min_x, min_y = max_x, max_y = points.pop()
 	pad = SELECTION_PADDING
+	color = SELECTION_COLOR if selected else SELECTION_HOVER_COLOR
+	line_width = 2 if selected else 1
 	for x, y in points:
 		min_x, max_x = min(x, min_x), max(x, max_x)
 		min_y, max_y = min(y, min_y), max(y, max_y)
 	if min_x > w or max_x < 0 or min_y > h or max_y < 0: return # not visible
 	rect = Rect(min_x - pad, min_y - pad, max_x - min_x + pad * 2, max_y - min_y + pad * 2)
-	pygame.draw.rect(screen, SELECTION_COLOR, rect, 2, int(pad / 2))
+	pygame.draw.rect(screen, color, rect, line_width, int(pad / 2))
 
 def render_selection() -> None:
 	sel = editor.get_selection()
-	points = get_all_vertexes(sel)
-	if len(points) > 0: render_box_around(points)
+	points = selection.get_vertexes(sel)
+	if len(points) > 0: render_box_around(points, True)
+
+def render_hover() -> None:
+	mouse = pygame.mouse.get_pos()
+	if mouse != I.hover_position:
+		I.hovered_position = mouse
+		sel = selection.get_nearest(mouse)
+		if sel == editor.get_selection(): return
+		I.hovered_points = selection.get_vertexes(sel)
+	if len(I.hovered_points) > 0: render_box_around(I.hovered_points, False)
 
 def perform() -> None:
 	render_grid()
 	render_level()
 	render_player()
 	render_selection()
+	render_hover()

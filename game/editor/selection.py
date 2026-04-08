@@ -21,7 +21,7 @@ class Vertex:
 
 type Selection = Sector | Wall | Vertex | None
 
-def find_nearest_item(pos: Vector2) -> Selection:
+def get_nearest(pos: Vector2) -> Selection:
 	level = game.get_level()
 	items: list[tuple[float, Selection]] = []
 
@@ -45,7 +45,7 @@ def find_nearest_item(pos: Vector2) -> Selection:
 	if len(items) == 0: return None
 	return min(items, key=lambda sel: sel[0])[1]
 
-def get_all_vertexes(sel: Selection) -> list[Vector2]:
+def get_vertexes(sel: Selection) -> list[Vector2]:
 	level = game.get_level()
 
 	if isinstance(sel, Sector):
