@@ -48,12 +48,13 @@ def set_editor(enabled: bool) -> None:
 	I.editor_mode = enabled
 	if enabled and not editor.get_init(): editor.init()
 	pygame.mouse.set_relative_mode(not enabled)
+	if enabled: pygame.mixer.music.pause()
+	else: pygame.mixer.music.unpause()
 
 def die() -> None:
 	I.running = False
 
 def handle_keydown(key: int) -> None:
-	if I.editor_mode: return editor.handle_keydown(key)
 	match key:
 		case pygame.K_ESCAPE | pygame.K_q:
 			die()
@@ -85,9 +86,9 @@ def handle_events() -> None:
 	I.scan_frame = False # reset next frame
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT: die()
+		elif I.editor_mode: editor.handle_event(event)
 		elif event.type == pygame.KEYDOWN: handle_keydown(event.key)
 		elif event.type == pygame.MOUSEMOTION: handle_mouse(event.rel[0])
-		elif I.editor_mode: editor.handle_event(event)
 
 def run() -> None:
 	while I.running:
