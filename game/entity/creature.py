@@ -22,3 +22,6 @@ def get_position() -> Vector2:
 
 def is_aggressive() -> bool:
 	return I.aggressive
+
+def update() -> None:
+	...

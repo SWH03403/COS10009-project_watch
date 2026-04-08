@@ -45,6 +45,7 @@ class Player:
 	aim: float
 	stamina: float
 	last_sprint: float # the last time the player sprints
+	direction: Vector2
 	state: MovementState
 	bob_phase: float
 	footstep: list[Sound]
@@ -60,6 +61,7 @@ def init() -> None:
 		aim=0,
 		stamina=1,
 		last_sprint=0,
+		direction=Vector2(),
 		state=MovementState.STANDING,
 		bob_phase=0,
 		footstep=load_sounds_suffix("footsteps/tile")
@@ -107,16 +109,19 @@ def set_state(state: MovementState) -> None:
 		else: I.last_sprint = monotonic()
 	I.state = state
 
+def set_direction(direction: Vector2) -> None:
+	I.direction = direction.clamp_magnitude(1)
+
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
 def play_footstep() -> Sound:
 	I.footstep[randrange(len(I.footstep))].play()
 
-def step(direction: Vector2) -> None:
+def update() -> None:
 	is_sprinting = I.state == MovementState.SPRINTING
 	distance = SPRINT_SPEED if is_sprinting else WALK_SPEED
-	movement = direction.clamp_magnitude(1.).rotate(I.aim) * distance * engine.get_delta()
+	movement = I.direction.rotate(I.aim) * distance * engine.get_delta()
 	new_position = I.position + movement
 	new_sector = None
 
