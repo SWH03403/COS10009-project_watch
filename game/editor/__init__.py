@@ -59,9 +59,6 @@ def handle_keydown(key: int) -> None:
 		case pygame.K_LEFTBRACKET:
 			game.set_editor(False)
 
-def handle_keys() -> None:
-	keys = pygame.key.get_pressed()
-
 def move_selection(mouse: Vector2) -> None:
 	diff = mouse - I.drag_origin
 	diff.y *= -1

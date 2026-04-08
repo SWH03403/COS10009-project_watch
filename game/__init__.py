@@ -64,7 +64,7 @@ def handle_keydown(key: int) -> None:
 			set_editor(True)
 
 def handle_keys() -> None:
-	if I.editor_mode: return editor.handle_keys()
+	if I.editor_mode: return
 	keys = pygame.key.get_pressed()
 
 	# player movement
