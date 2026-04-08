@@ -172,6 +172,7 @@ def render_hover() -> None:
 	if mouse != I.hover_position:
 		I.hovered_position = mouse
 		sel = selection.get_nearest(mouse)
+		if editor.get_mode() == EditMode.CONNECT and not isinstance(sel, selection.Vertex): return
 		if sel == editor.get_selection(): return
 		I.hovered_points = selection.get_vertexes(sel)
 	if len(I.hovered_points) > 0: render_box_around(I.hovered_points, False)

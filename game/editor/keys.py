@@ -55,6 +55,7 @@ def handle_keydown(key: int) -> None:
 		case pygame.K_i:
 			insert_vertex()
 		case pygame.K_c:
-			editor.set_mode(EditMode.CONNECT)
+			if isinstance(editor.get_selection(), selection.Vertex):
+				editor.set_mode(EditMode.CONNECT)
 		case pygame.K_n:
 			editor.set_mode(EditMode.CREATE)
