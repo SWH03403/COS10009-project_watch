@@ -70,6 +70,23 @@ def connect_vertexes(sel: Selection) -> None:
 	old_walls[left].neighbor = new_sector_id
 	new_walls[-1].neighbor = sector_id
 
+	# connect neighbors to new sector
+	for new_wall in new_walls:
+		if new_wall.neighbor is None or new_wall.neighbor == sector_id: continue
+		walls = level.sectors[new_wall.neighbor].walls
+		# shared neighbor of old and new
+		is_shared = False
+		for i, wall in enumerate(walls):
+			if wall.neighbor == sector_id and walls[i - 1].neighbor == sector_id:
+				wall.neighbor = new_sector_id
+				is_shared = True
+				break
+		if is_shared: continue
+		for wall in walls:
+			if wall.neighbor == sector_id:
+				wall.neighbor = new_sector_id
+				break
+
 	# insert sector into level
 	sector.walls = []
 	new_sector = deepcopy(sector)
