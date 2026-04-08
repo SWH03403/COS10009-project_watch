@@ -7,7 +7,7 @@ import game
 from game import engine
 from game.entity import player
 from .. import editor
-from . import selection
+from .selection import get_all_vertexes
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
@@ -130,20 +130,9 @@ def render_box_around(points: list[Vector2]) -> None:
 	pygame.draw.rect(screen, SELECTION_COLOR, rect, 2, int(pad / 2))
 
 def render_selection() -> None:
-	level = game.get_level()
 	sel = editor.get_selection()
-
-	if isinstance(sel, selection.Sector):
-		sector = level.sectors[sel.id]
-		vertexes = [level.vertexes[wall.vertex] for wall in sector.walls]
-		render_box_around(vertexes)
-	elif isinstance(sel, selection.Wall):
-		sector = level.sectors[sel.sector_id]
-		left = level.vertexes[sector.walls[sel.wall_idx].vertex]
-		right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
-		render_box_around([left, right])
-	elif isinstance(sel, selection.Vertex):
-		render_box_around([level.vertexes[sel.id]])
+	points = get_all_vertexes(sel)
+	if len(points) > 0: render_box_around(points)
 
 def perform() -> None:
 	render_grid()

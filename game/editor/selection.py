@@ -44,3 +44,18 @@ def find_nearest_item(pos: Vector2) -> Selection:
 	items = [sel for sel in items if sel[0] <= max_dist]
 	if len(items) == 0: return None
 	return min(items, key=lambda sel: sel[0])[1]
+
+def get_all_vertexes(sel: Selection) -> list[Vector2]:
+	level = game.get_level()
+
+	if isinstance(sel, Sector):
+		sector = level.sectors[sel.id]
+		return [level.vertexes[wall.vertex] for wall in sector.walls]
+	elif isinstance(sel, Wall):
+		sector = level.sectors[sel.sector_id]
+		left = level.vertexes[sector.walls[sel.wall_idx].vertex]
+		right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
+		return [left, right]
+	elif isinstance(sel, Vertex):
+		return [level.vertexes[sel.id]]
+	return []
