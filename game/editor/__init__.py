@@ -55,7 +55,7 @@ def pan(pos: tuple[int, int], start: bool, end: bool) -> None:
 		I.pan_origin = I.origin.copy()
 		return
 	if not isinstance(I.pan_start, Vector2): return
-	I.origin = pos - I.pan_start + I.pan_origin
+	I.origin = (pos - I.pan_start) / get_zoom() + I.pan_origin
 	if end:
 		I.pan_start = None
 		I.pan_origin = None
