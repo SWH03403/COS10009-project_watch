@@ -9,6 +9,7 @@ from game import engine
 from game.utils import unscale_mouse_position
 from game.world import Level
 from . import render
+from .selection import Selection, find_nearest_item
 
 ZOOM_STEP: float = .2
 MIN_ZOOM: float = -1
@@ -22,6 +23,7 @@ class MapEditor:
 
 	pan_start: Vector2 | None = None
 	pan_origin: Vector2 | None = None
+	selection: Selection | int | None = None
 
 I: MapEditor = None
 
@@ -42,6 +44,9 @@ def get_zoom() -> float:
 def get_origin() -> Vector2:
 	return I.origin
 
+def get_selection() -> Selection:
+	return I.selection
+
 def handle_keydown(key: int) -> None:
 	match key:
 		case pygame.K_ESCAPE:
@@ -52,7 +57,11 @@ def handle_keydown(key: int) -> None:
 def handle_keys() -> None:
 	keys = pygame.key.get_pressed()
 
+def select(pos: tuple[int, int]) -> None:
+	I.selection = find_nearest_item(Vector2(pos))
+
 def pan(pos: tuple[int, int], start: bool, end: bool) -> None:
+	I.selection = None
 	pos = Vector2(pos)
 	if start:
 		I.pan_start = pos
@@ -82,6 +91,7 @@ def handle_event(event: Event) -> None:
 			match event.button:
 				case pygame.BUTTON_LEFT:
 					if space: pan(event.pos, True, False)
+					else: select(event.pos)
 				case pygame.BUTTON_WHEELDOWN:
 					zoom(event.pos, False)
 				case pygame.BUTTON_WHEELUP:
