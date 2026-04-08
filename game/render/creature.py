@@ -1,17 +1,20 @@
 from dataclasses import dataclass
+from random import randrange
+import pygame
 from pygame import Surface, Vector2
-from pygame.transform import scale_by
 
 from game import engine
 from game.entity import creature, player
 from . import region, world
 
 VARIANTS: int = 5
-SCALE_FACTOR: float = 10
+ENLARGE: float = 10
 
 @dataclass
 class CreatureRenderer:
 	sprites: list[Surface]
+	visible: bool
+	variant: int
 
 I: CreatureRenderer
 
@@ -22,10 +25,16 @@ def init() -> None:
 	for i in range(VARIANTS):
 		sprites.append(load_image(f"creature/float{i}", True))
 		sprites.append(load_image(f"creature/grab{i}", True))
-	I = CreatureRenderer(sprites=sprites)
+	I = CreatureRenderer(sprites=sprites, visible=False, variant=0)
 
-def get_size() -> int:
-	return I.sprites[0].width
+def get_size() -> Vector2:
+	idx = 1 if creature.is_aggressive() else 0
+	return Vector2(I.sprites[idx].get_size())
+
+def get_sprite(scaling_factor: float) -> Surface:
+	idx = I.variant * 2
+	if creature.is_aggressive(): idx += 1
+	return pygame.transform.scale_by(I.sprites[idx], scaling_factor)
 
 def render() -> None:
 	screen = engine.get_screen()
@@ -33,19 +42,28 @@ def render() -> None:
 	if world_pos.y < world.NEAR_PLANE: return
 	pos = world.xyz_to_screen(world_pos, -player.get_bob_factor() / 2)
 	pos = Vector2(region.offset(*pos))
-	resized = scale_by(I.sprites[2], SCALE_FACTOR / world_pos.y)
-	pos -= Vector2(resized.get_size()) / 2
+	scaling_factor = ENLARGE / world_pos.y
+	size = get_size() * scaling_factor
+	pos -= size / 2
+
 	rx, _ = region.get_origin()
 	rw, _ = region.get_size()
-	xs = (-resized.width, rx, rx + rw - resized.width, screen.width)
-	if pos.x < xs[0] or xs[3] < pos.x: return
-	if xs[1] < pos.x < xs[2]: return
+	xs = (-size.x, rx, rx + rw - size.x, screen.width)
+	if pos.x < xs[0] or xs[3] < pos.x or xs[1] < pos.x < xs[2]:
+		I.visible = False
+		return
+
 	if xs[0] <= pos.x <= xs[1]:
-		sub_width = min(xs[1] - pos.x, resized.width)
+		sub_width = min(xs[1] - pos.x, size.x)
 		sub_x = 0
 	else:
-		sub_width = min(pos.x - xs[2], resized.width)
+		sub_width = min(pos.x - xs[2], size.x)
 		right = screen.width - rx
 		sub_x = max(right - pos.x, 0)
 		if sub_x > 0: pos.x = right
-	screen.blit(resized.subsurface((sub_x, 0, sub_width, resized.height)), pos)
+
+	if not I.visible:
+		I.visible = True
+		I.variant = randrange(VARIANTS)
+	sprite = get_sprite(scaling_factor)
+	screen.blit(sprite.subsurface((sub_x, 0, sub_width, size.y)), pos)
