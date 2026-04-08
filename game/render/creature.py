@@ -40,6 +40,8 @@ def get_sprite(scaling_factor: float) -> Surface:
 	return pygame.transform.scale_by(I.sprites[idx], scaling_factor)
 
 def render() -> None:
+	if not creature.is_enabled(): return
+
 	screen = engine.get_screen()
 	world_pos = player.get_relative(creature.get_position())
 	if world_pos.y < creature.KILL_DIST: return
