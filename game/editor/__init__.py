@@ -68,37 +68,36 @@ def move_selection(mouse: Vector2) -> None:
 		v.update((v + diff))
 	I.drag_origin = mouse
 
-def drag(pos: tuple[int, int], /, start: DragMode | None = None, end: bool = False) -> None:
-	pos = Vector2(pos)
+def drag(mouse: Vector2, /, start: DragMode | None = None, end: bool = False) -> None:
 	if start is not None:
 		I.drag_mode = start
-		I.drag_origin = pos
+		I.drag_origin = mouse
 		return
 	if not isinstance(I.drag_origin, Vector2): return
 	match I.drag_mode:
 		case DragMode.PANNING:
-			I.origin += pos - I.drag_origin
-			I.drag_origin = pos
+			I.origin += mouse - I.drag_origin
+			I.drag_origin = mouse
 		case DragMode.MOVING:
-			move_selection(pos)
+			move_selection(mouse)
 	if not end: return
 	I.drag_mode = None
 	I.drag_origin = None
 	I.pan_origin = None
 
 # anchor to mouse position
-def zoom(pos: tuple[int, int], enlarge: bool) -> None:
+def zoom(mouse: Vector2, enlarge: bool) -> None:
 	old_fact = get_scale()
 	step = ZOOM_STEP if enlarge else -ZOOM_STEP
 	I.zoom = clamp(I.zoom + step, MIN_ZOOM, MAX_ZOOM)
 	fact = get_scale() / old_fact
-	pos = unscale_mouse_position(Vector2(pos))
+	pos = unscale_mouse_position(mouse)
 	I.origin += (pos - I.origin) * (1 - fact)
 
-def select(pos: tuple[int, int]) -> None:
-	new_selection = find_nearest_item(Vector2(pos))
+def select(mouse: Vector2) -> None:
+	new_selection = find_nearest_item(mouse)
 	if I.selection == new_selection and new_selection is not None:
-		drag(pos, start=DragMode.MOVING)
+		drag(mouse, start=DragMode.MOVING)
 	I.selection = new_selection
 
 def handle_event(event: Event) -> None:
@@ -107,19 +106,21 @@ def handle_event(event: Event) -> None:
 
 	match event.type:
 		case pygame.MOUSEBUTTONDOWN:
+			mouse = Vector2(event.pos)
 			match event.button:
 				case pygame.BUTTON_LEFT:
-					if space: drag(event.pos, start=DragMode.PANNING)
-					else: select(event.pos)
+					if space: drag(mouse, start=DragMode.PANNING)
+					else: select(mouse)
 				case pygame.BUTTON_WHEELDOWN:
-					zoom(event.pos, False)
+					zoom(mouse, False)
 				case pygame.BUTTON_WHEELUP:
-					zoom(event.pos, True)
+					zoom(mouse, True)
 		case pygame.MOUSEBUTTONUP:
+			mouse = Vector2(event.pos)
 			match event.button:
 				case pygame.BUTTON_LEFT:
-					drag(event.pos, end=True)
+					drag(mouse, end=True)
 		case pygame.MOUSEMOTION:
-			drag(event.pos)
+			drag(Vector2(event.pos))
 		case pygame.KEYDOWN:
 			handle_keydown(event.key)
