@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import IntEnum, auto
 import pygame
 from pygame import Vector2
 from pygame.event import Event
@@ -15,13 +16,18 @@ ZOOM_STEP: float = .2
 MIN_ZOOM: float = -1
 MAX_ZOOM: float = 3
 
+class DragMode(IntEnum):
+	PANNING = auto()
+	MOVING = auto()
+
 @dataclass
 class MapEditor:
 	level: Level
 	zoom: float
 	origin: Vector2 # position of world coordinate (0, 0) on the screen
 
-	pan_start: Vector2 | None = None
+	drag_mode: DragMode | None = None
+	drag_origin: Vector2 | None = None
 	pan_origin: Vector2 | None = None
 	selection: Selection | int | None = None
 
@@ -57,20 +63,23 @@ def handle_keydown(key: int) -> None:
 def handle_keys() -> None:
 	keys = pygame.key.get_pressed()
 
-def select(pos: tuple[int, int]) -> None:
-	I.selection = find_nearest_item(Vector2(pos))
-
-def pan(pos: tuple[int, int], start: bool, end: bool) -> None:
+def drag(pos: tuple[int, int], /, start: DragMode | None = None, end: bool = False) -> None:
 	pos = Vector2(pos)
-	if start:
-		I.pan_start = pos
+	if start is not None:
+		I.drag_mode = start
+		I.drag_origin = pos
 		I.pan_origin = I.origin.copy()
 		return
-	if not isinstance(I.pan_start, Vector2): return
-	I.origin = (pos - I.pan_start) + I.pan_origin
-	if end:
-		I.pan_start = None
-		I.pan_origin = None
+	if not isinstance(I.drag_origin, Vector2): return
+	match I.drag_mode:
+		case DragMode.PANNING:
+			I.origin = (pos - I.drag_origin) + I.pan_origin
+		case DragMode.MOVING:
+			print("Moving object triggered!") # DEBUG:
+	if not end: return
+	I.drag_mode = None
+	I.drag_origin = None
+	I.pan_origin = None
 
 # anchor to mouse position
 def zoom(pos: tuple[int, int], enlarge: bool) -> None:
@@ -81,6 +90,12 @@ def zoom(pos: tuple[int, int], enlarge: bool) -> None:
 	pos = unscale_mouse_position(Vector2(pos))
 	I.origin += (pos - I.origin) * (1 - fact)
 
+def select(pos: tuple[int, int]) -> None:
+	new_selection = find_nearest_item(Vector2(pos))
+	if I.selection == new_selection and new_selection is not None:
+		drag(pos, start=DragMode.MOVING)
+	I.selection = new_selection
+
 def handle_event(event: Event) -> None:
 	keys = pygame.key.get_pressed()
 	space = keys[pygame.K_SPACE]
@@ -89,7 +104,7 @@ def handle_event(event: Event) -> None:
 		case pygame.MOUSEBUTTONDOWN:
 			match event.button:
 				case pygame.BUTTON_LEFT:
-					if space: pan(event.pos, True, False)
+					if space: drag(event.pos, start=DragMode.PANNING)
 					else: select(event.pos)
 				case pygame.BUTTON_WHEELDOWN:
 					zoom(event.pos, False)
@@ -98,8 +113,8 @@ def handle_event(event: Event) -> None:
 		case pygame.MOUSEBUTTONUP:
 			match event.button:
 				case pygame.BUTTON_LEFT:
-					if space: pan(event.pos, False, True)
+					drag(event.pos, end=True)
 		case pygame.MOUSEMOTION:
-			pan(event.pos, False, not space)
+			drag(event.pos)
 		case pygame.KEYDOWN:
 			handle_keydown(event.key)
