@@ -6,6 +6,7 @@ from pygame.math import clamp
 
 import game
 from game import engine
+from game.utils import unscale_mouse_position
 from game.world import Level
 from . import render
 
@@ -36,7 +37,7 @@ def get_zoom() -> float:
 	return 2**I.zoom
 
 def get_origin() -> Vector2:
-	return I.origin * get_zoom()
+	return I.origin
 
 def handle_keydown(key: int) -> None:
 	match key:
@@ -55,10 +56,19 @@ def pan(pos: tuple[int, int], start: bool, end: bool) -> None:
 		I.pan_origin = I.origin.copy()
 		return
 	if not isinstance(I.pan_start, Vector2): return
-	I.origin = (pos - I.pan_start) / get_zoom() + I.pan_origin
+	I.origin = (pos - I.pan_start) + I.pan_origin
 	if end:
 		I.pan_start = None
 		I.pan_origin = None
+
+# anchor to mouse position
+def zoom(pos: tuple[int, int], enlarge: bool) -> None:
+	old_fact = get_zoom()
+	step = ZOOM_STEP if enlarge else -ZOOM_STEP
+	I.zoom = clamp(I.zoom + step, MIN_ZOOM, MAX_ZOOM)
+	fact = get_zoom() / old_fact
+	pos = unscale_mouse_position(Vector2(pos))
+	I.origin += (pos - I.origin) * (1 - fact)
 
 def handle_event(event: Event) -> None:
 	match event.type:
@@ -66,6 +76,10 @@ def handle_event(event: Event) -> None:
 			match event.button:
 				case pygame.BUTTON_LEFT:
 					pan(event.pos, True, False)
+				case pygame.BUTTON_WHEELDOWN:
+					zoom(event.pos, False)
+				case pygame.BUTTON_WHEELUP:
+					zoom(event.pos, True)
 		case pygame.MOUSEBUTTONUP:
 			match event.button:
 				case pygame.BUTTON_LEFT:

@@ -1,3 +1,4 @@
+import math
 import pygame
 
 from game import engine
@@ -16,7 +17,7 @@ def render_grid() -> None:
 	lw = max(int(LINE_WIDTH * scale), 1)
 	origin = editor.get_origin()
 
-	nx, ny = int(w / spacing), int(h / spacing)
+	nx, ny = math.ceil(w / spacing), math.ceil(h / spacing)
 	x0, y0 = int(origin.x % spacing), int(origin.y % spacing)
 	for i in range(nx):
 		x = x0 + spacing * i
