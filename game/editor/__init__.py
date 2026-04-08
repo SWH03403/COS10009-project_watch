@@ -104,10 +104,9 @@ def zoom(mouse: Vector2, enlarge: bool) -> None:
 	I.origin += (pos - I.origin) * (1 - fact)
 
 def select(mouse: Vector2) -> None:
-	new_selection = selection.get_nearest(mouse)
-	if I.selection == new_selection and new_selection is not None:
+	I.selection = selection.get_nearest(mouse)
+	if I.selection is not None:
 		drag(mouse, start=DragMode.MOVING)
-	I.selection = new_selection
 
 def handle_event(event: Event) -> None:
 	keys = pygame.key.get_pressed()
