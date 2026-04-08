@@ -62,6 +62,12 @@ def get_origin() -> Vector2:
 def get_selection() -> Selection:
 	return I.selection
 
+def get_mode() -> EditMode:
+	return I.mode
+
+def set_selection(sel: Selection) -> None:
+	I.selection = sel
+
 def move_selection(mouse: Vector2) -> None:
 	diff = mouse - I.drag_origin
 	diff.y *= -1
