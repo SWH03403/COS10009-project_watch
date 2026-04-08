@@ -16,7 +16,16 @@ def insert_vertex() -> None:
 
 	# patch neighbor sector
 	if wall.neighbor is not None:
-		...
+		neighbor = level.sectors[wall.neighbor]
+		nb_wall_idx = 0
+		for i in range(1, len(neighbor.walls)):
+			if neighbor.walls[i].neighbor == sel.sector_id:
+				nb_wall_idx = i
+				break
+		neighbor.walls.insert(
+			nb_wall_idx + 1,
+			Wall(vertex=vertex_id, neighbor=sel.sector_id, color=neighbor.walls[nb_wall_idx].color)
+		)
 
 	left = level.vertexes[wall.vertex]
 	right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
