@@ -33,8 +33,11 @@ def init() -> None:
 def get_init() -> bool:
 	return I is not None
 
-def get_zoom() -> float:
+def get_scale() -> float:
 	return 2**I.zoom
+
+def get_zoom() -> float:
+	return I.zoom
 
 def get_origin() -> Vector2:
 	return I.origin
@@ -63,10 +66,10 @@ def pan(pos: tuple[int, int], start: bool, end: bool) -> None:
 
 # anchor to mouse position
 def zoom(pos: tuple[int, int], enlarge: bool) -> None:
-	old_fact = get_zoom()
+	old_fact = get_scale()
 	step = ZOOM_STEP if enlarge else -ZOOM_STEP
 	I.zoom = clamp(I.zoom + step, MIN_ZOOM, MAX_ZOOM)
-	fact = get_zoom() / old_fact
+	fact = get_scale() / old_fact
 	pos = unscale_mouse_position(Vector2(pos))
 	I.origin += (pos - I.origin) * (1 - fact)
 
