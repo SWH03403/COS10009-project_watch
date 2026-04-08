@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from random import randrange
 import pygame
 from pygame import Color, Surface, Vector2
-from . import engine, render
+from . import engine, entity, render
 from .entity import Direction, MovementState, player
 from .loaders import load_level, load_music
 from .world import Level
@@ -21,7 +21,7 @@ I: Game
 def init() -> None:
 	engine.init()
 	render.init()
-	player.init()
+	entity.init()
 
 	# music
 	load_music("void")
