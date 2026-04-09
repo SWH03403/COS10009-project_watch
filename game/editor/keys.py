@@ -1,4 +1,3 @@
-from enum import IntEnum, auto
 import pygame
 
 import game
@@ -6,16 +5,7 @@ from game.world import Wall
 from game.world.sector import WallType, set_wall_type
 from .. import editor
 from . import cache, selection
-
-class EditMode(IntEnum):
-	NORMAL = auto()
-
-	ADD = auto()
-	DIVIDE = auto()
-
-def is_snap_enabled() -> bool:
-	keys = pygame.key.get_pressed()
-	return not (keys[pygame.K_LALT] or keys[pygame.K_RALT])
+from .common import EditMode, is_shift_held
 
 def insert_vertex() -> None:
 	sel = editor.get_selection()
@@ -80,8 +70,7 @@ def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	cache.set_expired_walls() # NOTE: this must only be called after wall types are changed
 
 def handle_keydown(key: int) -> None:
-	keys = pygame.key.get_pressed()
-	shift = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+	shift = is_shift_held()
 
 	match key:
 		case pygame.K_q | pygame.K_ESCAPE:

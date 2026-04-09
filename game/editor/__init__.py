@@ -8,8 +8,8 @@ import game
 from game import engine
 from game.world import Level
 from . import cache, render
-from .calc import snap_to_grid
-from .keys import EditMode, handle_keydown
+from .common import EditMode, snap_to_grid
+from .keys import handle_keydown
 from .mouse import DragMode, handle_mouse_event
 from .selection import Selection
 

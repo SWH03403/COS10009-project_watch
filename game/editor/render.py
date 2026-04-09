@@ -11,8 +11,7 @@ from game.utils import render
 from game.world.sector import WallType
 from .. import editor
 from . import cache, selection
-from .calc import snap_to_grid, world_to_screen
-from .keys import EditMode
+from .common import EditMode, snap_to_grid, world_to_screen
 from .selection import Selection
 
 GRID_COLOR: str = "gray12"
@@ -186,12 +185,12 @@ def render_selection() -> None:
 
 def render_hover() -> None:
 	mouse = pygame.mouse.get_pos()
+	mode = editor.get_mode()
 	if mouse != I.hover_position:
 		I.hover_position = mouse
 		I.hover_target = selection.get_nearest(Vector2(mouse))
 		I.hover_points = selection.get_vertexes(I.hover_target)
-	if editor.get_mode() == EditMode.DIVIDE and not isinstance(I.hover_target, selection.Vertex):
-		return
+	if mode == EditMode.DIVIDE and not isinstance(I.hover_target, selection.Vertex): return
 	if I.hover_target is not None and I.hover_target == editor.get_selection(): return
 	if len(I.hover_points) > 0: render_box_around(I.hover_points, False)
 

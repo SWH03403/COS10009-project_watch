@@ -3,7 +3,7 @@ from pygame import Vector2
 
 import game
 from .. import editor
-from .calc import screen_to_world
+from .common import EditMode, screen_to_world
 
 THRESHOLD: float = 50 # pixels
 
@@ -22,17 +22,29 @@ class Vertex:
 
 type Selection = Sector | Wall | Vertex | None
 
-def get_nearest(position: Vector2) -> Selection:
+SELECTION_FILTERS: dict[EditMode, tuple[type, ...]] = {
+	EditMode.NORMAL: (),
+	EditMode.ADD: (Vertex,),
+	EditMode.DIVIDE: (Vertex,),
+}
+
+def get_nearest(position: Vector2, filters: tuple[type, ...] | None = None) -> Selection:
 	level = game.get_level()
 	items: list[tuple[float, Selection]] = []
 	world_pos = screen_to_world(position)
 
-	for i, vertex in enumerate(level.vertexes):
-		items.append(((vertex - world_pos).length(), Vertex(i)))
+	if filters is None: filters = SELECTION_FILTERS[editor.get_mode()]
+	no_filter = len(filters) == 0
+
+	if no_filter or Vertex in filters:
+		for i, vertex in enumerate(level.vertexes):
+			items.append(((vertex - world_pos).length(), Vertex(i)))
 	for i, sector in enumerate(level.sectors):
-		corners = [level.vertexes[wall.vertex] for wall in sector.walls]
-		center = sum(corners, start=Vector2()) / len(sector.walls)
-		items.append(((center - world_pos).length(), Sector(i)))
+		if no_filter or Sector in filters:
+			corners = [level.vertexes[wall.vertex] for wall in sector.walls]
+			center = sum(corners, start=Vector2()) / len(sector.walls)
+			items.append(((center - world_pos).length(), Sector(i)))
+		if not (no_filter or Wall in filters): continue
 		for j, left in enumerate(corners):
 			right = corners[j - len(corners) + 1]
 			target = left.lerp(right, 1 / 3) # differentiate shared sector wall

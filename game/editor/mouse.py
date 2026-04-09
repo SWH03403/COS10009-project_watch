@@ -1,5 +1,4 @@
 from copy import deepcopy
-from enum import IntEnum, auto
 import pygame
 from pygame import Vector2
 from pygame.event import Event
@@ -8,15 +7,8 @@ import game
 from game.world import Wall, default_sector
 from .. import editor
 from . import cache, selection
-from .calc import screen_to_world, snap_to_grid
-from .keys import EditMode
+from .common import DragMode, EditMode, ZOOM_STEP, screen_to_world, snap_to_grid
 from .selection import Selection, is_world_element
-
-ZOOM_STEP: float = .2
-
-class DragMode(IntEnum):
-	PANNING = auto()
-	MOVING = auto()
 
 def move_selection(mouse: Vector2) -> None:
 	sel = editor.get_selection()
