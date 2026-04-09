@@ -5,8 +5,10 @@ from pygame import Vector2
 from pygame.event import Event
 
 import game
+from game.world import Wall, default_sector
 from .. import editor
 from . import selection
+from .calc import screen_to_world, snap_to_grid
 from .keys import EditMode
 from .selection import Selection
 
@@ -93,18 +95,52 @@ def connect_vertexes(sel: Selection) -> None:
 	new_sector.walls = new_walls
 	level.sectors.append(new_sector)
 
+def add_sector_from_extensions() -> None:
+	level = game.get_level()
+	first = editor.get_selection().id
+
+	next_id = len(level.vertexes)
+	new_vertexes = editor.get_extensions()
+	new_ids = [first]
+	for vertex in new_vertexes:
+		if isinstance(vertex, int):
+			new_ids.append(vertex)
+			continue
+		level.vertexes.append(vertex)
+		new_ids.append(next_id)
+		next_id += 1
+	new_vertexes.clear()
+
+	sector = default_sector()
+	sector.walls = [Wall(vertex=v_id) for v_id in new_ids]
+	level.sectors.append(sector)
+
 def select(mouse: Vector2) -> None:
 	sel = selection.get_nearest(mouse)
-	if sel is None:
+	mode = editor.get_mode()
+	in_extend = mode == EditMode.EXTEND
+	if sel is None and not in_extend:
 		drag(mouse, start=DragMode.PANNING)
 		editor.set_selection(sel)
 		return
 	else:
 		drag(mouse, start=DragMode.MOVING)
 
-	if editor.get_mode() == EditMode.CONNECT:
+	if mode == EditMode.CONNECT:
 		if isinstance(sel, selection.Vertex): connect_vertexes(sel)
 		editor.set_mode(EditMode.NORMAL)
+	elif in_extend:
+		buf = editor.get_extensions()
+		is_vertex = isinstance(sel, selection.Vertex)
+		if is_vertex:
+			if sel == editor.get_selection():
+				add_sector_from_extensions()
+				editor.set_mode(EditMode.NORMAL)
+			else:
+				buf.append(sel.id)
+		elif sel is None:
+			buf.append(snap_to_grid(screen_to_world(Vector2(pygame.mouse.get_pos()))))
+		return
 
 	editor.set_selection(sel)
 
