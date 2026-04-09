@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pygame import Vector2
 
+import game
 from game import engine
 from . import player
 
@@ -38,3 +39,4 @@ def update() -> None:
 	if is_aggressive():
 		target, _ = player.get_position()
 		I.position.move_towards_ip(target, 10 * engine.get_delta())
+		if (I.position - target).length() < KILL_DIST: game.die()
