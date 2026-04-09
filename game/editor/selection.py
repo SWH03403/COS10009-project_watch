@@ -3,7 +3,7 @@ from pygame import Vector2
 
 import game
 from .. import editor
-from .render import screen_to_world
+from .calc import screen_to_world
 
 THRESHOLD: float = 50 # pixels
 

@@ -12,6 +12,10 @@ class EditMode(IntEnum):
 	CREATE = auto()
 	CONNECT = auto()
 
+def is_snap_enabled() -> bool:
+	keys = pygame.key.get_pressed()
+	return not (keys[pygame.K_LALT] or keys[pygame.K_RALT])
+
 def insert_vertex() -> None:
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Wall): return

@@ -10,6 +10,7 @@ from game.entity import player
 from game.world.sector import WallType, get_wall_type
 from .. import editor
 from . import selection
+from .calc import world_to_screen
 from .keys import EditMode
 from .selection import Selection
 
@@ -68,16 +69,6 @@ def render_grid() -> None:
 				x = x0 + spacing * (i + (pi + 1) / 5)
 				y = y0 + spacing * (j + (pj + 1) / 5)
 				pygame.draw.circle(screen, GRID_COLOR, (x, y), lw)
-
-def world_to_screen(p: Vector2) -> Vector2:
-	p *= editor.get_scale()
-	p.y *= -1
-	return editor.get_origin() + p
-
-def screen_to_world(p: Vector2) -> Vector2:
-	p -= editor.get_origin()
-	p.y *= -1
-	return p / editor.get_scale()
 
 def line_dashes(color: ColorLike, start: Vector2, end: Vector2, width: int) -> None:
 	screen = engine.get_screen()
@@ -190,7 +181,7 @@ def render_hover() -> None:
 	mouse = pygame.mouse.get_pos()
 	if mouse != I.hover_position:
 		I.hover_position = mouse
-		I.hover_target = selection.get_nearest(mouse)
+		I.hover_target = selection.get_nearest(Vector2(mouse))
 		I.hover_points = selection.get_vertexes(I.hover_target)
 	if editor.get_mode() == EditMode.CONNECT and not isinstance(I.hover_target, selection.Vertex):
 		return
