@@ -66,5 +66,6 @@ def is_sector_convex(sector: int) -> bool:
 	_cache_sectors_convex()
 	return I.sectors_convex[sector]
 
-def expire_walls() -> None:
+def set_expired() -> None:
 	I.walls_expired = True
+	I.sectors_convex_expired = True

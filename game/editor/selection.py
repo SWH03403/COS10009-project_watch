@@ -43,6 +43,9 @@ def get_nearest(position: Vector2) -> Selection:
 	if len(items) == 0: return None
 	return min(items, key=lambda sel: sel[0])[1]
 
+def is_world_element(sel: Selection) -> bool:
+	return isinstance(sel, (Vertex, Wall, Sector))
+
 def get_vertexes(sel: Selection) -> list[Vector2]:
 	level = game.get_level()
 
