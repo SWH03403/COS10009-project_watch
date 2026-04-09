@@ -5,10 +5,12 @@ from pygame import Vector2
 from pygame.event import Event
 
 import game
+from game.world import Wall, default_sector
 from .. import editor
-from . import selection
+from . import cache, selection
+from .calc import screen_to_world, snap_to_grid
 from .keys import EditMode
-from .selection import Selection
+from .selection import Selection, is_world_element
 
 ZOOM_STEP: float = .2
 
@@ -17,8 +19,11 @@ class DragMode(IntEnum):
 	MOVING = auto()
 
 def move_selection(mouse: Vector2) -> None:
-	vertexes = selection.get_vertexes(editor.get_selection())
+	sel = editor.get_selection()
+	vertexes = selection.get_vertexes(sel)
 	diff = editor.move_drag(mouse, vertexes[0])
+	if is_world_element(sel) and (diff.x != 0 or diff.y != 0):
+		cache.set_expired()
 	for v in vertexes:
 		v.update((v + diff))
 
@@ -39,7 +44,9 @@ def zoom(mouse: Vector2, enlarge: bool) -> None:
 	origin = editor.get_origin()
 	editor.set_origin(origin + (mouse - origin) * (1 - fact))
 
-def connect_vertexes(sel: Selection) -> None:
+def divide_sector(sel: Selection) -> None:
+	cache.set_expired()
+
 	level = game.get_level()
 	cur, sel = editor.get_selection().id, sel.id
 
@@ -93,18 +100,53 @@ def connect_vertexes(sel: Selection) -> None:
 	new_sector.walls = new_walls
 	level.sectors.append(new_sector)
 
+def add_sector() -> None:
+	cache.set_expired()
+	level = game.get_level()
+	first = editor.get_selection().id
+
+	next_id = len(level.vertexes)
+	new_vertexes = editor.get_extensions()
+	new_ids = [first]
+	for vertex in new_vertexes:
+		if isinstance(vertex, int):
+			new_ids.append(vertex)
+			continue
+		level.vertexes.append(vertex)
+		new_ids.append(next_id)
+		next_id += 1
+	new_vertexes.clear()
+
+	sector = default_sector()
+	sector.walls = [Wall(vertex=v_id) for v_id in new_ids]
+	level.sectors.append(sector)
+
 def select(mouse: Vector2) -> None:
 	sel = selection.get_nearest(mouse)
-	if sel is None:
+	mode = editor.get_mode()
+	in_extend = mode == EditMode.ADD
+	if sel is None and not in_extend:
 		drag(mouse, start=DragMode.PANNING)
 		editor.set_selection(sel)
 		return
 	else:
 		drag(mouse, start=DragMode.MOVING)
 
-	if editor.get_mode() == EditMode.CONNECT:
-		if isinstance(sel, selection.Vertex): connect_vertexes(sel)
+	if mode == EditMode.DIVIDE:
+		if isinstance(sel, selection.Vertex): divide_sector(sel)
 		editor.set_mode(EditMode.NORMAL)
+	elif in_extend:
+		buf = editor.get_extensions()
+		is_vertex = isinstance(sel, selection.Vertex)
+		if is_vertex:
+			if sel == editor.get_selection():
+				add_sector()
+				editor.set_mode(EditMode.NORMAL)
+			else:
+				buf.append(sel.id)
+		elif sel is None:
+			buf.append(snap_to_grid(screen_to_world(Vector2(pygame.mouse.get_pos()))))
+		return
 
 	editor.set_selection(sel)
 

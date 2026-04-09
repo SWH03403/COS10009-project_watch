@@ -7,7 +7,7 @@ from pygame.math import clamp
 import game
 from game import engine
 from game.world import Level
-from . import render
+from . import cache, render
 from .calc import snap_to_grid
 from .keys import EditMode, handle_keydown
 from .mouse import DragMode, handle_mouse_event
@@ -18,25 +18,24 @@ MAX_ZOOM: float = 3
 
 @dataclass
 class MapEditor:
-	level: Level
-	zoom: float
 	origin: Vector2 # position of world coordinate (0, 0) on the screen
+	zoom: float = 0
 
 	mode: EditMode = EditMode.NORMAL
 	drag_mode: DragMode | None = None
 	drag_origin: Vector2 | None = None
-	selection: Selection | int | None = None
+	selection: Selection = None
 
-	# "create" mode
-	origin_vertex: int = 0
-	pending_create: list[Vector2] = field(default_factory=list)
+	# "add" mode
+	add_parts: list[Vector2 | int] = field(default_factory=list)
 
 I: MapEditor = None
 
 def init() -> None:
+	cache.init()
+
 	global I
-	origin = Vector2(engine.get_screen().size) / 2
-	I = MapEditor(level=game.get_level(), zoom=0, origin=origin)
+	I = MapEditor(origin=Vector2(engine.get_screen().size) / 2)
 
 def get_init() -> bool:
 	return I is not None
@@ -58,6 +57,9 @@ def get_drag_mode() -> DragMode:
 
 def get_mode() -> EditMode:
 	return I.mode
+
+def get_extensions() -> list[Vector2 | int]:
+	return I.add_parts
 
 def set_zoom(zoom: float) -> None:
 	I.zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM)
@@ -92,6 +94,7 @@ def pan(target: Vector2) -> None:
 
 def set_mode(mode: EditMode) -> None:
 	I.mode = mode
+	if mode == EditMode.NORMAL: I.add_parts.clear()
 
 def handle_event(event: Event) -> None:
 	match event.type:

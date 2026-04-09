@@ -7,10 +7,11 @@ from pygame.typing import ColorLike
 import game
 from game import engine
 from game.entity import player
-from game.world.sector import WallType, get_wall_type
+from game.utils import render
+from game.world.sector import WallType
 from .. import editor
-from . import selection
-from .calc import world_to_screen
+from . import cache, selection
+from .calc import snap_to_grid, world_to_screen
 from .keys import EditMode
 from .selection import Selection
 
@@ -95,23 +96,18 @@ def render_level() -> None:
 	solid_wall = get_line_width(1.5)
 
 	vertexes = [world_to_screen(v) for v in level.vertexes]
-	walls: dict[tuple[int, int], list[WallType]] = {}
-	for sector in level.sectors:
-		for i, wall in enumerate(sector.walls):
-			typ = get_wall_type(wall)
-			left, right = wall.vertex, sector.walls[i - len(sector.walls) + 1].vertex
-			# NOTE: try not to overlap sectors too much
-			if (left, right) in walls: ...
-			elif (right, left) in walls:
-				if typ not in walls[right, left]: walls[right, left].append(typ)
-			else: walls[left, right] = [typ]
+	for sector_id, sector in enumerate(level.sectors):
+		is_convex = cache.is_sector_convex(sector_id)
+		color = "white" if is_convex else "red"
+		points = [vertexes[wall.vertex] for wall in sector.walls]
+		render.polygon(screen, color, points, 50)
 
-	for (left, right), types in walls.items():
+	for (left, right), refs in cache.get_walls().items():
 		left, right = vertexes[left], vertexes[right]
-		types = types[:2]
-		for i, typ in enumerate(types):
-			start = left.lerp(right, i / len(types))
-			end = left.lerp(right, (i + 1) / len(types))
+		types = [r.typ for r in refs][:2] # get at most 2
+		for sector_id, typ in enumerate(types):
+			start = left.lerp(right, sector_id / len(types))
+			end = left.lerp(right, (sector_id + 1) / len(types))
 			if typ == WallType.SKY: line_dashes("firebrick3", start, end, no_wall)
 			elif typ == WallType.SOLID: pygame.draw.line(screen, "white", start, end, solid_wall)
 			else: line_dashes("goldenrod3", start, end, connect_wall)
@@ -125,15 +121,26 @@ def render_level() -> None:
 
 def render_new_walls() -> None:
 	sel = editor.get_selection()
+	level = game.get_level()
 	points = []
+	snappable = False
 	match editor.get_mode():
-		case EditMode.CONNECT:
+		case EditMode.DIVIDE:
 			if not isinstance(sel, selection.Vertex): return
-			level = game.get_level()
 			points.append(world_to_screen(level.vertexes[sel.id]))
+		case EditMode.ADD:
+			if isinstance(sel, selection.Vertex):
+				points.append(world_to_screen(level.vertexes[sel.id]))
+				for p in editor.get_extensions():
+					p = level.vertexes[p] if isinstance(p, int) else p
+					points.append(world_to_screen(p))
+				snappable = True
+			if isinstance(sel, selection.Wall):
+				...
 	if len(points) == 0: return
 
-	mouse = pygame.mouse.get_pos()
+	mouse = Vector2(pygame.mouse.get_pos())
+	if snappable: mouse = snap_to_grid(mouse, True)
 	hovered = selection.get_nearest(mouse)
 	if not isinstance(hovered, selection.Vertex): points.append(mouse)
 	else: points.append(world_to_screen(level.vertexes[hovered.id]))
@@ -183,7 +190,7 @@ def render_hover() -> None:
 		I.hover_position = mouse
 		I.hover_target = selection.get_nearest(Vector2(mouse))
 		I.hover_points = selection.get_vertexes(I.hover_target)
-	if editor.get_mode() == EditMode.CONNECT and not isinstance(I.hover_target, selection.Vertex):
+	if editor.get_mode() == EditMode.DIVIDE and not isinstance(I.hover_target, selection.Vertex):
 		return
 	if I.hover_target is not None and I.hover_target == editor.get_selection(): return
 	if len(I.hover_points) > 0: render_box_around(I.hover_points, False)

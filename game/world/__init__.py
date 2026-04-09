@@ -2,7 +2,7 @@ from pygame import Vector2
 
 from .fog import Fog, default_fog
 from .level import Level
-from .sector import Sector, Plane, Wall
+from .sector import Sector, Plane, Wall, default_sector
 from .spawn import Spawn
 
 def get_walls(level: Level, sector_id: int, relative: bool) -> list[tuple[Vector2, Vector2, Wall]]:

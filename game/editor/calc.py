@@ -16,10 +16,10 @@ def screen_to_world(p: Vector2) -> Vector2:
 	return p / editor.get_scale()
 
 # get closest screen coordinate that is on the snap grid of the world
-# NOTE: this function takes and outputs world coordinate
-def snap_to_grid(p: Vector2) -> Vector2:
+def snap_to_grid(p: Vector2, is_screen: bool = False) -> Vector2:
 	if not is_snap_enabled(): return p.copy()
+	if is_screen: p = screen_to_world(p)
 	diff_x, diff_y = p.x % SNAP_STEP, p.y % SNAP_STEP
 	p.x -= (diff_x - SNAP_STEP) if diff_x > SNAP_STEP / 2 else diff_x
 	p.y -= (diff_y - SNAP_STEP) if diff_y > SNAP_STEP / 2 else diff_y
-	return p
+	return world_to_screen(p) if is_screen else p
