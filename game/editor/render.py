@@ -11,6 +11,7 @@ from game.world.sector import WallType, get_wall_type
 from .. import editor
 from . import selection
 from .keys import EditMode
+from .selection import Selection
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
@@ -27,6 +28,7 @@ CONNECT_COLOR: str = "lightskyblue1"
 class Renderer:
 	# prevent iterating through everything every frame
 	hover_position: tuple[int, int] = (0, 0)
+	hover_target: Selection = None
 	hover_points: list[Vector2] = field(default_factory=list)
 
 I = Renderer()
@@ -183,10 +185,11 @@ def render_hover() -> None:
 	mouse = pygame.mouse.get_pos()
 	if mouse != I.hover_position:
 		I.hover_position = mouse
-		sel = selection.get_nearest(mouse)
-		if editor.get_mode() == EditMode.CONNECT and not isinstance(sel, selection.Vertex): return
-		if sel == editor.get_selection(): return
-		I.hover_points = selection.get_vertexes(sel)
+		I.hover_target = selection.get_nearest(mouse)
+		I.hover_points = selection.get_vertexes(I.hover_target)
+	if editor.get_mode() == EditMode.CONNECT and not isinstance(I.hover_target, selection.Vertex):
+		return
+	if I.hover_target is not None and I.hover_target == editor.get_selection(): return
 	if len(I.hover_points) > 0: render_box_around(I.hover_points, False)
 
 def perform() -> None:

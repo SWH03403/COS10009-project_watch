@@ -4,7 +4,7 @@ from pygame import Vector2
 import game
 from .. import editor
 
-THRESHOLD: float = 20 # pixels
+THRESHOLD: float = 50 # pixels
 
 @dataclass
 class Sector:
