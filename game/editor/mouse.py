@@ -99,6 +99,7 @@ def add_sector() -> None:
 
 	next_id = len(level.vertexes)
 	new_vertexes = editor.get_extensions()
+	if len(new_vertexes) < 2: return
 	new_ids = [first]
 	for vertex in new_vertexes:
 		if isinstance(vertex, int):
@@ -129,8 +130,7 @@ def select(mouse: Vector2) -> None:
 		editor.set_mode(EditMode.NORMAL)
 	elif in_extend:
 		buf = editor.get_extensions()
-		is_vertex = isinstance(sel, selection.Vertex)
-		if is_vertex:
+		if isinstance(sel, selection.Vertex):
 			if sel == editor.get_selection():
 				add_sector()
 				editor.set_mode(EditMode.NORMAL)
@@ -152,6 +152,11 @@ def handle_mouse_event(event: Event) -> None:
 				case pygame.BUTTON_LEFT:
 					if space: drag(event.pos, start=DragMode.PANNING)
 					else: select(event.pos)
+				case pygame.BUTTON_RIGHT:
+					if editor.get_mode() == EditMode.ADD:
+						parts = editor.get_extensions()
+						if len(parts) > 0: parts.pop()
+						else: editor.set_mode(EditMode.NORMAL)
 				case pygame.BUTTON_WHEELDOWN:
 					zoom(event.pos, False)
 				case pygame.BUTTON_WHEELUP:
