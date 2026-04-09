@@ -51,7 +51,6 @@ def insert_vertex() -> None:
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Wall): return
-	cache.set_expired_walls()
 	level = game.get_level()
 
 	sector = level.sectors[sel.sector_id]
@@ -76,6 +75,8 @@ def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	else:
 		set_wall_type(wall, typ)
 		if nb_wall is not None: set_wall_type(nb_wall, typ)
+
+	cache.set_expired_walls() # NOTE: this must only be called after wall types are changed
 
 def handle_keydown(key: int) -> None:
 	keys = pygame.key.get_pressed()
