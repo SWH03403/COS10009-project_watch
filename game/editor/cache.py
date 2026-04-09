@@ -60,12 +60,15 @@ def get_walls() -> WallCache:
 def get_sectors(left: int, right: int) -> list[SectorRef]:
 	_cache_walls()
 	if (left, right) in I.walls: return I.walls[left, right]
-	return I.wallss[right, left]
+	return I.walls[right, left]
 
 def is_sector_convex(sector: int) -> bool:
 	_cache_sectors_convex()
 	return I.sectors_convex[sector]
 
-def set_expired() -> None:
+def set_expired_walls() -> None:
 	I.walls_expired = True
+
+def set_expired() -> None:
+	set_expired_walls()
 	I.sectors_convex_expired = True

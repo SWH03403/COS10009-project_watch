@@ -5,7 +5,7 @@ import game
 from game.world import Wall
 from game.world.sector import WallType, set_wall_type
 from .. import editor
-from . import selection
+from . import cache, selection
 
 class EditMode(IntEnum):
 	NORMAL = auto()
@@ -51,15 +51,28 @@ def insert_vertex() -> None:
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Wall): return
+	cache.set_expired_walls()
 	level = game.get_level()
 
-	wall = level.sectors[sel.sector_id].walls[sel.wall_idx]
-	nb_wall = None
-	if not onesided and wall.neighbor is not None:
-		for nb_wall in level.sectors[wall.neighbor].walls:
-			if nb_wall.neighbor == sel.sector_id: break
+	sector = level.sectors[sel.sector_id]
+	wall = sector.walls[sel.wall_idx]
+	left = wall.vertex
+	right = sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex
+
+	nb_id = nb_wall = None
+	for ref in cache.get_sectors(left, right):
+		# FIX: verify walls are opposite facing
+		if ref.id != sel.sector_id:
+			nb_id = ref.id
+			nb_wall = level.sectors[ref.id].walls[ref.wall_idx]
+			break
+
 	if typ == WallType.NEIGHBOR:
-		if nb_wall is None: return
+		set_wall_type(wall, WallType.SOLID)
+		wall.neighbor = nb_id
+		if not (nb_wall is None or onesided):
+			set_wall_type(nb_wall, WallType.SOLID)
+			nb_wall.neighbor = sel.sector_id
 	else:
 		set_wall_type(wall, typ)
 		if nb_wall is not None: set_wall_type(nb_wall, typ)
