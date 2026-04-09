@@ -5,7 +5,6 @@ from pygame import Vector2
 from pygame.event import Event
 
 import game
-from game.world import Sector
 from .. import editor
 from . import selection
 from .keys import EditMode

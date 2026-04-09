@@ -7,6 +7,7 @@ from pygame.typing import ColorLike
 import game
 from game import engine
 from game.entity import player
+from game.world.sector import WallType, get_wall_type
 from .. import editor
 from . import selection
 from .keys import EditMode
@@ -95,19 +96,27 @@ def render_level() -> None:
 	no_wall = get_line_width(.8)
 	solid_wall = get_line_width(1.5)
 
-	rendered_wall = set()
+	vertexes = [xy_to_screen(v) for v in level.vertexes]
+	walls: dict[tuple[int, int], list[WallType]] = {}
 	for sector in level.sectors:
 		for i, wall in enumerate(sector.walls):
+			typ = get_wall_type(wall)
 			left, right = wall.vertex, sector.walls[i - len(sector.walls) + 1].vertex
-			if left > right: left, right = right, left
-			if (left, right) in rendered_wall: continue
-			rendered_wall.add((left, right)) # FIX: consider different wall types
+			# NOTE: try not to overlap sectors too much
+			if (left, right) in walls: ...
+			elif (right, left) in walls:
+				if typ not in walls[right, left]: walls[right, left].append(typ)
+			else: walls[left, right] = [typ]
 
-			left = xy_to_screen(level.vertexes[left])
-			right = xy_to_screen(level.vertexes[right])
-			if wall.color is None: line_dashes("firebrick3", left, right, no_wall)
-			elif wall.neighbor is None: pygame.draw.line(screen, "white", left, right, solid_wall)
-			else: line_dashes("goldenrod3", left, right, connect_wall)
+	for (left, right), types in walls.items():
+		left, right = vertexes[left], vertexes[right]
+		types = types[:2]
+		for i, typ in enumerate(types):
+			start = left.lerp(right, i / len(types))
+			end = left.lerp(right, (i + 1) / len(types))
+			if typ == WallType.SKY: line_dashes("firebrick3", start, end, no_wall)
+			elif typ == WallType.SOLID: pygame.draw.line(screen, "white", start, end, solid_wall)
+			else: line_dashes("goldenrod3", start, end, connect_wall)
 
 	hlen = SPAWNPOINT_SIZE * editor.get_scale() / 2
 	spawn_lw = connect_wall
@@ -173,12 +182,12 @@ def render_selection() -> None:
 def render_hover() -> None:
 	mouse = pygame.mouse.get_pos()
 	if mouse != I.hover_position:
-		I.hovered_position = mouse
+		I.hover_position = mouse
 		sel = selection.get_nearest(mouse)
 		if editor.get_mode() == EditMode.CONNECT and not isinstance(sel, selection.Vertex): return
 		if sel == editor.get_selection(): return
-		I.hovered_points = selection.get_vertexes(sel)
-	if len(I.hovered_points) > 0: render_box_around(I.hovered_points, False)
+		I.hover_points = selection.get_vertexes(sel)
+	if len(I.hover_points) > 0: render_box_around(I.hover_points, False)
 
 def perform() -> None:
 	render_grid()

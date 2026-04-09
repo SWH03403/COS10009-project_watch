@@ -3,6 +3,7 @@ import pygame
 
 import game
 from game.world import Wall
+from game.world.sector import WallType, WALL_COLOR
 from .. import editor
 from . import selection
 
@@ -42,7 +43,33 @@ def insert_vertex() -> None:
 
 	editor.set_selection(selection.Vertex(id=vertex_id))
 
+def set_wall_type(wall: Wall, typ: WallType) -> None:
+	if typ == WallType.SKY:
+		wall.neighbor = wall.color = None
+	elif typ == WallType.SOLID:
+		wall.neighbor = None
+		if wall.color is None: wall.color = WALL_COLOR
+
+def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
+	sel = editor.get_selection()
+	if not isinstance(sel, selection.Wall): return
+	level = game.get_level()
+
+	wall = level.sectors[sel.sector_id].walls[sel.wall_idx]
+	nb_wall = None
+	if not onesided and wall.neighbor is not None:
+		for nb_wall in level.sectors[wall.neighbor].walls:
+			if nb_wall.neighbor == sel.sector_id: break
+	if typ == WallType.NEIGHBOR:
+		if nb_wall is None: return
+	else:
+		set_wall_type(wall, typ)
+		if nb_wall is not None: set_wall_type(nb_wall, typ)
+
 def handle_keydown(key: int) -> None:
+	keys = pygame.key.get_pressed()
+	shift = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+
 	match key:
 		case pygame.K_q | pygame.K_ESCAPE:
 			if editor.get_mode() == EditMode.NORMAL:
@@ -59,3 +86,10 @@ def handle_keydown(key: int) -> None:
 				editor.set_mode(EditMode.CONNECT)
 		case pygame.K_n:
 			editor.set_mode(EditMode.CREATE)
+
+		case pygame.K_1:
+			set_selection_wall_type(WallType.SOLID, shift)
+		case pygame.K_2:
+			set_selection_wall_type(WallType.NEIGHBOR, shift)
+		case pygame.K_3:
+			set_selection_wall_type(WallType.SKY, shift)
