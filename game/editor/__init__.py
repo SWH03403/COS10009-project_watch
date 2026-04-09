@@ -24,10 +24,10 @@ class MapEditor:
 	mode: EditMode = EditMode.NORMAL
 	drag_mode: DragMode | None = None
 	drag_origin: Vector2 | None = None
-	selection: Selection | int | None = None
+	selection: Selection = None
 
-	# "extend" mode
-	extensions: list[Vector2 | int] = field(default_factory=list)
+	# "add" mode
+	add_parts: list[Vector2 | int] = field(default_factory=list)
 
 I: MapEditor = None
 
@@ -57,7 +57,7 @@ def get_mode() -> EditMode:
 	return I.mode
 
 def get_extensions() -> list[Vector2 | int]:
-	return I.extensions
+	return I.add_parts
 
 def set_zoom(zoom: float) -> None:
 	I.zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM)

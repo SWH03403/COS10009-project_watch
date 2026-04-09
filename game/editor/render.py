@@ -129,10 +129,10 @@ def render_new_walls() -> None:
 	points = []
 	snappable = False
 	match editor.get_mode():
-		case EditMode.CONNECT:
+		case EditMode.DIVIDE:
 			if not isinstance(sel, selection.Vertex): return
 			points.append(world_to_screen(level.vertexes[sel.id]))
-		case EditMode.EXTEND:
+		case EditMode.ADD:
 			if isinstance(sel, selection.Vertex):
 				points.append(world_to_screen(level.vertexes[sel.id]))
 				for p in editor.get_extensions():
@@ -194,7 +194,7 @@ def render_hover() -> None:
 		I.hover_position = mouse
 		I.hover_target = selection.get_nearest(Vector2(mouse))
 		I.hover_points = selection.get_vertexes(I.hover_target)
-	if editor.get_mode() == EditMode.CONNECT and not isinstance(I.hover_target, selection.Vertex):
+	if editor.get_mode() == EditMode.DIVIDE and not isinstance(I.hover_target, selection.Vertex):
 		return
 	if I.hover_target is not None and I.hover_target == editor.get_selection(): return
 	if len(I.hover_points) > 0: render_box_around(I.hover_points, False)

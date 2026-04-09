@@ -41,7 +41,7 @@ def zoom(mouse: Vector2, enlarge: bool) -> None:
 	origin = editor.get_origin()
 	editor.set_origin(origin + (mouse - origin) * (1 - fact))
 
-def connect_vertexes(sel: Selection) -> None:
+def divide_sector(sel: Selection) -> None:
 	level = game.get_level()
 	cur, sel = editor.get_selection().id, sel.id
 
@@ -95,7 +95,7 @@ def connect_vertexes(sel: Selection) -> None:
 	new_sector.walls = new_walls
 	level.sectors.append(new_sector)
 
-def add_sector_from_extensions() -> None:
+def add_sector() -> None:
 	level = game.get_level()
 	first = editor.get_selection().id
 
@@ -118,7 +118,7 @@ def add_sector_from_extensions() -> None:
 def select(mouse: Vector2) -> None:
 	sel = selection.get_nearest(mouse)
 	mode = editor.get_mode()
-	in_extend = mode == EditMode.EXTEND
+	in_extend = mode == EditMode.ADD
 	if sel is None and not in_extend:
 		drag(mouse, start=DragMode.PANNING)
 		editor.set_selection(sel)
@@ -126,15 +126,15 @@ def select(mouse: Vector2) -> None:
 	else:
 		drag(mouse, start=DragMode.MOVING)
 
-	if mode == EditMode.CONNECT:
-		if isinstance(sel, selection.Vertex): connect_vertexes(sel)
+	if mode == EditMode.DIVIDE:
+		if isinstance(sel, selection.Vertex): divide_sector(sel)
 		editor.set_mode(EditMode.NORMAL)
 	elif in_extend:
 		buf = editor.get_extensions()
 		is_vertex = isinstance(sel, selection.Vertex)
 		if is_vertex:
 			if sel == editor.get_selection():
-				add_sector_from_extensions()
+				add_sector()
 				editor.set_mode(EditMode.NORMAL)
 			else:
 				buf.append(sel.id)

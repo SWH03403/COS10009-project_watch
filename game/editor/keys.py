@@ -9,8 +9,9 @@ from . import selection
 
 class EditMode(IntEnum):
 	NORMAL = auto()
-	EXTEND = auto()
-	CONNECT = auto()
+
+	ADD = auto()
+	DIVIDE = auto()
 
 def is_snap_enabled() -> bool:
 	keys = pygame.key.get_pressed()
@@ -78,13 +79,13 @@ def handle_keydown(key: int) -> None:
 			game.set_editor(False)
 		case pygame.K_i:
 			insert_vertex()
-		case pygame.K_c:
+		case pygame.K_d:
 			if isinstance(editor.get_selection(), selection.Vertex):
-				editor.set_mode(EditMode.CONNECT)
-		case pygame.K_e:
+				editor.set_mode(EditMode.DIVIDE)
+		case pygame.K_c:
 			sel = editor.get_selection()
 			if isinstance(sel, (selection.Vertex, selection.Wall)):
-				editor.set_mode(EditMode.EXTEND)
+				editor.set_mode(EditMode.ADD)
 		case pygame.K_1:
 			set_selection_wall_type(WallType.SOLID, shift)
 		case pygame.K_2:
