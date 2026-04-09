@@ -14,6 +14,7 @@ from .selection import Selection
 
 MIN_ZOOM: float = -1
 MAX_ZOOM: float = 3
+SNAP_DIST: float = 5
 
 @dataclass
 class MapEditor:
@@ -75,11 +76,22 @@ def reset_drag() -> None:
 	I.drag_mode = None
 	I.drag_origin = None
 
-def move_drag(new_origin: Vector2) -> Vector2:
+def move_drag(new_origin: Vector2, align_target: Vector2) -> Vector2:
+	keys = pygame.key.get_pressed()
+	no_snap = keys[pygame.K_LALT] or keys[pygame.K_RALT]
+
 	diff = new_origin - I.drag_origin
 	diff.y *= -1
 	diff /= get_scale()
-	I.drag_origin = new_origin
+	if no_snap: I.drag_origin = new_origin
+	else:
+		aligned = align_target + diff
+		aligned.x -= aligned.x % SNAP_DIST
+		aligned.y -= aligned.y % SNAP_DIST
+		diff = aligned - align_target
+		revert = diff.copy() * get_scale()
+		revert.y *= -1
+		I.drag_origin += revert
 	return diff
 
 def pan(target: Vector2) -> None:

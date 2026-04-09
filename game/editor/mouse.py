@@ -17,8 +17,8 @@ class DragMode(IntEnum):
 	MOVING = auto()
 
 def move_selection(mouse: Vector2) -> None:
-	diff = editor.move_drag(mouse)
 	vertexes = selection.get_vertexes(editor.get_selection())
+	diff = editor.move_drag(mouse, vertexes[0])
 	for v in vertexes:
 		v.update((v + diff))
 

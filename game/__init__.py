@@ -31,7 +31,7 @@ def init() -> None:
 	pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(.5)
 
-	level = load_level("cliff") # DEBUG: Test level
+	level = load_level("cafe") # DEBUG: Test level
 	spawn = level.spawns[randrange(len(level.spawns))]
 	player.set_position(spawn.position, spawn.sector)
 	player.set_aim(spawn.angle)
