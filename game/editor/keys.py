@@ -3,7 +3,7 @@ import pygame
 
 import game
 from game.world import Wall
-from game.world.sector import WallType, WALL_COLOR
+from game.world.sector import WallType, set_wall_type
 from .. import editor
 from . import selection
 
@@ -47,13 +47,6 @@ def insert_vertex() -> None:
 
 	editor.set_selection(selection.Vertex(id=vertex_id))
 
-def set_wall_type(wall: Wall, typ: WallType) -> None:
-	if typ == WallType.SKY:
-		wall.neighbor = wall.color = None
-	elif typ == WallType.SOLID:
-		wall.neighbor = None
-		if wall.color is None: wall.color = WALL_COLOR
-
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Wall): return
@@ -90,7 +83,7 @@ def handle_keydown(key: int) -> None:
 				editor.set_mode(EditMode.CONNECT)
 		case pygame.K_e:
 			sel = editor.get_selection()
-			if isinstance(sel, selection.Vertex) or isinstance(sel, selection.Wall):
+			if isinstance(sel, (selection.Vertex, selection.Wall)):
 				editor.set_mode(EditMode.EXTEND)
 		case pygame.K_1:
 			set_selection_wall_type(WallType.SOLID, shift)
