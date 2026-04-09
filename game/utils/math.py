@@ -2,6 +2,15 @@ from dataclasses import dataclass
 from typing import Self
 from pygame import Vector2
 
+# NOTE: everything is flipped vertically, so this is actually checking for anticlockwise instead
+def is_polygon_clockwise(points: list[Vector2]) -> bool:
+	n = len(points)
+	if n < 3: return False
+	for i in range(n):
+		a, b, c = points[i - 2], points[i - 1], points[i]
+		if (a - b).cross(a - c) > 0: return False
+	return True
+
 @dataclass
 class Line:
 	a: float
