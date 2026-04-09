@@ -7,9 +7,9 @@ from pygame.typing import ColorLike
 import game
 from game import engine
 from game.entity import player
-from game.world.sector import WallType, get_wall_type
+from game.world.sector import WallType
 from .. import editor
-from . import selection
+from . import cache, selection
 from .calc import snap_to_grid, world_to_screen
 from .keys import EditMode
 from .selection import Selection
@@ -95,20 +95,9 @@ def render_level() -> None:
 	solid_wall = get_line_width(1.5)
 
 	vertexes = [world_to_screen(v) for v in level.vertexes]
-	walls: dict[tuple[int, int], list[WallType]] = {}
-	for sector in level.sectors:
-		for i, wall in enumerate(sector.walls):
-			typ = get_wall_type(wall)
-			left, right = wall.vertex, sector.walls[i - len(sector.walls) + 1].vertex
-			# NOTE: try not to overlap sectors too much
-			if (left, right) in walls: ...
-			elif (right, left) in walls:
-				if typ not in walls[right, left]: walls[right, left].append(typ)
-			else: walls[left, right] = [typ]
-
-	for (left, right), types in walls.items():
+	for (left, right), refs in cache.get_walls().items():
 		left, right = vertexes[left], vertexes[right]
-		types = types[:2]
+		types = [r.typ for r in refs][:2] # get at most 2
 		for i, typ in enumerate(types):
 			start = left.lerp(right, i / len(types))
 			end = left.lerp(right, (i + 1) / len(types))
