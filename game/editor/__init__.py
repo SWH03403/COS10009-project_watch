@@ -89,7 +89,7 @@ def move_drag(new_origin: Vector2, align_target: Vector2) -> Vector2:
 		aligned.x -= aligned.x % SNAP_DIST
 		aligned.y -= aligned.y % SNAP_DIST
 		diff = aligned - align_target
-		revert = diff.copy() * get_scale()
+		revert = diff * get_scale()
 		revert.y *= -1
 		I.drag_origin += revert
 	return diff

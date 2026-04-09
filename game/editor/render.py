@@ -69,10 +69,15 @@ def render_grid() -> None:
 				y = y0 + spacing * (j + (pj + 1) / 5)
 				pygame.draw.circle(screen, GRID_COLOR, (x, y), lw)
 
-def xy_to_screen(p: Vector2) -> Vector2:
-	scaled = p * editor.get_scale()
-	scaled.y *= -1
-	return editor.get_origin() + scaled
+def world_to_screen(p: Vector2) -> Vector2:
+	p *= editor.get_scale()
+	p.y *= -1
+	return editor.get_origin() + p
+
+def screen_to_world(p: Vector2) -> Vector2:
+	p -= editor.get_origin()
+	p.y *= -1
+	return p / editor.get_scale()
 
 def line_dashes(color: ColorLike, start: Vector2, end: Vector2, width: int) -> None:
 	screen = engine.get_screen()
@@ -98,7 +103,7 @@ def render_level() -> None:
 	no_wall = get_line_width(.8)
 	solid_wall = get_line_width(1.5)
 
-	vertexes = [xy_to_screen(v) for v in level.vertexes]
+	vertexes = [world_to_screen(v) for v in level.vertexes]
 	walls: dict[tuple[int, int], list[WallType]] = {}
 	for sector in level.sectors:
 		for i, wall in enumerate(sector.walls):
@@ -123,7 +128,7 @@ def render_level() -> None:
 	hlen = SPAWNPOINT_SIZE * editor.get_scale() / 2
 	spawn_lw = connect_wall
 	for spawn in level.spawns:
-		x, y = xy_to_screen(spawn.position)
+		x, y = world_to_screen(spawn.position)
 		pygame.draw.line(screen, "springgreen2", (x - hlen, y), (x + hlen, y), spawn_lw)
 		pygame.draw.line(screen, "springgreen2", (x, y - hlen), (x, y + hlen), spawn_lw)
 
@@ -134,13 +139,13 @@ def render_new_walls() -> None:
 		case EditMode.CONNECT:
 			if not isinstance(sel, selection.Vertex): return
 			level = game.get_level()
-			points.append(xy_to_screen(level.vertexes[sel.id]))
+			points.append(world_to_screen(level.vertexes[sel.id]))
 	if len(points) == 0: return
 
 	mouse = pygame.mouse.get_pos()
 	hovered = selection.get_nearest(mouse)
 	if not isinstance(hovered, selection.Vertex): points.append(mouse)
-	else: points.append(xy_to_screen(level.vertexes[hovered.id]))
+	else: points.append(world_to_screen(level.vertexes[hovered.id]))
 
 	screen = engine.get_screen()
 	lw = get_line_width()
@@ -153,7 +158,7 @@ def render_player() -> None:
 	size = player.HITBOX_SIZE * scale
 	color = "goldenrod1" if size < MIN_PLAYER_SIZE else "white"
 	size = max(size, MIN_PLAYER_SIZE)
-	pos = xy_to_screen(player.get_position()[0])
+	pos = world_to_screen(player.get_position()[0])
 	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
 	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
 	pygame.draw.circle(screen, color, pos, size, lw)
@@ -161,7 +166,7 @@ def render_player() -> None:
 def render_box_around(points: list[Vector2], selected: bool) -> None:
 	screen = engine.get_screen()
 	w, h = screen.size
-	points = [xy_to_screen(p) for p in points]
+	points = [world_to_screen(p) for p in points]
 	min_x, min_y = max_x, max_y = points.pop()
 	pad = SELECTION_PADDING
 	color = SELECTION_COLOR if selected else SELECTION_HOVER_COLOR
@@ -178,7 +183,7 @@ def render_selection() -> None:
 	points = selection.get_vertexes(sel)
 	if len(points) > 0: render_box_around(points, True)
 	if len(points) > 1:
-		center = xy_to_screen(points[0])
+		center = world_to_screen(points[0])
 		pygame.draw.circle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
 
 def render_hover() -> None:

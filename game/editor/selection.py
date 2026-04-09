@@ -3,6 +3,7 @@ from pygame import Vector2
 
 import game
 from .. import editor
+from .render import screen_to_world
 
 THRESHOLD: float = 50 # pixels
 
@@ -21,13 +22,10 @@ class Vertex:
 
 type Selection = Sector | Wall | Vertex | None
 
-def get_nearest(pos: Vector2) -> Selection:
+def get_nearest(position: Vector2) -> Selection:
 	level = game.get_level()
 	items: list[tuple[float, Selection]] = []
-
-	world_pos = pos - editor.get_origin()
-	world_pos.y *= -1
-	world_pos /= editor.get_scale()
+	world_pos = screen_to_world(position)
 
 	for i, vertex in enumerate(level.vertexes):
 		items.append(((vertex - world_pos).length(), Vertex(i)))
