@@ -66,15 +66,16 @@ def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 			nb_wall = level.sectors[ref.id].walls[ref.wall_idx]
 			break
 
+	onesided |= nb_wall is None
 	if typ == WallType.NEIGHBOR:
 		set_wall_type(wall, WallType.SOLID)
 		wall.neighbor = nb_id
-		if not (nb_wall is None or onesided):
+		if not onesided:
 			set_wall_type(nb_wall, WallType.SOLID)
 			nb_wall.neighbor = sel.sector_id
 	else:
 		set_wall_type(wall, typ)
-		if nb_wall is not None: set_wall_type(nb_wall, typ)
+		if not onesided: set_wall_type(nb_wall, typ)
 
 	cache.set_expired_walls() # NOTE: this must only be called after wall types are changed
 
