@@ -47,3 +47,6 @@ def get_sectors(left: int, right: int) -> list[SectorRef]:
 	lazy_cache_walls()
 	if (left, right) in I.walls: return I.walls[left, right]
 	return I.wallss[right, left]
+
+def expire_walls() -> None:
+	I.walls_expired = True

@@ -7,7 +7,7 @@ from pygame.event import Event
 import game
 from game.world import Wall, default_sector
 from .. import editor
-from . import selection
+from . import cache, selection
 from .calc import screen_to_world, snap_to_grid
 from .keys import EditMode
 from .selection import Selection
@@ -42,6 +42,7 @@ def zoom(mouse: Vector2, enlarge: bool) -> None:
 	editor.set_origin(origin + (mouse - origin) * (1 - fact))
 
 def divide_sector(sel: Selection) -> None:
+	cache.expire_walls()
 	level = game.get_level()
 	cur, sel = editor.get_selection().id, sel.id
 
@@ -96,6 +97,7 @@ def divide_sector(sel: Selection) -> None:
 	level.sectors.append(new_sector)
 
 def add_sector() -> None:
+	cache.expire_walls()
 	level = game.get_level()
 	first = editor.get_selection().id
 
