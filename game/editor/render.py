@@ -7,6 +7,7 @@ from pygame.typing import ColorLike
 import game
 from game import engine
 from game.entity import player
+from game.utils import render
 from game.world.sector import WallType
 from .. import editor
 from . import cache, selection
@@ -95,12 +96,18 @@ def render_level() -> None:
 	solid_wall = get_line_width(1.5)
 
 	vertexes = [world_to_screen(v) for v in level.vertexes]
+	for sector_id, sector in enumerate(level.sectors):
+		is_convex = cache.is_sector_convex(sector_id)
+		color = "white" if is_convex else "red"
+		points = [vertexes[wall.vertex] for wall in sector.walls]
+		render.polygon(screen, color, points, 50)
+
 	for (left, right), refs in cache.get_walls().items():
 		left, right = vertexes[left], vertexes[right]
 		types = [r.typ for r in refs][:2] # get at most 2
-		for i, typ in enumerate(types):
-			start = left.lerp(right, i / len(types))
-			end = left.lerp(right, (i + 1) / len(types))
+		for sector_id, typ in enumerate(types):
+			start = left.lerp(right, sector_id / len(types))
+			end = left.lerp(right, (sector_id + 1) / len(types))
 			if typ == WallType.SKY: line_dashes("firebrick3", start, end, no_wall)
 			elif typ == WallType.SOLID: pygame.draw.line(screen, "white", start, end, solid_wall)
 			else: line_dashes("goldenrod3", start, end, connect_wall)
