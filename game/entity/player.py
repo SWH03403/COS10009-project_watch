@@ -10,10 +10,14 @@ from game import engine
 from game.loaders import load_sounds_suffix
 from game.utils.math import Line
 from game.world import get_walls
+from game.world.sector import WallType, get_wall_type
 
 WALK_SPEED: float = 20
 SPRINT_SPEED: float = 50
 HITBOX_SIZE: float = 3
+
+SURVIABLE_FALL_HEIGHT: float = 40
+CLIMPABLE_HEIGHT: float = 10
 
 STAMINA_DECAY: float = .1
 STAMINA_REGEN: float = .15
@@ -48,7 +52,10 @@ class Player:
 	direction: Vector2
 	state: MovementState
 	bob_phase: float
+
 	footstep: list[Sound]
+	fall: list[Sound]
+	fall_death: list[Sound]
 
 I: Player
 
@@ -64,7 +71,9 @@ def init() -> None:
 		direction=Vector2(),
 		state=MovementState.STANDING,
 		bob_phase=0,
-		footstep=load_sounds_suffix("footsteps/tile")
+		footstep=load_sounds_suffix("footsteps/tile"),
+		fall=[],
+		fall_death=load_sounds_suffix("death/fall"),
 	)
 
 def get_position() -> tuple[Vector2, int]:
@@ -115,8 +124,11 @@ def set_direction(direction: Vector2) -> None:
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
-def play_footstep() -> Sound:
+def play_footstep() -> None:
 	I.footstep[randrange(len(I.footstep))].play()
+
+def play_fall_death() -> None:
+	I.fall_death[randrange(len(I.fall_death))].play()
 
 def update() -> None:
 	is_sprinting = I.state == MovementState.SPRINTING
@@ -166,9 +178,16 @@ def update() -> None:
 		dist_vec = new_position - nearest
 		dist = dist_vec.length()
 		if dist > 0: dist_vec.normalize_ip()
-		if dist < HITBOX_SIZE and info.neighbor is None:
+
+		has_collision = True
+		has_neighbor = get_wall_type(info) == WallType.NEIGHBOR
+		if has_neighbor:
+			floor_height_diff = level.sectors[info.neighbor].floor.z - level.sectors[I.sector].floor.z
+			has_collision = floor_height_diff > CLIMPABLE_HEIGHT
+
+		if dist < HITBOX_SIZE and has_collision:
 			new_position = nearest + dist_vec * HITBOX_SIZE
-		elif info.neighbor is not None and Line.from_point(left, right).cross(new_position) < 0:
+		elif has_neighbor and Line.from_point(left, right).cross(new_position) < 0:
 			if new_sector is None and idx < n_crossable_walls: new_sector = info.neighbor
 
 	I.position = new_position
@@ -177,7 +196,12 @@ def update() -> None:
 		z_new = level.sectors[new_sector].floor.z
 		z_cur = level.sectors[I.sector].floor.z
 		if z_new > z_cur: I.bob_phase = -math.pi # lowest point
-		elif z_new < z_cur: I.bob_phase = 0 # highest point
+		elif z_new < z_cur:
+			if z_cur - z_new > SURVIABLE_FALL_HEIGHT:
+				play_fall_death()
+				game.set_death_delay(.4)
+				game.die()
+			I.bob_phase = 0 # highest point
 		if z_new != z_cur: play_footstep()
 
 		I.sector = new_sector

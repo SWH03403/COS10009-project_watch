@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from random import randrange
+from time import sleep
 import pygame
 from pygame import Color, Surface, Vector2
 from . import editor, engine, entity, render
@@ -16,6 +17,7 @@ class Game:
 
 	scan_frame: bool
 	editor_mode: bool
+	death_delay: float
 
 I: Game
 
@@ -29,13 +31,13 @@ def init() -> None:
 	pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(.5)
 
-	level = load_level("cafe") # DEBUG: Test level
+	level = load_level("cliff") # DEBUG: Test level
 	spawn = level.spawns[randrange(len(level.spawns))]
 	player.set_position(spawn.position, spawn.sector)
 	player.set_aim(spawn.angle)
 
 	global I
-	I = Game(running=True, level=level, scan_frame=False, editor_mode=False)
+	I = Game(running=True, level=level, scan_frame=False, editor_mode=False, death_delay=0)
 	set_editor(True)
 
 def get_level() -> Level:
@@ -50,6 +52,9 @@ def set_editor(enabled: bool) -> None:
 	pygame.mouse.set_relative_mode(not enabled)
 	if enabled: pygame.mixer.music.pause()
 	else: pygame.mixer.music.unpause()
+
+def set_death_delay(delay: float) -> None:
+	I.death_delay = max(delay, 0)
 
 def die() -> None:
 	I.running = False
@@ -104,4 +109,9 @@ def run() -> None:
 		engine.update()
 		engine.tick()
 
+	blackout = min(I.death_delay, .1)
+	sleep(blackout)
+	engine.clear()
+	engine.update()
+	sleep(I.death_delay - blackout)
 	pygame.quit()
