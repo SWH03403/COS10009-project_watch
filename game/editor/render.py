@@ -166,6 +166,9 @@ def render_selection() -> None:
 	sel = editor.get_selection()
 	points = selection.get_vertexes(sel)
 	if len(points) > 0: render_box_around(points, True)
+	if len(points) > 1:
+		center = xy_to_screen(points[0])
+		pygame.draw.circle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
 
 def render_hover() -> None:
 	mouse = pygame.mouse.get_pos()

@@ -35,10 +35,10 @@ def get_nearest(pos: Vector2) -> Selection:
 		corners = [level.vertexes[wall.vertex] for wall in sector.walls]
 		center = sum(corners, start=Vector2()) / len(sector.walls)
 		items.append(((center - world_pos).length(), Sector(i)))
-		for j, vertex in enumerate(corners):
-			other = corners[j - len(corners) + 1]
-			middle = (vertex + other) / 2
-			items.append(((middle - world_pos).length(), Wall(i, j)))
+		for j, left in enumerate(corners):
+			right = corners[j - len(corners) + 1]
+			target = left.lerp(right, 1 / 3) # differentiate shared sector wall
+			items.append(((target - world_pos).length(), Wall(i, j)))
 
 	max_dist = THRESHOLD / editor.get_scale()
 	items = [sel for sel in items if sel[0] <= max_dist]
