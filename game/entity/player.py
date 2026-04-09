@@ -9,7 +9,7 @@ import game
 from game import engine
 from game.loaders import load_sounds_suffix
 from game.utils.math import Line
-from game.world.level import get_walls
+from game.world import get_walls
 
 WALK_SPEED: float = 20
 SPRINT_SPEED: float = 50

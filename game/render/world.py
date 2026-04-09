@@ -11,8 +11,7 @@ import game
 from game import engine
 from game.entity import player
 from game.utils.math import Line
-from game.world import Fog
-from game.world.level import get_walls
+from game.world import Fog, get_walls
 from . import region
 from .region import offset
 

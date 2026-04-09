@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from random import randrange
 import pygame
 from pygame import Color, Surface, Vector2
-from . import engine, entity, render
+from . import editor, engine, entity, render
 from .entity import Direction, MovementState, player
 from .loaders import load_level, load_music
 from .world import Level
@@ -14,7 +14,8 @@ class Game:
 	running: bool
 	level: Level
 
-	scan_frame: bool = False
+	scan_frame: bool
+	editor_mode: bool
 
 I: Game
 
@@ -34,7 +35,8 @@ def init() -> None:
 	player.set_aim(spawn.angle)
 
 	global I
-	I = Game(running=True, level=level)
+	I = Game(running=True, level=level, scan_frame=False, editor_mode=False)
+	set_editor(True)
 
 def get_level() -> Level:
 	return I.level
@@ -42,14 +44,27 @@ def get_level() -> Level:
 def is_scan_mode() -> bool:
 	return I.scan_frame
 
-def _handle_keydown(key: int) -> bool:
+def set_editor(enabled: bool) -> None:
+	I.editor_mode = enabled
+	if enabled and not editor.get_init(): editor.init()
+	pygame.mouse.set_relative_mode(not enabled)
+	if enabled: pygame.mixer.music.pause()
+	else: pygame.mixer.music.unpause()
+
+def die() -> None:
+	I.running = False
+
+def handle_keydown(key: int) -> None:
 	match key:
 		case pygame.K_ESCAPE | pygame.K_q:
-			I.running = False
+			die()
 		case pygame.K_p:
 			I.scan_frame = True
+		case pygame.K_LEFTBRACKET:
+			set_editor(True)
 
-def _handle_key() -> bool:
+def handle_keys() -> None:
+	if I.editor_mode: return
 	keys = pygame.key.get_pressed()
 
 	# player movement
@@ -64,25 +79,28 @@ def _handle_key() -> bool:
 	player.set_state(state)
 	player.set_direction(direction)
 
-def _handle_mouse(diff: float) -> None:
+def handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)
 
-def _handle_events() -> bool:
+def handle_events() -> None:
 	I.scan_frame = False # reset next frame
 	for event in pygame.event.get():
-		if event.type == pygame.QUIT: I.running = False
-		elif event.type == pygame.KEYDOWN: _handle_keydown(event.key)
-		elif event.type == pygame.MOUSEMOTION: _handle_mouse(event.rel[0])
+		if event.type == pygame.QUIT: die()
+		elif I.editor_mode: editor.handle_event(event)
+		elif event.type == pygame.KEYDOWN: handle_keydown(event.key)
+		elif event.type == pygame.MOUSEMOTION: handle_mouse(event.rel[0])
 
 def run() -> None:
 	while I.running:
-		_handle_events()
-		_handle_key()
-
-		entity.update()
+		handle_events()
+		handle_keys()
 
 		engine.clear()
-		render.update()
+		if I.editor_mode:
+			editor.render.perform()
+		else:
+			entity.update()
+			render.perform()
 		engine.update()
 		engine.tick()
 
