@@ -59,8 +59,8 @@ def get_walls() -> WallCache:
 
 def get_sectors(left: int, right: int) -> list[SectorRef]:
 	_cache_walls()
-	if (left, right) in I.walls: return I.walls[left, right]
-	return I.walls[right, left]
+	if len(I.walls[left, right]) > 0: return I.walls[left, right]
+	return I.walls[right, left][::-1]
 
 def is_sector_convex(sector: int) -> bool:
 	_cache_sectors_convex()
