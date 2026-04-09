@@ -9,7 +9,7 @@ from . import selection
 
 class EditMode(IntEnum):
 	NORMAL = auto()
-	CREATE = auto()
+	EXTEND = auto()
 	CONNECT = auto()
 
 def is_snap_enabled() -> bool:
@@ -88,9 +88,10 @@ def handle_keydown(key: int) -> None:
 		case pygame.K_c:
 			if isinstance(editor.get_selection(), selection.Vertex):
 				editor.set_mode(EditMode.CONNECT)
-		case pygame.K_n:
-			editor.set_mode(EditMode.CREATE)
-
+		case pygame.K_e:
+			sel = editor.get_selection()
+			if isinstance(sel, selection.Vertex) or isinstance(sel, selection.Wall):
+				editor.set_mode(EditMode.EXTEND)
 		case pygame.K_1:
 			set_selection_wall_type(WallType.SOLID, shift)
 		case pygame.K_2:

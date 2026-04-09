@@ -10,7 +10,7 @@ from game.entity import player
 from game.world.sector import WallType, get_wall_type
 from .. import editor
 from . import selection
-from .calc import world_to_screen
+from .calc import snap_to_grid, world_to_screen
 from .keys import EditMode
 from .selection import Selection
 
@@ -125,15 +125,25 @@ def render_level() -> None:
 
 def render_new_walls() -> None:
 	sel = editor.get_selection()
+	level = game.get_level()
 	points = []
+	snappable = False
 	match editor.get_mode():
 		case EditMode.CONNECT:
 			if not isinstance(sel, selection.Vertex): return
-			level = game.get_level()
 			points.append(world_to_screen(level.vertexes[sel.id]))
+		case EditMode.EXTEND:
+			if isinstance(sel, selection.Vertex):
+				points.append(world_to_screen(level.vertexes[sel.id]))
+				for p in editor.get_extensions():
+					points.append(world_to_screen(p))
+				snappable = True
+			if isinstance(sel, selection.Wall):
+				...
 	if len(points) == 0: return
 
-	mouse = pygame.mouse.get_pos()
+	mouse = Vector2(pygame.mouse.get_pos())
+	if snappable: mouse = snap_to_grid(mouse, True)
 	hovered = selection.get_nearest(mouse)
 	if not isinstance(hovered, selection.Vertex): points.append(mouse)
 	else: points.append(world_to_screen(level.vertexes[hovered.id]))

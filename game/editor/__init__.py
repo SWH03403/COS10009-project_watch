@@ -18,25 +18,22 @@ MAX_ZOOM: float = 3
 
 @dataclass
 class MapEditor:
-	level: Level
-	zoom: float
 	origin: Vector2 # position of world coordinate (0, 0) on the screen
+	zoom: float = 0
 
 	mode: EditMode = EditMode.NORMAL
 	drag_mode: DragMode | None = None
 	drag_origin: Vector2 | None = None
 	selection: Selection | int | None = None
 
-	# "create" mode
-	origin_vertex: int = 0
-	pending_create: list[Vector2] = field(default_factory=list)
+	# "extend" mode
+	extensions: list[Vector2] = field(default_factory=list)
 
 I: MapEditor = None
 
 def init() -> None:
 	global I
-	origin = Vector2(engine.get_screen().size) / 2
-	I = MapEditor(level=game.get_level(), zoom=0, origin=origin)
+	I = MapEditor(origin=Vector2(engine.get_screen().size) / 2)
 
 def get_init() -> bool:
 	return I is not None
@@ -58,6 +55,9 @@ def get_drag_mode() -> DragMode:
 
 def get_mode() -> EditMode:
 	return I.mode
+
+def get_extensions() -> list[Vector2]:
+	return I.extensions
 
 def set_zoom(zoom: float) -> None:
 	I.zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM)
