@@ -94,6 +94,7 @@ def pan(target: Vector2) -> None:
 
 def set_mode(mode: EditMode) -> None:
 	I.mode = mode
+	if mode == EditMode.NORMAL: I.add_parts.clear()
 
 def handle_event(event: Event) -> None:
 	match event.type:
