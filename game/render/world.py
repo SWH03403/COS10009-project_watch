@@ -37,7 +37,7 @@ def init() -> None:
 
 def debug_delay() -> None:
 	if game.is_scan_mode():
-		sleep(5e-3)
+		sleep(1e-3)
 		pygame.display.update()
 
 def yz_to_screen(y: float, z: float) -> float:
