@@ -96,7 +96,11 @@ def connect_vertexes(sel: Selection) -> None:
 
 def select(mouse: Vector2) -> None:
 	sel = selection.get_nearest(mouse)
-	if sel is not None:
+	if sel is None:
+		drag(mouse, start=DragMode.PANNING)
+		editor.set_selection(sel)
+		return
+	else:
 		drag(mouse, start=DragMode.MOVING)
 
 	if editor.get_mode() == EditMode.CONNECT:
