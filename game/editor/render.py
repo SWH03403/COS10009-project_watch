@@ -136,6 +136,7 @@ def render_new_walls() -> None:
 			if isinstance(sel, selection.Vertex):
 				points.append(world_to_screen(level.vertexes[sel.id]))
 				for p in editor.get_extensions():
+					p = level.vertexes[p] if isinstance(p, int) else p
 					points.append(world_to_screen(p))
 				snappable = True
 			if isinstance(sel, selection.Wall):
