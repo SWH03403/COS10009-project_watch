@@ -13,13 +13,14 @@ from .keys import handle_keydown
 from .mouse import DragMode, handle_mouse_event
 from .selection import Selection
 
+DEFAULT_ZOOM = 2
 MIN_ZOOM: float = -1
 MAX_ZOOM: float = 3
 
 @dataclass
 class MapEditor:
 	origin: Vector2 # position of world coordinate (0, 0) on the screen
-	zoom: float = 0
+	zoom: float = DEFAULT_ZOOM
 
 	mode: EditMode = EditMode.NORMAL
 	drag_mode: DragMode | None = None

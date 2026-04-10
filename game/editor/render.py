@@ -18,9 +18,9 @@ GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
 LINE_SPACING: float = 50
 DASH_LENGTH: float = 8
-MIN_PLAYER_SIZE: float = 10
+MIN_PLAYER_SIZE: float = 20
 SPAWNPOINT_SIZE: float = 8
-SELECTION_PADDING: float = 10
+SELECTION_PADDING: int = 20
 SELECTION_COLOR: str = "honeydew3"
 SELECTION_HOVER_COLOR: str = "lightsteelblue4"
 CONNECT_COLOR: str = "lightskyblue1"
@@ -76,12 +76,14 @@ def render_grid() -> None:
 		pygame.draw.line(screen, GRID_COLOR_ORIGIN, (0, origin.y), (w, origin.y), lw)
 
 	# render dots
+	radius = lw // 2
+	if radius < 1: return
 	for i in range(-1, nx):
 		for j in range(-1, ny):
 			for pi, pj in [(0, 0), (0, 3), (3, 0), (3, 3)]:
 				x = x0 + spacing * (i + (pi + 1) / 5)
 				y = y0 + spacing * (j + (pj + 1) / 5)
-				pygame.draw.aacircle(screen, GRID_COLOR, (x, y), lw)
+				pygame.draw.aacircle(screen, GRID_COLOR, (x, y), radius)
 
 def line_dashes(color: ColorLike, start: Vector2, end: Vector2, width: int) -> None:
 	screen = engine.get_screen()
@@ -161,22 +163,21 @@ def render_new_walls() -> None:
 	lw = get_line_width()
 	pygame.draw.lines(screen, CONNECT_COLOR, False, points, lw)
 
-def render_player() -> None:
+def render_entities() -> None:
 	screen = engine.get_screen()
 	lw = get_line_width(.8, 2)
 	scale = editor.get_scale()
 	size = player.HITBOX_SIZE * scale
-	color = "goldenrod1" if size < MIN_PLAYER_SIZE else "white"
+	color = "yellow" if size < MIN_PLAYER_SIZE else "white"
 	size = max(size, MIN_PLAYER_SIZE)
-	pos = world_to_screen(player.get_position()[0])
-	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
-	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
-	pygame.draw.aacircle(screen, color, pos, size, lw)
 
-def render_creature() -> None:
-	screen = engine.get_screen()
-	scale = editor.get_scale()
-	size = max(player.HITBOX_SIZE * scale, MIN_PLAYER_SIZE)
+	# player
+	position = world_to_screen(player.get_position()[0])
+	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
+	pygame.draw.line(screen, "red", position, position + aim, lw)
+	pygame.draw.aacircle(screen, color, position, size, lw)
+
+	# creature
 	position = world_to_screen(creature.get_position())
 	points = []
 	for i in range(4):
@@ -184,8 +185,7 @@ def render_creature() -> None:
 		points.append(position + p * size)
 	for i in range(3, -1, -1):
 		p = Vector2(math.sin(THIRD * i), -math.cos(THIRD * i))
-		points.append(position + p * size / 2)
-
+		points.append(position + p * size * .6)
 	pygame.draw.polygon(screen, "red", points)
 
 def render_box_around(points: list[Vector2], selected: bool) -> None:
@@ -238,7 +238,6 @@ def perform() -> None:
 	render_grid()
 	render_level()
 	render_new_walls()
-	render_player()
-	render_creature()
+	render_entities()
 	render_selection()
 	render_hover()
