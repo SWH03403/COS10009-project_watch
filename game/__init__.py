@@ -10,7 +10,7 @@ from .world import Level
 
 SENSITIVITY: float = .5
 DEFAULT_LEVEL: str = "test/cafe"
-EDITOR_MODE: bool = True
+EDITOR_MODE: bool = False
 
 @dataclass
 class Game:
@@ -23,14 +23,14 @@ class Game:
 
 I: Game
 
-def init() -> None:
+def init(level: str | None = None) -> None:
 	engine.init() # NOTE: must be run first
 	assets.init()
 	render.init()
 
 	pygame.display.set_icon(library.get_image(Image.WINDOW_ICON))
 	library.play_sound(Sound.AMBIENT_WINDY, True)
-	level = loaders.level(DEFAULT_LEVEL)
+	level = loaders.level(level or DEFAULT_LEVEL)
 	player.init(level.spawns[randrange(len(level.spawns))])
 
 	global I
