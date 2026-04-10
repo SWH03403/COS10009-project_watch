@@ -111,6 +111,7 @@ def run() -> None:
 		engine.tick()
 
 	blackout = min(I.death_delay, .1)
+	pygame.display.set_gamma(2, .2, .2)
 	sleep(blackout)
 	engine.clear()
 	engine.update()
