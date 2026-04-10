@@ -7,7 +7,7 @@ import game
 from game.utils.math import is_polygon_clockwise
 from game.world import Wall, default_sector
 from .. import editor
-from . import cache, selection
+from . import cache, selection, ui
 from .common import DragMode, EditMode, ZOOM_STEP, screen_to_world, snap_to_grid
 from .selection import Selection, is_world_element
 
@@ -147,6 +147,8 @@ def select(mouse: Vector2) -> None:
 	editor.set_selection(sel)
 
 def handle_mouse_event(event: Event) -> None:
+	if ui.on_mouse_event(event): return
+
 	keys = pygame.key.get_pressed()
 	space = keys[pygame.K_SPACE]
 

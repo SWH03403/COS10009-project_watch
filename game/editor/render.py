@@ -10,8 +10,8 @@ from game.entity import creature, player
 from game.utils import TextRenderer, render
 from game.world.sector import WallType
 from .. import editor
-from . import cache, selection
-from .common import EditMode, snap_to_grid, world_to_screen
+from . import cache, selection, ui
+from .common import EditMode, SELECTION_PADDING, snap_to_grid, world_to_screen
 from .selection import EntityType, Selection
 
 GRID_COLOR: str = "gray12"
@@ -20,7 +20,6 @@ LINE_SPACING: float = 50
 DASH_LENGTH: float = 8
 MIN_PLAYER_SIZE: float = 20
 SPAWNPOINT_SIZE: float = 8
-SELECTION_PADDING: int = 20
 SELECTION_COLOR: str = "honeydew3"
 SELECTION_HOVER_COLOR: str = "lightsteelblue4"
 CONNECT_COLOR: str = "lightskyblue1"
@@ -254,3 +253,5 @@ def perform() -> None:
 	render_entities()
 	render_selection()
 	render_hover()
+
+	ui.render()

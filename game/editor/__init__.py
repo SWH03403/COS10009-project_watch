@@ -7,7 +7,7 @@ from pygame.math import clamp
 import game
 from game import engine
 from game.world import Level
-from . import cache, render
+from . import cache, render, ui
 from .common import EditMode, snap_to_grid
 from .keys import handle_keydown
 from .mouse import DragMode, handle_mouse_event
@@ -35,6 +35,7 @@ I: MapEditor = None
 def init() -> None:
 	cache.init()
 	render.init()
+	ui.init()
 
 	global I
 	I = MapEditor(origin=Vector2(engine.get_screen().size) / 2)
