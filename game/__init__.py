@@ -4,11 +4,12 @@ from time import sleep
 import pygame
 from pygame import Color, Surface, Vector2
 from . import assets, editor, engine, entities, render
+from .assets import Sound, library, loaders
 from .entities import Direction, MovementState, player
-from .loaders import load_level, load_music
 from .world import Level
 
 SENSITIVITY: float = .5
+DEFAULT_LEVEL: str = "test/cafe"
 EDITOR_MODE: bool = True
 
 @dataclass
@@ -27,12 +28,10 @@ def init() -> None:
 	assets.init()
 	render.init()
 
-	# music
-	load_music("void")
-	pygame.mixer.music.play(-1)
-	pygame.mixer.music.set_volume(.5)
+	# ambient
+	library.play_sound(Sound.AMBIENT_WINDY, True)
 
-	level = load_level("cafe") # DEBUG: Test level
+	level = loaders.level(DEFAULT_LEVEL)
 	player.init(level.spawns[randrange(len(level.spawns))])
 
 	global I
