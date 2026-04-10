@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from enum import Enum
+from dataclasses import dataclass, field
 from time import monotonic
 import math
 import pygame
@@ -30,10 +29,9 @@ class Bobbing:
 	frequency: float
 	magnitude: float
 
-class MovementState(Enum):
-	STANDING = Bobbing(1, 1)
-	WALKING = Bobbing(8, 1)
-	SPRINTING = Bobbing(16, 2)
+STANDING = Bobbing(1, 1)
+WALKING = Bobbing(8, 1)
+SPRINTING = Bobbing(16, 2)
 
 @dataclass
 class Player:
@@ -44,7 +42,7 @@ class Player:
 	eye: float = 10 # z coordinate
 	stamina: float = 1
 	last_sprint: float = 0 # the last time the player sprints
-	state: MovementState = MovementState.STANDING
+	bob: Bobbing = field(default_factory=lambda: STANDING)
 	bob_phase: float = 0
 
 I: Player
@@ -66,11 +64,11 @@ def get_aim() -> float:
 	return aim
 
 def get_bob_factor() -> float:
-	if I.state == MovementState.STANDING:
+	if I.bob == STANDING:
 		# smooth highest and lowest
-		return math.cos(I.bob_phase) * I.state.value.magnitude
+		return math.cos(I.bob_phase) * I.bob.magnitude
 	# smooth only highest
-	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.state.value.magnitude
+	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.bob.magnitude
 
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
@@ -99,23 +97,23 @@ def update() -> None:
 	if keys[pygame.K_d]: direction.x += 1
 	direction = direction.clamp_magnitude(1)
 
-	I.state = MovementState.STANDING
+	I.bob = STANDING
 	if direction.length_squared() > 0:
-		I.state = MovementState.SPRINTING if keys[pygame.K_LSHIFT] else MovementState.WALKING
-	if I.state == MovementState.SPRINTING:
-		if I.stamina == 0: I.state = MovementState.WALKING
+		I.bob = SPRINTING if keys[pygame.K_LSHIFT] else WALKING
+	if I.bob == SPRINTING:
+		if I.stamina == 0: I.bob = WALKING
 		else: I.last_sprint = monotonic()
 
-	is_sprinting = I.state == MovementState.SPRINTING
+	is_sprinting = I.bob == SPRINTING
 	distance = SPRINT_SPEED if is_sprinting else WALK_SPEED
-	movement = I.direction.rotate(I.aim) * distance * engine.get_delta()
+	movement = direction.rotate(I.aim) * distance * engine.get_delta()
 	new_position = I.position + movement
 	new_sector = None
 
 	# update view bobbing
-	is_standing = I.state == MovementState.STANDING
+	is_standing = I.bob == STANDING
 	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if is_standing else 1
-	I.bob_phase += I.state.value.frequency * heavy_breathing * engine.get_delta()
+	I.bob_phase += I.bob.frequency * heavy_breathing * engine.get_delta()
 	# play sound after lowest bob
 	if I.bob_phase > math.pi:
 		I.bob_phase %= 2 * math.pi
@@ -128,7 +126,7 @@ def update() -> None:
 	if is_sprinting: stamina_rate = -STAMINA_DECAY
 	elif monotonic() >= I.last_sprint + STAMINA_REGEN_DELAY:
 		stamina_rate = STAMINA_REGEN
-		if I.state == MovementState.WALKING: stamina_rate *= STAMINA_REGEN_PENALTY
+		if I.bob == WALKING: stamina_rate *= STAMINA_REGEN_PENALTY
 	I.stamina = clamp(I.stamina + stamina_rate * engine.get_delta(), 0, 1)
 	# apply extra delay if stamina reaches 0 this frame
 	if last_stamina > 0 and I.stamina == 0: I.last_sprint += STAMINA_TIRED_DELAY
