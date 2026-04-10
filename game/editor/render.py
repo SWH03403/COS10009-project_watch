@@ -6,7 +6,7 @@ from pygame.typing import ColorLike
 
 import game
 from game import engine
-from game.entity import creature, player
+from game.entities import creature, player
 from game.utils import TextRenderer, render
 from game.world.sector import WallType
 from .. import editor

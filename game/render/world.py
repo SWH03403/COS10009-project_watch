@@ -8,7 +8,7 @@ from pygame.typing import ColorLike
 
 import game
 from game import engine
-from game.entity import player
+from game.entities import player
 from game.utils.math import Line, is_facing
 from game.world import Fog, get_walls
 from . import region

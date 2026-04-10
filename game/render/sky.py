@@ -4,7 +4,7 @@ import pygame
 from pygame import Surface
 
 from game import engine
-from game.entity import player
+from game.entities import player
 from game.loaders import load_skybox
 from . import region
 from .region import ASPECT, offset

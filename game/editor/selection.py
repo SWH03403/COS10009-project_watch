@@ -3,7 +3,7 @@ from enum import IntEnum, auto
 from pygame import Vector2
 
 import game
-from game import entity
+from game import entities
 from .. import editor
 from .common import EditMode, screen_to_world
 
@@ -65,9 +65,9 @@ def get_nearest(position: Vector2, filters: tuple[type, ...] | None = None) -> S
 			items.append(((target - world_pos).length(), Wall(i, j)))
 
 	if no_filter or Entity in filters:
-		dist = (entity.creature.get_position() - world_pos).length()
+		dist = (entities.creature.get_position() - world_pos).length()
 		items.append((dist, Entity(typ=EntityType.CREATURE)))
-		dist = (entity.player.get_position()[0] - world_pos).length()
+		dist = (entities.player.get_position()[0] - world_pos).length()
 		items.append((dist, Entity(typ=EntityType.PLAYER)))
 	if no_filter or Spawn in filters:
 		for i, spawn in enumerate(level.spawns):
@@ -97,6 +97,6 @@ def get_vertexes(sel: Selection) -> list[Vector2]:
 	elif isinstance(sel, Spawn):
 		return [level.spawns[sel.id].position]
 	elif isinstance(sel, Entity):
-		if sel.typ == EntityType.CREATURE: return [entity.creature.get_position()]
-		elif sel.typ == EntityType.PLAYER: return [entity.player.get_position()[0]]
+		if sel.typ == EntityType.CREATURE: return [entities.creature.get_position()]
+		elif sel.typ == EntityType.PLAYER: return [entities.player.get_position()[0]]
 	return []

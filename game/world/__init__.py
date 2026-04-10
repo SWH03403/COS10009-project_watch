@@ -6,7 +6,7 @@ from .sector import Sector, Plane, Wall, default_sector
 from .spawn import Spawn
 
 def get_walls(level: Level, sector_id: int, relative: bool) -> list[tuple[Vector2, Vector2, Wall]]:
-	from game.entity import player
+	from game.entities import player
 	sector = level.sectors[sector_id]
 	n_walls = len(sector.walls)
 	v = [level.vertexes[wall.vertex] for wall in sector.walls]

@@ -5,7 +5,7 @@ import pygame
 from pygame import Color, Surface, Vector2
 
 from game import engine
-from game.entity import player
+from game.entities import player
 from . import region
 
 COLOR: str = "gray80"

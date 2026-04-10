@@ -5,7 +5,7 @@ import pygame
 from pygame import Surface, Vector2
 
 from game import engine
-from game.entity import creature, player
+from game.entities import creature, player
 from . import region, world
 
 VARIANTS: int = 5
