@@ -7,7 +7,7 @@ from game import entity
 from .. import editor
 from .common import EditMode, screen_to_world
 
-THRESHOLD: float = 50 # pixels
+THRESHOLD: float = 20 # pixels
 
 class EntityType(IntEnum):
 	CREATURE = auto()
