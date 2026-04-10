@@ -47,8 +47,8 @@ def set_editor(enabled: bool) -> None:
 	I.editor_mode = enabled
 	if enabled and not editor.get_init(): editor.init()
 	engine.set_editor_mode(enabled)
-	if enabled: pygame.mixer.music.pause()
-	else: pygame.mixer.music.unpause()
+	if enabled: pygame.mixer.pause()
+	else: pygame.mixer.unpause()
 
 def set_death_delay(delay: float) -> None:
 	I.death_delay = max(delay, 0)
