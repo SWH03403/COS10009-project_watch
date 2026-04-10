@@ -8,8 +8,9 @@ class Image(Enum):
 	CREATURE_FLOAT = "creature/float"
 	CREATURE_GRAB = "creature/grab"
 	SKYBOX_CLOUDY = "skybox/cloudy"
-	WINDOW_ICON = "icon"
+	SKYBOX_STARRY = "skybox/starry"
 	VIGNETTE = "vignette"
+	WINDOW_ICON = "icon"
 
 class Sound(Enum):
 	AMBIENT_WINDY = "windy"
