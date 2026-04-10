@@ -105,6 +105,7 @@ def render_level() -> None:
 	for (left, right), refs in cache.get_walls().items():
 		left, right = vertexes[left], vertexes[right]
 		types = [r.typ for r in refs][:2] # get at most 2
+		if len(types) > 1 and types[0] == types[1]: types.pop()
 		for sector_id, typ in enumerate(types):
 			start = left.lerp(right, sector_id / len(types))
 			end = left.lerp(right, (sector_id + 1) / len(types))
