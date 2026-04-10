@@ -90,8 +90,7 @@ def render_level() -> None:
 	screen = engine.get_screen()
 	level = game.get_level()
 
-	connect_wall = get_line_width()
-	no_wall = get_line_width(.8)
+	non_solid_wall = get_line_width()
 	solid_wall = get_line_width(1.5)
 
 	vertexes = [world_to_screen(v) for v in level.vertexes]
@@ -107,12 +106,12 @@ def render_level() -> None:
 		for sector_id, typ in enumerate(types):
 			start = left.lerp(right, sector_id / len(types))
 			end = left.lerp(right, (sector_id + 1) / len(types))
-			if typ == WallType.SKY: line_dashes("firebrick3", start, end, no_wall)
+			if typ == WallType.SKY: line_dashes("firebrick3", start, end, non_solid_wall)
 			elif typ == WallType.SOLID: pygame.draw.line(screen, "white", start, end, solid_wall)
-			else: line_dashes("goldenrod3", start, end, connect_wall)
+			else: line_dashes("goldenrod3", start, end, non_solid_wall)
 
 	hlen = SPAWNPOINT_SIZE * editor.get_scale() / 2
-	spawn_lw = connect_wall
+	spawn_lw = non_solid_wall
 	for spawn in level.spawns:
 		x, y = world_to_screen(spawn.position)
 		pygame.draw.line(screen, "springgreen2", (x - hlen, y), (x + hlen, y), spawn_lw)
