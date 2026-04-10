@@ -31,11 +31,9 @@ def polygon(
 	surface.blit(inner, origin)
 
 class TextRenderer:
-	BASE_SIZE: float = 12
-
-	def __init__(self, scale: float, color: str, bold: bool = False) -> None:
+	def __init__(self, size: int, color: str, bold: bool = False) -> None:
 		self.font = load_font("poppins_bold" if bold else "poppins")
-		self.font.point_size = int(TextRenderer.BASE_SIZE * scale)
+		self.font.point_size = size
 		self.color = color
 
 	def __call__(self, text: str) -> Surface:

@@ -12,7 +12,7 @@ from game.world.sector import WallType
 from .. import editor
 from . import cache, selection
 from .common import EditMode, snap_to_grid, world_to_screen
-from .selection import Selection
+from .selection import EntityType, Selection
 
 GRID_COLOR: str = "gray12"
 GRID_COLOR_ORIGIN: str = "gray36"
@@ -26,6 +26,7 @@ SELECTION_HOVER_COLOR: str = "lightsteelblue4"
 CONNECT_COLOR: str = "lightskyblue1"
 THIRD: float = math.radians(120)
 TOOLTIP_OFFSET: int = 10
+TEXT_PADDING: Vector2 = Vector2(.5, .2) # em
 
 @dataclass
 class Renderer:
@@ -34,7 +35,7 @@ class Renderer:
 	hover_target: Selection
 	hover_points: list[Vector2]
 
-	f_title: TextRenderer
+	f_general: TextRenderer
 
 I: Renderer
 
@@ -44,7 +45,7 @@ def init() -> None:
 		hover_position=Vector2(),
 		hover_target=None,
 		hover_points=[],
-		f_title=TextRenderer(1.2, "white", True),
+		f_general=TextRenderer(24, "white"),
 	)
 
 def get_line_width(adhoc_scale: float = 1, min_width: int = 1) -> int:
@@ -212,12 +213,25 @@ def render_selection() -> None:
 		pygame.draw.aacircle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
 
 def render_tooltip(origin: Vector2) -> None:
-	title = I.f_title("Sector")
-
 	if editor.get_drag_mode() is not None: return
-	tooltip = Surface((120, 80)).convert_alpha()
+	if (sel := I.hover_target) is None: return
+
+	text = "?"
+	if isinstance(sel, selection.Vertex): text = f"Vertex {sel.id}"
+	elif isinstance(sel, selection.Wall): text = f"Wall {sel.wall_idx} of Sector {sel.sector_id}"
+	elif isinstance(sel, selection.Sector): text = f"Sector {sel.id}"
+	elif isinstance(sel, selection.Spawn): text = f"Spawn {sel.id}"
+	elif isinstance(sel, selection.Entity):
+		if sel.typ == EntityType.CREATURE: text = "Creature"
+		elif sel.typ == EntityType.PLAYER: text = "Player"
+
+	text_surface = I.f_general(text)
+	pad = TEXT_PADDING * I.f_general.font.point_size
+	size = Vector2(text_surface.width, I.f_general.font.get_linesize()) + pad * 2
+
+	tooltip = Surface(size).convert_alpha()
 	tooltip.fill("black")
-	tooltip.blit(title, (10, 10))
+	tooltip.blit(text_surface, pad)
 	tooltip.set_alpha(200)
 	pygame.draw.rect(tooltip, "white", tooltip.get_rect(), 1)
 	engine.get_screen().blit(tooltip, (origin + Vector2(TOOLTIP_OFFSET, TOOLTIP_OFFSET)))
