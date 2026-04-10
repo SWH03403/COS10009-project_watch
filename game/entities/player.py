@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum
 from time import monotonic
 import math
 from pygame.math import Vector2, clamp
@@ -34,7 +35,7 @@ class Bobbing:
 	frequency: float
 	magnitude: float
 
-class MovementState:
+class MovementState(Enum):
 	STANDING = Bobbing(1, 1)
 	WALKING = Bobbing(8, 1)
 	SPRINTING = Bobbing(16, 2)
@@ -73,9 +74,9 @@ def get_aim() -> float:
 def get_bob_factor() -> float:
 	if I.state == MovementState.STANDING:
 		# smooth highest and lowest
-		return math.cos(I.bob_phase) * I.state.magnitude
+		return math.cos(I.bob_phase) * I.state.value.magnitude
 	# smooth only highest
-	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.state.magnitude
+	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.state.value.magnitude
 
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
@@ -113,7 +114,7 @@ def update() -> None:
 	# update view bobbing
 	is_standing = I.state == MovementState.STANDING
 	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if is_standing else 1
-	I.bob_phase += I.state.frequency * heavy_breathing * engine.get_delta()
+	I.bob_phase += I.state.value.frequency * heavy_breathing * engine.get_delta()
 	# play sound after lowest bob
 	if I.bob_phase > math.pi:
 		I.bob_phase %= 2 * math.pi
