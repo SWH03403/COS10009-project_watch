@@ -6,7 +6,7 @@ from pygame.typing import ColorLike
 
 import game
 from game import engine
-from game.entity import player
+from game.entity import creature, player
 from game.utils import render
 from game.world.sector import WallType
 from .. import editor
@@ -24,6 +24,7 @@ SELECTION_PADDING: float = 10
 SELECTION_COLOR: str = "honeydew3"
 SELECTION_HOVER_COLOR: str = "lightsteelblue4"
 CONNECT_COLOR: str = "lightskyblue1"
+THIRD: float = math.radians(120)
 
 @dataclass
 class Renderer:
@@ -159,6 +160,21 @@ def render_player() -> None:
 	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
 	pygame.draw.aacircle(screen, color, pos, size, lw)
 
+def render_creature() -> None:
+	screen = engine.get_screen()
+	scale = editor.get_scale()
+	size = max(player.HITBOX_SIZE * scale, MIN_PLAYER_SIZE)
+	position = world_to_screen(creature.get_position())
+	points = []
+	for i in range(4):
+		p = Vector2(math.sin(THIRD * i), -math.cos(THIRD * i))
+		points.append(position + p * size)
+	for i in range(3, -1, -1):
+		p = Vector2(math.sin(THIRD * i), -math.cos(THIRD * i))
+		points.append(position + p * size / 2)
+
+	pygame.draw.polygon(screen, "red", points)
+
 def render_box_around(points: list[Vector2], selected: bool) -> None:
 	screen = engine.get_screen()
 	w, h = screen.size
@@ -198,5 +214,6 @@ def perform() -> None:
 	render_level()
 	render_new_walls()
 	render_player()
+	render_creature()
 	render_selection()
 	render_hover()
