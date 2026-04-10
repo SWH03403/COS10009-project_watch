@@ -1,6 +1,7 @@
 import pygame
-from pygame import Color, Rect, Surface, Vector2, draw
+from pygame import Color, Surface, Vector2, draw
 from pygame.typing import ColorLike
+from game.loaders import load_font
 
 TRANSPARENT: Color = Color(0, 0, 0, 0)
 
@@ -28,3 +29,12 @@ def polygon(
 	draw.polygon(inner, color, points, width)
 
 	surface.blit(inner, origin)
+
+class TextRenderer:
+	def __init__(self, size: int, color: str, bold: bool = False) -> None:
+		self.font = load_font("poppins_bold" if bold else "poppins")
+		self.font.point_size = size
+		self.color = color
+
+	def __call__(self, text: str) -> Surface:
+		return self.font.render(text, True, self.color)

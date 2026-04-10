@@ -9,6 +9,7 @@ from .loaders import load_level, load_music
 from .world import Level
 
 SENSITIVITY: float = .5
+EDITOR_MODE: bool = True
 
 @dataclass
 class Game:
@@ -22,7 +23,7 @@ class Game:
 I: Game
 
 def init() -> None:
-	engine.init()
+	engine.init(EDITOR_MODE)
 	render.init()
 	entity.init()
 
@@ -38,7 +39,7 @@ def init() -> None:
 
 	global I
 	I = Game(running=True, level=level, scan_frame=False, editor_mode=False, death_delay=0)
-	set_editor(True)
+	if EDITOR_MODE: set_editor(True)
 
 def get_level() -> Level:
 	return I.level
@@ -49,7 +50,7 @@ def is_scan_mode() -> bool:
 def set_editor(enabled: bool) -> None:
 	I.editor_mode = enabled
 	if enabled and not editor.get_init(): editor.init()
-	pygame.mouse.set_relative_mode(not enabled)
+	engine.set_editor_mode(enabled)
 	if enabled: pygame.mixer.music.pause()
 	else: pygame.mixer.music.unpause()
 

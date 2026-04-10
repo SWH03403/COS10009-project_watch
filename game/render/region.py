@@ -1,6 +1,6 @@
 """limit rendering for most elements"""
 from pygame import Rect
-from game.engine import RESOLUTION
+from game.engine import LOW_RES
 
 ASPECT: float = 4 / 3
 
@@ -13,7 +13,7 @@ def init() -> None:
 	global I
 
 	# render into a 3:4 region on a 16:9 surface for special effect
-	sw, sh = RESOLUTION
+	sw, sh = LOW_RES
 	w = int(sh * ASPECT)
 	x = int((sw - w) / 2)
 	I = Rect(x, 0, w, sh)
