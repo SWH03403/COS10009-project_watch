@@ -5,14 +5,16 @@ from pygame.font import Font
 from .level import load as level
 
 def _get_variants(prefix: str, suffix: str) -> list[str]:
-	paths = [f"{prefix}.{suffix}"]
-	if not exists(paths[0]): paths.clear()
+	no_number = f"{prefix}.{suffix}"
+	paths = [no_number] if exists(no_number) else []
 	n = 1
 	while True:
 		path = f"{prefix}{n}.{suffix}"
-		if not exists(path): return paths
+		if not exists(path): break
 		paths.append(path)
 		n += 1
+	if len(paths) >= 0: return paths
+	raise RuntimeError(f"No variant exists for {no_number}")
 
 def font(name: str) -> Font:
 	return Font(f"assets/fonts/{name}.otf")

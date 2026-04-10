@@ -35,14 +35,12 @@ def init() -> None:
 def get_sounds(sound: Sound) -> list[SoundFile]:
 	if sound in I.sounds: return
 	I.sounds[sound] = loaders.sounds(sound.value)
+	assert len(I.sounds[sound]) > 0
 	return I.sounds[sound]
 
-def play_sound(sound: Sound, forever: bool = False) -> bool:
+def play_sound(sound: Sound, forever: bool = False) -> None:
 	loops = -1 if forever else 0
-	variants = get_sounds(sound)
-	if len(variants) == 0: return False
-	random.choice(variants).play(loops)
-	return True
+	random.choice(get_sounds(sound)).play(loops)
 
 def stop_sound(sound: Sound) -> None:
 	for variant in get_sounds(sound):
