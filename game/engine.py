@@ -3,7 +3,7 @@ import pygame
 from pygame import FULLSCREEN, SCALED, Surface
 from pygame.time import Clock
 
-TITLE: str = "Watch"
+TITLE: str = "watch"
 LOW_RES: tuple[int, int] = 800, 450
 HIGH_RES: tuple[int, int] = 1920, 1080
 FPS: int = 60
@@ -17,12 +17,17 @@ class Engine:
 
 I: Engine
 
-def init(editor_mode: bool) -> None:
+def init() -> None:
+	from game import EDITOR_MODE
+
 	global I
 	I = Engine(screen=None, clock=Clock(), delta=0)
-	set_editor_mode(editor_mode)
+	set_editor_mode(EDITOR_MODE)
 	pygame.font.init()
 	pygame.mixer.init()
+
+	icon = load_image("icon", False)
+	pygame.display.set_icon(icon)
 
 def get_screen() -> Surface:
 	return I.screen
@@ -43,6 +48,6 @@ def set_editor_mode(enabled: bool) -> None:
 	res = HIGH_RES if enabled else LOW_RES
 	if I.screen is not None and I.screen.size == res: return
 	I.screen = pygame.display.set_mode(res, FULLSCREEN | SCALED)
-	subtitle = " (map editor)" if enabled else ""
+	subtitle = " (editor)" if enabled else ""
 	pygame.display.set_caption(TITLE + subtitle)
 	pygame.mouse.set_relative_mode(not enabled)

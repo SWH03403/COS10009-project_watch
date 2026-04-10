@@ -23,7 +23,7 @@ class Game:
 I: Game
 
 def init() -> None:
-	engine.init(EDITOR_MODE)
+	engine.init()
 	render.init()
 	entity.init()
 
