@@ -38,8 +38,6 @@ def clear() -> None:
 
 def update() -> None:
 	pygame.display.flip()
-
-def tick() -> None:
 	I.delta = I.clock.tick(FPS) / 1000 # seconds
 
 def set_editor_mode(enabled: bool) -> None:

@@ -5,7 +5,7 @@ import pygame
 from pygame import Color, Surface, Vector2
 from . import assets, editor, engine, entities, render
 from .assets import Image, Sound, library, loaders
-from .entities import Direction, MovementState, player
+from .entities import player
 from .world import Level
 
 SENSITIVITY: float = .5
@@ -65,22 +65,6 @@ def handle_keydown(key: int) -> None:
 		case pygame.K_LEFTBRACKET:
 			set_editor(True)
 
-def handle_keys() -> None:
-	if I.editor_mode: return
-	keys = pygame.key.get_pressed()
-
-	# player movement
-	direction = Vector2()
-	if keys[pygame.K_w]: direction += Direction.FORWARD
-	if keys[pygame.K_s]: direction += Direction.BACKWARD
-	if keys[pygame.K_a]: direction += Direction.LEFT
-	if keys[pygame.K_d]: direction += Direction.RIGHT
-	state = MovementState.STANDING
-	if direction.length_squared() > 0:
-		state = MovementState.SPRINTING if keys[pygame.K_LSHIFT] else MovementState.WALKING
-	player.set_state(state)
-	player.set_direction(direction)
-
 def handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)
 
@@ -95,8 +79,6 @@ def handle_events() -> None:
 def run() -> None:
 	while I.running:
 		handle_events()
-		handle_keys()
-
 		engine.clear()
 		if I.editor_mode:
 			editor.render.perform()
@@ -104,7 +86,6 @@ def run() -> None:
 			entities.update()
 			render.perform()
 		engine.update()
-		engine.tick()
 
 	blackout = min(I.death_delay, .1)
 	pygame.display.set_gamma(2, .2, .2)

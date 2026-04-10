@@ -1,5 +1,4 @@
 from . import creature, player
-from .player import Direction, MovementState
 
 def update() -> None:
 	player.update()

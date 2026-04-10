@@ -1,7 +1,8 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from time import monotonic
 import math
+import pygame
 from pygame.math import Vector2, clamp
 
 import game
@@ -24,12 +25,6 @@ STAMINA_REGEN_DELAY: float = 2
 STAMINA_TIRED_DELAY: float = 3 # extra time penalty if running out of stamina
 STAMINA_REGEN_PENALTY: float = .35 # applied when walking
 
-class Direction:
-	FORWARD = Vector2(0, 1)
-	BACKWARD = Vector2(0, -1)
-	LEFT = Vector2(-1, 0)
-	RIGHT = Vector2(1, 0)
-
 @dataclass
 class Bobbing:
 	frequency: float
@@ -49,7 +44,6 @@ class Player:
 	eye: float = 10 # z coordinate
 	stamina: float = 1
 	last_sprint: float = 0 # the last time the player sprints
-	direction: Vector2 = field(init=False) # set by main loop anyway
 	state: MovementState = MovementState.STANDING
 	bob_phase: float = 0
 
@@ -88,15 +82,6 @@ def get_relative(target: Vector2) -> Vector2:
 def get_stamina() -> float:
 	return I.stamina
 
-def set_state(state: MovementState) -> None:
-	if state == MovementState.SPRINTING:
-		if I.stamina == 0: state = MovementState.WALKING
-		else: I.last_sprint = monotonic()
-	I.state = state
-
-def set_direction(direction: Vector2) -> None:
-	I.direction = direction.clamp_magnitude(1)
-
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
@@ -105,6 +90,22 @@ def play_footstep() -> None:
 	library.play_sound(Sound.STEP_TILE)
 
 def update() -> None:
+	keys = pygame.key.get_pressed()
+
+	direction = Vector2()
+	if keys[pygame.K_w]: direction.y += 1
+	if keys[pygame.K_s]: direction.y -= 1
+	if keys[pygame.K_a]: direction.x -= 1
+	if keys[pygame.K_d]: direction.x += 1
+	direction = direction.clamp_magnitude(1)
+
+	I.state = MovementState.STANDING
+	if direction.length_squared() > 0:
+		I.state = MovementState.SPRINTING if keys[pygame.K_LSHIFT] else MovementState.WALKING
+	if I.state == MovementState.SPRINTING:
+		if I.stamina == 0: I.state = MovementState.WALKING
+		else: I.last_sprint = monotonic()
+
 	is_sprinting = I.state == MovementState.SPRINTING
 	distance = SPRINT_SPEED if is_sprinting else WALK_SPEED
 	movement = I.direction.rotate(I.aim) * distance * engine.get_delta()
