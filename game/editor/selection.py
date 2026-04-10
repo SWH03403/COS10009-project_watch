@@ -1,11 +1,17 @@
 from dataclasses import dataclass
+from enum import IntEnum, auto
 from pygame import Vector2
 
 import game
+from game import entity
 from .. import editor
 from .common import EditMode, screen_to_world
 
 THRESHOLD: float = 50 # pixels
+
+class EntityType(IntEnum):
+	CREATURE = auto()
+	PLAYER = auto()
 
 @dataclass
 class Sector:
@@ -20,7 +26,15 @@ class Wall:
 class Vertex:
 	id: int
 
-type Selection = Sector | Wall | Vertex | None
+@dataclass
+class Spawn:
+	id: int
+
+@dataclass
+class Entity:
+	typ: EntityType
+
+type Selection = Sector | Wall | Vertex | Spawn | Entity | None
 
 SELECTION_FILTERS: dict[EditMode, tuple[type, ...]] = {
 	EditMode.NORMAL: (),
@@ -50,6 +64,15 @@ def get_nearest(position: Vector2, filters: tuple[type, ...] | None = None) -> S
 			target = left.lerp(right, 1 / 3) # differentiate shared sector wall
 			items.append(((target - world_pos).length(), Wall(i, j)))
 
+	if no_filter or Entity in filters:
+		dist = (entity.creature.get_position() - world_pos).length()
+		items.append((dist, Entity(typ=EntityType.CREATURE)))
+		dist = (entity.player.get_position()[0] - world_pos).length()
+		items.append((dist, Entity(typ=EntityType.PLAYER)))
+	if no_filter or Spawn in filters:
+		for i, spawn in enumerate(level.spawns):
+			items.append(((spawn.position - world_pos).length(), Spawn(i)))
+
 	max_dist = THRESHOLD / editor.get_scale()
 	items = [sel for sel in items if sel[0] <= max_dist]
 	if len(items) == 0: return None
@@ -71,4 +94,9 @@ def get_vertexes(sel: Selection) -> list[Vector2]:
 		return [left, right]
 	elif isinstance(sel, Vertex):
 		return [level.vertexes[sel.id]]
+	elif isinstance(sel, Spawn):
+		return [level.spawns[sel.id].position]
+	elif isinstance(sel, Entity):
+		if sel.typ == EntityType.CREATURE: return [entity.creature.get_position()]
+		elif sel.typ == EntityType.PLAYER: return [entity.player.get_position()[0]]
 	return []

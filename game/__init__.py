@@ -33,7 +33,7 @@ def init() -> None:
 
 	level = load_level("cafe") # DEBUG: Test level
 	spawn = level.spawns[randrange(len(level.spawns))]
-	player.set_position(spawn.position, spawn.sector)
+	player.set_position(spawn.position.copy(), spawn.sector)
 	player.set_aim(spawn.angle)
 
 	global I
