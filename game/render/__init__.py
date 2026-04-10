@@ -13,7 +13,7 @@ def init() -> None:
 def perform() -> None:
 	sky.render()
 	world.render()
-	ui.render()
 	creature.render()
 	vignette.render()
+	ui.render()
 	text.render()
