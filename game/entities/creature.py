@@ -9,7 +9,7 @@ KILL_DIST: float = 5
 
 @dataclass
 class Creature:
-	enabled: bool
+	invisible: bool # whether it can be seen by the player
 	position: Vector2
 	maintain_distance: tuple[float, float]
 	aggressive: bool
@@ -19,7 +19,7 @@ I: Creature
 def init() -> None:
 	global I
 	I = Creature(
-		enabled=False,
+		invisible=False,
 		position=Vector2(100, 100),
 		maintain_distance=(100, 200),
 		aggressive=False,
@@ -28,14 +28,13 @@ def init() -> None:
 def get_position() -> Vector2:
 	return I.position
 
-def is_enabled() -> bool:
-	return I.enabled
+def is_invisible() -> bool:
+	return I.invisible
 
 def is_aggressive() -> bool:
 	return I.aggressive
 
 def update() -> None:
-	if not is_enabled(): return
 	if is_aggressive():
 		target, _ = player.get_position()
 		I.position.move_towards_ip(target, 10 * engine.get_delta())

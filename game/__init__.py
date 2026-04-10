@@ -25,7 +25,7 @@ I: Game
 def init() -> None:
 	engine.init()
 	render.init()
-	entity.init()
+	entities.init()
 
 	# music
 	load_music("void")
@@ -105,7 +105,7 @@ def run() -> None:
 		if I.editor_mode:
 			editor.render.perform()
 		else:
-			entity.update()
+			entities.update()
 			render.perform()
 		engine.update()
 		engine.tick()

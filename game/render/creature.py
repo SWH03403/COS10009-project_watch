@@ -15,7 +15,7 @@ MIN_UNSEEN_DURATION: float = 3 # for the sprite to change
 @dataclass
 class CreatureRenderer:
 	sprites: list[Surface]
-	visible: bool
+	watched: bool # is being looked at by the player
 	variant: int
 	last_change: int # variant change
 
@@ -28,7 +28,7 @@ def init() -> None:
 	for i in range(VARIANTS):
 		sprites.append(load_image(f"creature/float{i}", True))
 		sprites.append(load_image(f"creature/grab{i}", True))
-	I = CreatureRenderer(sprites=sprites, visible=False, variant=0, last_change=0)
+	I = CreatureRenderer(sprites=sprites, watched=False, variant=0, last_change=0)
 
 def get_size() -> Vector2:
 	idx = 1 if creature.is_aggressive() else 0
@@ -40,7 +40,7 @@ def get_sprite(scaling_factor: float) -> Surface:
 	return pygame.transform.scale_by(I.sprites[idx], scaling_factor)
 
 def render() -> None:
-	if not creature.is_enabled(): return
+	if creature.is_invisible(): return
 
 	screen = engine.get_screen()
 	world_pos = player.get_relative(creature.get_position())
@@ -55,7 +55,7 @@ def render() -> None:
 	rw, rh = region.get_size()
 	xs = (-size.x, rx, rx + rw - size.x, screen.width)
 	if pos.x < xs[0] or xs[3] < pos.x or xs[1] < pos.x < xs[2]:
-		I.visible = False
+		I.watched = False
 		return
 
 	if xs[0] <= pos.x <= xs[1]:
@@ -73,8 +73,8 @@ def render() -> None:
 
 	now = monotonic()
 	should_change = now >= I.last_change + MIN_UNSEEN_DURATION or creature.is_aggressive()
-	if not I.visible and should_change: I.variant = randrange(VARIANTS)
-	I.visible = True
+	if not I.watched and should_change: I.variant = randrange(VARIANTS)
+	I.watched = True
 	I.last_change = now
 
 	sprite = get_sprite(scaling_factor)
