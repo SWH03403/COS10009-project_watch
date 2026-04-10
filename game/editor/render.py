@@ -34,8 +34,8 @@ class Renderer:
 
 I = Renderer()
 
-def get_line_width(adhoc_scale: float = 1) -> int:
-	return max(round(editor.get_scale() * adhoc_scale), 1)
+def get_line_width(adhoc_scale: float = 1, min: float = 1) -> int:
+	return max(round(editor.get_scale() * adhoc_scale), min)
 
 def render_grid() -> None:
 	screen = engine.get_screen()
@@ -68,7 +68,7 @@ def render_grid() -> None:
 			for pi, pj in [(0, 0), (0, 3), (3, 0), (3, 3)]:
 				x = x0 + spacing * (i + (pi + 1) / 5)
 				y = y0 + spacing * (j + (pj + 1) / 5)
-				pygame.draw.circle(screen, GRID_COLOR, (x, y), lw)
+				pygame.draw.aacircle(screen, GRID_COLOR, (x, y), lw)
 
 def line_dashes(color: ColorLike, start: Vector2, end: Vector2, width: int) -> None:
 	screen = engine.get_screen()
@@ -149,7 +149,7 @@ def render_new_walls() -> None:
 
 def render_player() -> None:
 	screen = engine.get_screen()
-	lw = get_line_width(.8)
+	lw = get_line_width(.8, 2)
 	scale = editor.get_scale()
 	size = player.HITBOX_SIZE * scale
 	color = "goldenrod1" if size < MIN_PLAYER_SIZE else "white"
@@ -157,7 +157,7 @@ def render_player() -> None:
 	pos = world_to_screen(player.get_position()[0])
 	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
 	pygame.draw.line(screen, "firebrick1", pos, pos + aim, lw)
-	pygame.draw.circle(screen, color, pos, size, lw)
+	pygame.draw.aacircle(screen, color, pos, size, lw)
 
 def render_box_around(points: list[Vector2], selected: bool) -> None:
 	screen = engine.get_screen()
@@ -180,7 +180,7 @@ def render_selection() -> None:
 	if len(points) > 0: render_box_around(points, True)
 	if len(points) > 1:
 		center = world_to_screen(points[0])
-		pygame.draw.circle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
+		pygame.draw.aacircle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
 
 def render_hover() -> None:
 	mouse = pygame.mouse.get_pos()
