@@ -169,14 +169,13 @@ def render_entities() -> None:
 	lw = get_line_width(.8, 2)
 	scale = editor.get_scale()
 	size = player.HITBOX_SIZE * scale
-	color = "yellow" if size < MIN_PLAYER_SIZE else "white"
 	size = max(size, MIN_PLAYER_SIZE)
 
 	# player
 	position = world_to_screen(player.get_position()[0])
 	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
 	pygame.draw.line(screen, "red", position, position + aim, lw)
-	pygame.draw.aacircle(screen, color, position, size, lw)
+	pygame.draw.aacircle(screen, "white", position, size, lw)
 
 	# creature
 	position = world_to_screen(creature.get_position())
