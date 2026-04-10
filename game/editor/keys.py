@@ -52,14 +52,13 @@ def get_neighbor_ref() -> SectorRef | None:
 		if ref.id != sel.sector_id: return ref
 
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
-	ref = get_neighbor_ref()
-	if ref is None: return
 	sel = editor.get_selection()
-	assert isinstance(sel, selection.Wall)
+	if not isinstance(sel, selection.Wall): return
+	ref = get_neighbor_ref()
 
 	level = game.get_level()
 	wall = level.sectors[sel.sector_id].walls[sel.wall_idx]
-	nb_wall = level.sectors[ref.id].walls[ref.wall_idx]
+	nb_wall = None if ref is None else level.sectors[ref.id].walls[ref.wall_idx]
 
 	onesided |= nb_wall is None
 	if typ == WallType.NEIGHBOR:
