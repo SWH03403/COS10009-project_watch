@@ -1,4 +1,4 @@
-from . import creature, region, sky, ui, world
+from . import creature, region, sky, text, ui, world
 
 def init() -> None:
 	region.init()
@@ -6,6 +6,7 @@ def init() -> None:
 	creature.init()
 	sky.init()
 	ui.init()
+	text.init()
 	world.init()
 
 def perform() -> None:
@@ -13,3 +14,4 @@ def perform() -> None:
 	world.render()
 	ui.render()
 	creature.render()
+	text.render()
