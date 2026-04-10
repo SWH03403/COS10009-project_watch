@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pygame import Vector2
 
 import game
@@ -9,7 +9,8 @@ KILL_DIST: float = 5
 
 @dataclass
 class Creature:
-	position: Vector2 | None = None # `None` means it can not be seen (temporarily invisible)
+	invisible: bool = False # the player can not see it
+	position: Vector2 = field(default_factory=Vector2)
 	maintain_distance: tuple[float, float] = (100, 200)
 	aggressive: bool = False
 
@@ -18,11 +19,11 @@ I: Creature = Creature()
 def get_position() -> Vector2:
 	return I.position
 
-def is_invisible() -> bool:
-	return I.position is None
-
 def is_aggressive() -> bool:
 	return I.aggressive
+
+def is_invisible() -> bool:
+	return I.invisible and not is_aggressive()
 
 def update() -> None:
 	if is_aggressive():

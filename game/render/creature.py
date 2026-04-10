@@ -1,43 +1,33 @@
 from dataclasses import dataclass
-from random import randrange
 from time import monotonic
 import pygame
 from pygame import Surface, Vector2
 
 from game import engine
+from game.assets import Image, library
 from game.entities import creature, player
 from . import region, world
 
-VARIANTS: int = 5
 ENLARGE: float = 10
 MIN_UNSEEN_DURATION: float = 3 # for the sprite to change
 
 @dataclass
 class CreatureRenderer:
-	sprites: list[Surface]
-	watched: bool # is being looked at by the player
-	variant: int
-	last_change: int # variant change
+	passive_size: Vector2
+	aggressive_size: Vector2
+	current: Surface # image currently being shown
+	watched: bool = False # is being looked at by the player
+	to_change: float = 0
 
 I: CreatureRenderer
 
 def init() -> None:
-	from game.loaders import load_image
+	current = library.get_image(Image.CREATURE_FLOAT)
+	passive_size = Vector2(current.size)
+	aggressive_size = Vector2(library.get_image(Image.CREATURE_GRAB).size)
+
 	global I
-	sprites = []
-	for i in range(VARIANTS):
-		sprites.append(load_image(f"creature/float{i}", True))
-		sprites.append(load_image(f"creature/grab{i}", True))
-	I = CreatureRenderer(sprites=sprites, watched=False, variant=0, last_change=0)
-
-def get_size() -> Vector2:
-	idx = 1 if creature.is_aggressive() else 0
-	return Vector2(I.sprites[idx].get_size())
-
-def get_sprite(scaling_factor: float) -> Surface:
-	idx = I.variant * 2
-	if creature.is_aggressive(): idx += 1
-	return pygame.transform.scale_by(I.sprites[idx], scaling_factor)
+	I = CreatureRenderer(passive_size, aggressive_size, current)
 
 def render() -> None:
 	if creature.is_invisible(): return
@@ -48,7 +38,7 @@ def render() -> None:
 	pos = world.xyz_to_screen(world_pos, -player.get_bob_factor() / 2)
 	pos = Vector2(region.offset(*pos))
 	scaling_factor = ENLARGE / world_pos.y
-	size = get_size() * scaling_factor
+	size = (I.aggressive_size if creature.is_aggressive() else I.passive_size) * scaling_factor
 	pos -= size / 2
 
 	rx, _ = region.get_origin()
@@ -72,10 +62,12 @@ def render() -> None:
 	if sub_y > 0: pos.y += sub_y
 
 	now = monotonic()
-	should_change = now >= I.last_change + MIN_UNSEEN_DURATION or creature.is_aggressive()
-	if not I.watched and should_change: I.variant = randrange(VARIANTS)
+	should_change = now >= I.to_change or creature.is_aggressive()
+	if not I.watched and should_change:
+		typ = Image.CREATURE_GRAB if creature.is_aggressive() else Image.CREATURE_FLOAT
+		I.current = library.get_image(typ)
 	I.watched = True
-	I.last_change = now
+	I.to_change = now + MIN_UNSEEN_DURATION
 
-	sprite = get_sprite(scaling_factor)
+	sprite = pygame.transform.scale_by(I.current, scaling_factor)
 	screen.blit(sprite.subsurface((sub_x, sub_y, sub_width, sub_height)), pos)
