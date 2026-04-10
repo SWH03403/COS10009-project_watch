@@ -1,2 +1,2 @@
 from . import library
-from .library import Image, Sound
+from .library import Image, Sound, init

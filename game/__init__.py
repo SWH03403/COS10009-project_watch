@@ -3,7 +3,7 @@ from random import randrange
 from time import sleep
 import pygame
 from pygame import Color, Surface, Vector2
-from . import editor, engine, entities, render
+from . import assets, editor, engine, entities, render
 from .entities import Direction, MovementState, player
 from .loaders import load_level, load_music
 from .world import Level
@@ -23,7 +23,8 @@ class Game:
 I: Game
 
 def init() -> None:
-	engine.init()
+	engine.init() # NOTE: must be run first
+	assets.init()
 	render.init()
 	entities.init()
 
