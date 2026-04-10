@@ -9,27 +9,17 @@ KILL_DIST: float = 5
 
 @dataclass
 class Creature:
-	invisible: bool # whether it can be seen by the player
-	position: Vector2
-	maintain_distance: tuple[float, float]
-	aggressive: bool
+	position: Vector2 | None = None # `None` means it can not be seen (temporarily invisible)
+	maintain_distance: tuple[float, float] = (100, 200)
+	aggressive: bool = False
 
-I: Creature
-
-def init() -> None:
-	global I
-	I = Creature(
-		invisible=False,
-		position=Vector2(100, 100),
-		maintain_distance=(100, 200),
-		aggressive=False,
-	)
+I: Creature = Creature()
 
 def get_position() -> Vector2:
 	return I.position
 
 def is_invisible() -> bool:
-	return I.invisible
+	return I.position is None
 
 def is_aggressive() -> bool:
 	return I.aggressive

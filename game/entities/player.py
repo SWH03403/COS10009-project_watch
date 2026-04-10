@@ -1,15 +1,13 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from time import monotonic
 import math
 from random import randrange
-from pygame import Sound
 from pygame.math import Vector2, clamp
 
 import game
 from game import engine
-from game.loaders import load_sounds_suffix
-from game.utils.math import Line, is_facing
-from game.world import get_walls
+from game.utils.math import is_facing
+from game.world import Spawn, get_walls
 from game.world.sector import WallType, get_wall_type
 
 WALK_SPEED: float = 20
@@ -45,36 +43,20 @@ class MovementState:
 class Player:
 	position: Vector2
 	sector: int
-	eye: float # z coordinate
 	aim: float
-	stamina: float
-	last_sprint: float # the last time the player sprints
-	direction: Vector2
-	state: MovementState
-	bob_phase: float
 
-	footstep: list[Sound]
-	fall: list[Sound]
-	fall_death: list[Sound]
+	eye: float = 10 # z coordinate
+	stamina: float = 1
+	last_sprint: float = 0 # the last time the player sprints
+	direction: Vector2 = field(init=False) # set by main loop anyway
+	state: MovementState = MovementState.STANDING
+	bob_phase: float = 0
 
 I: Player
 
-def init() -> None:
+def init(spawn: Spawn) -> None:
 	global I
-	I = Player(
-		position=Vector2(),
-		sector=0,
-		eye=10,
-		aim=0,
-		stamina=1,
-		last_sprint=0,
-		direction=Vector2(),
-		state=MovementState.STANDING,
-		bob_phase=0,
-		footstep=load_sounds_suffix("footsteps/tile"),
-		fall=[],
-		fall_death=load_sounds_suffix("death/fall"),
-	)
+	I = Player(position=spawn.position, sector=spawn.sector, aim=spawn.angle)
 
 def get_position() -> tuple[Vector2, int]:
 	return I.position, I.sector
@@ -104,13 +86,6 @@ def get_relative(target: Vector2) -> Vector2:
 
 def get_stamina() -> float:
 	return I.stamina
-
-def set_position(position: Vector2, sector: int) -> None:
-	I.position = position
-	I.sector = sector
-
-def set_aim(aim: float) -> None:
-	I.aim = aim
 
 def set_state(state: MovementState) -> None:
 	if state == MovementState.SPRINTING:
