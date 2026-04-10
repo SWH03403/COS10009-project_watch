@@ -33,7 +33,7 @@ def init() -> None:
 	I = Library(images={}, sounds={})
 
 def get_images(image: Image) -> list[Surface]:
-	if image in I.images: return
+	if image in I.images: return I.images[image]
 	I.images[image] = loaders.images(image.value)
 	assert len(I.images[image]) > 0
 	return I.images[image]
@@ -42,7 +42,7 @@ def get_image(image: Image) -> Surface:
 	return random.choice(get_images(image))
 
 def get_sounds(sound: Sound) -> list[SoundFile]:
-	if sound in I.sounds: return
+	if sound in I.sounds: return I.sounds[sound]
 	I.sounds[sound] = loaders.sounds(sound.value)
 	assert len(I.sounds[sound]) > 0
 	return I.sounds[sound]
