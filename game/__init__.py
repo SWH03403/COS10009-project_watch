@@ -3,12 +3,13 @@ from random import randrange
 from time import sleep
 import pygame
 from pygame import Color, Surface, Vector2
-from . import editor, engine, entities, render
+from . import assets, editor, engine, entities, render
+from .assets import Image, Sound, library, loaders
 from .entities import Direction, MovementState, player
-from .loaders import load_level, load_music
 from .world import Level
 
 SENSITIVITY: float = .5
+DEFAULT_LEVEL: str = "test/cafe"
 EDITOR_MODE: bool = True
 
 @dataclass
@@ -23,19 +24,14 @@ class Game:
 I: Game
 
 def init() -> None:
-	engine.init()
+	engine.init() # NOTE: must be run first
+	assets.init()
 	render.init()
-	entities.init()
 
-	# music
-	load_music("void")
-	pygame.mixer.music.play(-1)
-	pygame.mixer.music.set_volume(.5)
-
-	level = load_level("cafe") # DEBUG: Test level
-	spawn = level.spawns[randrange(len(level.spawns))]
-	player.set_position(spawn.position.copy(), spawn.sector)
-	player.set_aim(spawn.angle)
+	pygame.display.set_icon(library.get_image(Image.WINDOW_ICON))
+	library.play_sound(Sound.AMBIENT_WINDY, True)
+	level = loaders.level(DEFAULT_LEVEL)
+	player.init(level.spawns[randrange(len(level.spawns))])
 
 	global I
 	I = Game(running=True, level=level, scan_frame=False, editor_mode=False, death_delay=0)
@@ -51,8 +47,8 @@ def set_editor(enabled: bool) -> None:
 	I.editor_mode = enabled
 	if enabled and not editor.get_init(): editor.init()
 	engine.set_editor_mode(enabled)
-	if enabled: pygame.mixer.music.pause()
-	else: pygame.mixer.music.unpause()
+	if enabled: pygame.mixer.pause()
+	else: pygame.mixer.unpause()
 
 def set_death_delay(delay: float) -> None:
 	I.death_delay = max(delay, 0)

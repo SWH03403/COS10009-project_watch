@@ -1,15 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from enum import Enum
 from time import monotonic
 import math
-from random import randrange
-from pygame import Sound
 from pygame.math import Vector2, clamp
 
 import game
 from game import engine
-from game.loaders import load_sounds_suffix
-from game.utils.math import Line, is_facing
-from game.world import get_walls
+from game.assets import Sound, library
+from game.utils.math import is_facing
+from game.world import Spawn, get_walls
 from game.world.sector import WallType, get_wall_type
 
 WALK_SPEED: float = 20
@@ -36,7 +35,7 @@ class Bobbing:
 	frequency: float
 	magnitude: float
 
-class MovementState:
+class MovementState(Enum):
 	STANDING = Bobbing(1, 1)
 	WALKING = Bobbing(8, 1)
 	SPRINTING = Bobbing(16, 2)
@@ -45,36 +44,20 @@ class MovementState:
 class Player:
 	position: Vector2
 	sector: int
-	eye: float # z coordinate
 	aim: float
-	stamina: float
-	last_sprint: float # the last time the player sprints
-	direction: Vector2
-	state: MovementState
-	bob_phase: float
 
-	footstep: list[Sound]
-	fall: list[Sound]
-	fall_death: list[Sound]
+	eye: float = 10 # z coordinate
+	stamina: float = 1
+	last_sprint: float = 0 # the last time the player sprints
+	direction: Vector2 = field(init=False) # set by main loop anyway
+	state: MovementState = MovementState.STANDING
+	bob_phase: float = 0
 
 I: Player
 
-def init() -> None:
+def init(spawn: Spawn) -> None:
 	global I
-	I = Player(
-		position=Vector2(),
-		sector=0,
-		eye=10,
-		aim=0,
-		stamina=1,
-		last_sprint=0,
-		direction=Vector2(),
-		state=MovementState.STANDING,
-		bob_phase=0,
-		footstep=load_sounds_suffix("footsteps/tile"),
-		fall=[],
-		fall_death=load_sounds_suffix("death/fall"),
-	)
+	I = Player(position=spawn.position, sector=spawn.sector, aim=spawn.angle)
 
 def get_position() -> tuple[Vector2, int]:
 	return I.position, I.sector
@@ -91,9 +74,9 @@ def get_aim() -> float:
 def get_bob_factor() -> float:
 	if I.state == MovementState.STANDING:
 		# smooth highest and lowest
-		return math.cos(I.bob_phase) * I.state.magnitude
+		return math.cos(I.bob_phase) * I.state.value.magnitude
 	# smooth only highest
-	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.state.magnitude
+	return (abs(math.cos(I.bob_phase / 2)) * 2 - 1) * I.state.value.magnitude
 
 def get_absolute_eye_height() -> float:
 	sector = game.get_level().sectors[I.sector]
@@ -104,13 +87,6 @@ def get_relative(target: Vector2) -> Vector2:
 
 def get_stamina() -> float:
 	return I.stamina
-
-def set_position(position: Vector2, sector: int) -> None:
-	I.position = position
-	I.sector = sector
-
-def set_aim(aim: float) -> None:
-	I.aim = aim
 
 def set_state(state: MovementState) -> None:
 	if state == MovementState.SPRINTING:
@@ -125,10 +101,8 @@ def turn_aim(by: float) -> None:
 	I.aim -= by
 
 def play_footstep() -> None:
-	I.footstep[randrange(len(I.footstep))].play()
-
-def play_fall_death() -> None:
-	I.fall_death[randrange(len(I.fall_death))].play()
+	# TODO: play sound based on sector floor material
+	library.play_sound(Sound.STEP_TILE)
 
 def update() -> None:
 	is_sprinting = I.state == MovementState.SPRINTING
@@ -140,7 +114,7 @@ def update() -> None:
 	# update view bobbing
 	is_standing = I.state == MovementState.STANDING
 	heavy_breathing = 3 - 2 * math.pow(I.stamina, .4) if is_standing else 1
-	I.bob_phase += I.state.frequency * heavy_breathing * engine.get_delta()
+	I.bob_phase += I.state.value.frequency * heavy_breathing * engine.get_delta()
 	# play sound after lowest bob
 	if I.bob_phase > math.pi:
 		I.bob_phase %= 2 * math.pi
@@ -199,8 +173,8 @@ def update() -> None:
 		if z_new > z_cur: I.bob_phase = -math.pi # lowest point
 		elif z_new < z_cur:
 			if z_cur - z_new > SURVIABLE_FALL_HEIGHT:
-				play_fall_death()
-				game.set_death_delay(.4)
+				library.play_sound(Sound.DEATH_FALL)
+				game.set_death_delay(.4) # TODO: refactor as asset
 				game.die()
 			I.bob_phase = 0 # highest point
 		if z_new != z_cur: play_footstep()

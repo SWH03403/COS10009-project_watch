@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import pygame
 from pygame import FULLSCREEN, SCALED, Surface
 from pygame.time import Clock
-from game.loaders import load_image
+from game.assets import Image, library
 
 TITLE: str = "watch"
 LOW_RES: tuple[int, int] = 800, 450
@@ -26,9 +26,6 @@ def init() -> None:
 	set_editor_mode(EDITOR_MODE)
 	pygame.font.init()
 	pygame.mixer.init()
-
-	icon = load_image("icon", False)
-	pygame.display.set_icon(icon)
 
 def get_screen() -> Surface:
 	return I.screen
