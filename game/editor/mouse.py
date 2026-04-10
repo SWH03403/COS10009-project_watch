@@ -4,6 +4,7 @@ from pygame import Vector2
 from pygame.event import Event
 
 import game
+from game.utils.math import is_polygon_clockwise
 from game.world import Wall, default_sector
 from .. import editor
 from . import cache, selection
@@ -108,6 +109,9 @@ def add_sector() -> None:
 		level.vertexes.append(vertex)
 		new_ids.append(next_id)
 		next_id += 1
+
+	three = [level.vertexes[v] for v in new_ids]
+	if not is_polygon_clockwise(three): new_ids = new_ids[::-1]
 	new_vertexes.clear()
 
 	sector = default_sector()
