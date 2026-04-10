@@ -1,6 +1,5 @@
 from copy import copy
 from dataclasses import dataclass
-import math
 from time import sleep
 import pygame
 from pygame import Color, Vector2, draw
@@ -10,7 +9,7 @@ from pygame.typing import ColorLike
 import game
 from game import engine
 from game.entity import player
-from game.utils.math import Line
+from game.utils.math import Line, is_facing
 from game.world import Fog, get_walls
 from . import region
 from .region import offset
@@ -104,8 +103,7 @@ def render_sector(scoped: ScopedSector) -> None:
 
 	for left, right, info in get_walls(level, scoped.id, True):
 		# only render if facing the player
-		facing = math.atan2(left.x, left.y) - math.atan2(right.x, right.y)
-		if 0 <= facing <= math.pi: continue
+		if not is_facing(left, right, Vector2()): continue
 
 		# only render if in front of the player
 		left_behind, right_behind = left.y < NEAR_PLANE, right.y < NEAR_PLANE

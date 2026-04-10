@@ -8,7 +8,7 @@ from pygame.math import Vector2, clamp
 import game
 from game import engine
 from game.loaders import load_sounds_suffix
-from game.utils.math import Line
+from game.utils.math import Line, is_facing
 from game.world import get_walls
 from game.world.sector import WallType, get_wall_type
 
@@ -179,15 +179,16 @@ def update() -> None:
 		dist = dist_vec.length()
 		if dist > 0: dist_vec.normalize_ip()
 
-		has_collision = True
+		is_facing_player = is_facing(left, right, new_position)
+		has_collision = is_facing_player
 		has_neighbor = get_wall_type(info) == WallType.NEIGHBOR
 		if has_neighbor:
 			floor_height_diff = level.sectors[info.neighbor].floor.z - level.sectors[I.sector].floor.z
-			has_collision = floor_height_diff > CLIMPABLE_HEIGHT
+			has_collision &= floor_height_diff > CLIMPABLE_HEIGHT
 
 		if dist < HITBOX_SIZE and has_collision:
 			new_position = nearest + dist_vec * HITBOX_SIZE
-		elif has_neighbor and Line.from_point(left, right).cross(new_position) < 0:
+		elif has_neighbor and not is_facing_player:
 			if new_sector is None and idx < n_crossable_walls: new_sector = info.neighbor
 
 	I.position = new_position

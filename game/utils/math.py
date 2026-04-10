@@ -11,6 +11,9 @@ def is_polygon_clockwise(points: list[Vector2]) -> bool:
 		if (a - b).cross(a - c) > 0: return False
 	return True
 
+def is_facing(left: Vector2, right: Vector2, target: Vector2) -> bool:
+	return (target - left).cross(target - right) < 0
+
 @dataclass
 class Line:
 	a: float
