@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from time import monotonic
 import math
-from random import randrange
 from pygame.math import Vector2, clamp
 
 import game
 from game import engine
+from game.assets import library, Sound
 from game.utils.math import is_facing
 from game.world import Spawn, get_walls
 from game.world.sector import WallType, get_wall_type
@@ -100,10 +100,8 @@ def turn_aim(by: float) -> None:
 	I.aim -= by
 
 def play_footstep() -> None:
-	I.footstep[randrange(len(I.footstep))].play()
-
-def play_fall_death() -> None:
-	I.fall_death[randrange(len(I.fall_death))].play()
+	# TODO: play sound based on sector floor material
+	library.play_sound(Sound.STEP_TILE)
 
 def update() -> None:
 	is_sprinting = I.state == MovementState.SPRINTING
@@ -174,8 +172,8 @@ def update() -> None:
 		if z_new > z_cur: I.bob_phase = -math.pi # lowest point
 		elif z_new < z_cur:
 			if z_cur - z_new > SURVIABLE_FALL_HEIGHT:
-				play_fall_death()
-				game.set_death_delay(.4)
+				library.play_sound(Sound.DEATH_FALL)
+				game.set_death_delay(.4) # TODO: refactor as asset
 				game.die()
 			I.bob_phase = 0 # highest point
 		if z_new != z_cur: play_footstep()
