@@ -1,7 +1,11 @@
 import os
 import pygame
 from pygame import Sound, Surface
+from pygame.font import Font
 from .level import load as load_level
+
+def load_font(name: str) -> Font:
+	return Font(f"assets/fonts/{name}.otf")
 
 def load_image(path: str, alpha: bool) -> Surface:
 	image = pygame.image.load(f"assets/images/{path}.png")

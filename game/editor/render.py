@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import math
 import pygame
 from pygame import Rect, Surface, Vector2
@@ -7,7 +7,7 @@ from pygame.typing import ColorLike
 import game
 from game import engine
 from game.entity import creature, player
-from game.utils import render
+from game.utils import TextRenderer, render
 from game.world.sector import WallType
 from .. import editor
 from . import cache, selection
@@ -30,14 +30,25 @@ TOOLTIP_OFFSET: int = 10
 @dataclass
 class Renderer:
 	# prevent iterating through everything every frame
-	hover_position: Vector2 = field(default_factory=Vector2)
-	hover_target: Selection = None
-	hover_points: list[Vector2] = field(default_factory=list)
+	hover_position: Vector2
+	hover_target: Selection
+	hover_points: list[Vector2]
 
-I = Renderer()
+	f_title: TextRenderer
 
-def get_line_width(adhoc_scale: float = 1, min: float = 1) -> int:
-	return max(round(editor.get_scale() * adhoc_scale), min)
+I: Renderer
+
+def init() -> None:
+	global I
+	I = Renderer(
+		hover_position=Vector2(),
+		hover_target=None,
+		hover_points=[],
+		f_title=TextRenderer(1.2, "white", True),
+	)
+
+def get_line_width(adhoc_scale: float = 1, min_width: int = 1) -> int:
+	return max(round(editor.get_scale() * adhoc_scale), min_width)
 
 def render_grid() -> None:
 	screen = engine.get_screen()
@@ -201,9 +212,12 @@ def render_selection() -> None:
 		pygame.draw.aacircle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
 
 def render_tooltip(origin: Vector2) -> None:
+	title = I.f_title("Sector")
+
 	if editor.get_drag_mode() is not None: return
 	tooltip = Surface((120, 80)).convert_alpha()
 	tooltip.fill("black")
+	tooltip.blit(title, (10, 10))
 	tooltip.set_alpha(200)
 	pygame.draw.rect(tooltip, "white", tooltip.get_rect(), 1)
 	engine.get_screen().blit(tooltip, (origin + Vector2(TOOLTIP_OFFSET, TOOLTIP_OFFSET)))

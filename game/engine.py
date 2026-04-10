@@ -20,6 +20,7 @@ def init() -> None:
 	screen = pygame.display.set_mode(RESOLUTION, FULLSCREEN | SCALED)
 	pygame.display.set_caption(TITLE)
 	pygame.mouse.set_relative_mode(True)
+	pygame.font.init()
 	pygame.mixer.init()
 
 	global I

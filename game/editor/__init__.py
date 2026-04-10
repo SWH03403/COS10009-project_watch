@@ -33,6 +33,7 @@ I: MapEditor = None
 
 def init() -> None:
 	cache.init()
+	render.init()
 
 	global I
 	I = MapEditor(origin=Vector2(engine.get_screen().size) / 2)
