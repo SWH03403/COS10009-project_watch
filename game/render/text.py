@@ -14,7 +14,7 @@ SHOW_AFTER: float = 3
 BLUR_DUR: float = 3
 FADE_DUR: float = 10
 
-DISTANCE: float = 200
+DISTANCE: float = 400
 SAMPLES: int = 80
 
 @dataclass
