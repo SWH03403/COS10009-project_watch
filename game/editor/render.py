@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import math
 import pygame
-from pygame import Rect, Vector2
+from pygame import Rect, Surface, Vector2
 from pygame.typing import ColorLike
 
 import game
@@ -25,11 +25,12 @@ SELECTION_COLOR: str = "honeydew3"
 SELECTION_HOVER_COLOR: str = "lightsteelblue4"
 CONNECT_COLOR: str = "lightskyblue1"
 THIRD: float = math.radians(120)
+TOOLTIP_OFFSET: int = 10
 
 @dataclass
 class Renderer:
 	# prevent iterating through everything every frame
-	hover_position: tuple[int, int] = (0, 0)
+	hover_position: Vector2 = field(default_factory=Vector2)
 	hover_target: Selection = None
 	hover_points: list[Vector2] = field(default_factory=list)
 
@@ -198,16 +199,25 @@ def render_selection() -> None:
 		center = world_to_screen(points[0])
 		pygame.draw.aacircle(engine.get_screen(), SELECTION_COLOR, center, SELECTION_PADDING / 2)
 
+def render_tooltip(origin: Vector2) -> None:
+	if editor.get_drag_mode() is not None: return
+	tooltip = Surface((120, 80)).convert_alpha()
+	tooltip.fill("black")
+	tooltip.set_alpha(200)
+	pygame.draw.rect(tooltip, "white", tooltip.get_rect(), 1)
+	engine.get_screen().blit(tooltip, (origin + Vector2(TOOLTIP_OFFSET, TOOLTIP_OFFSET)))
+
 def render_hover() -> None:
-	mouse = pygame.mouse.get_pos()
+	mouse = Vector2(pygame.mouse.get_pos())
 	mode = editor.get_mode()
 	if mouse != I.hover_position:
 		I.hover_position = mouse
-		I.hover_target = selection.get_nearest(Vector2(mouse))
+		I.hover_target = selection.get_nearest(mouse)
 		I.hover_points = selection.get_vertexes(I.hover_target)
 	if mode == EditMode.DIVIDE and not isinstance(I.hover_target, selection.Vertex): return
-	if I.hover_target is not None and I.hover_target == editor.get_selection(): return
-	if len(I.hover_points) > 0: render_box_around(I.hover_points, False)
+	if I.hover_target is None: return
+	if I.hover_target != editor.get_selection(): render_box_around(I.hover_points, False)
+	render_tooltip(mouse)
 
 def perform() -> None:
 	render_grid()
