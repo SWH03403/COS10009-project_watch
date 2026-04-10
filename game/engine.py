@@ -3,28 +3,26 @@ import pygame
 from pygame import FULLSCREEN, SCALED, Surface
 from pygame.time import Clock
 
-TITLE: str = "The Game"
-RESOLUTION: tuple[int, int] = 800, 450
+TITLE: str = "Watch"
+LOW_RES: tuple[int, int] = 800, 450
+HIGH_RES: tuple[int, int] = 1920, 1080
 FPS: int = 60
 BACKGROUND: str = "black"
 
 @dataclass
 class Engine:
-	screen: Surface
+	screen: Surface | None
 	clock: Clock
 	delta: float
 
 I: Engine
 
-def init() -> None:
-	screen = pygame.display.set_mode(RESOLUTION, FULLSCREEN | SCALED)
-	pygame.display.set_caption(TITLE)
-	pygame.mouse.set_relative_mode(True)
+def init(editor_mode: bool) -> None:
+	global I
+	I = Engine(screen=None, clock=Clock(), delta=0)
+	set_editor_mode(editor_mode)
 	pygame.font.init()
 	pygame.mixer.init()
-
-	global I
-	I = Engine(screen=screen, clock=Clock(), delta=0)
 
 def get_screen() -> Surface:
 	return I.screen
@@ -40,3 +38,11 @@ def update() -> None:
 
 def tick() -> None:
 	I.delta = I.clock.tick(FPS) / 1000 # seconds
+
+def set_editor_mode(enabled: bool) -> None:
+	res = HIGH_RES if enabled else LOW_RES
+	if I.screen is not None and I.screen.size == res: return
+	I.screen = pygame.display.set_mode(res, FULLSCREEN | SCALED)
+	subtitle = " (map editor)" if enabled else ""
+	pygame.display.set_caption(TITLE + subtitle)
+	pygame.mouse.set_relative_mode(not enabled)
