@@ -216,10 +216,10 @@ def render_tooltip(origin: Vector2) -> None:
 	if (sel := I.hover_target) is None: return
 
 	text = "?"
-	if isinstance(sel, selection.Vertex): text = f"Vertex {sel.id}"
-	elif isinstance(sel, selection.Wall): text = f"Wall {sel.wall_idx} of Sector {sel.sector_id}"
-	elif isinstance(sel, selection.Sector): text = f"Sector {sel.id}"
-	elif isinstance(sel, selection.Spawn): text = f"Spawn {sel.id}"
+	if isinstance(sel, selection.Vertex): text = f"v{sel.id}"
+	elif isinstance(sel, selection.Wall): text = f"s{sel.sector_id}/w{sel.wall_idx}"
+	elif isinstance(sel, selection.Sector): text = f"s{sel.id}"
+	elif isinstance(sel, selection.Spawn): text = f"@{sel.id}"
 	elif isinstance(sel, selection.Entity):
 		if sel.typ == EntityType.CREATURE: text = "Creature"
 		elif sel.typ == EntityType.PLAYER: text = "Player"
