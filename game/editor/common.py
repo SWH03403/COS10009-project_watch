@@ -7,6 +7,8 @@ from .. import editor
 SNAP_STEP: float = 5
 ZOOM_STEP: float = .2
 
+SELECTION_PADDING: int = 20
+
 class DragMode(IntEnum):
 	MOVING = auto()
 	PANNING = auto()
