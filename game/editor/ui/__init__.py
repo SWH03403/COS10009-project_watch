@@ -6,8 +6,9 @@ from game.utils import TextRenderer
 from .. import selection
 from . import sector
 
-CHECKBOX_SIZE: int = 30
-SPACING: int = 10
+SPACE: int = 10
+CHECK: int = 30 # size of square checbox
+CHECK_S: int = CHECK + SPACE
 
 @dataclass
 class UI:
