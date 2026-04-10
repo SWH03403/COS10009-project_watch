@@ -5,7 +5,7 @@ from pygame.math import Vector2, clamp
 
 import game
 from game import engine
-from game.assets import library, Sound
+from game.assets import Sound, library
 from game.utils.math import is_facing
 from game.world import Spawn, get_walls
 from game.world.sector import WallType, get_wall_type

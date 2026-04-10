@@ -27,8 +27,6 @@ def init() -> None:
 	pygame.font.init()
 	pygame.mixer.init()
 
-	pygame.display.set_icon(library.get_image(Image.WINDOW_ICON))
-
 def get_screen() -> Surface:
 	return I.screen
 

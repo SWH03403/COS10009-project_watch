@@ -4,7 +4,7 @@ from time import sleep
 import pygame
 from pygame import Color, Surface, Vector2
 from . import assets, editor, engine, entities, render
-from .assets import Sound, library, loaders
+from .assets import Image, Sound, library, loaders
 from .entities import Direction, MovementState, player
 from .world import Level
 
@@ -28,9 +28,8 @@ def init() -> None:
 	assets.init()
 	render.init()
 
-	# ambient
+	pygame.display.set_icon(library.get_image(Image.WINDOW_ICON))
 	library.play_sound(Sound.AMBIENT_WINDY, True)
-
 	level = loaders.level(DEFAULT_LEVEL)
 	player.init(level.spawns[randrange(len(level.spawns))])
 
