@@ -20,7 +20,7 @@ def get_position() -> Vector2:
 	return I.position
 
 def is_aggressive() -> bool:
-	return I.aggressive
+	return I.aggressive and not player.is_god()
 
 def is_invisible() -> bool:
 	return I.invisible and not is_aggressive()

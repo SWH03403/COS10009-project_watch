@@ -44,12 +44,16 @@ class Player:
 	last_sprint: float = 0 # the last time the player sprints
 	bob: Bobbing = field(default_factory=lambda: STANDING)
 	bob_phase: float = 0
+	god_mode: bool = False
 
 I: Player
 
 def init(spawn: Spawn) -> None:
 	global I
 	I = Player(position=spawn.position, sector=spawn.sector, aim=spawn.angle)
+
+def is_god() -> bool:
+	return I.god_mode
 
 def get_position() -> tuple[Vector2, int]:
 	return I.position, I.sector
