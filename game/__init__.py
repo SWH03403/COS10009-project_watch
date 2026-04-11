@@ -11,14 +11,14 @@ from .world import Level
 
 SENSITIVITY: float = .5
 DEFAULT_LEVEL: str = "test/cafe"
-EDITOR_MODE: bool = False
+EDITOR_MODE: bool = True
 
 @dataclass
 class Game:
 	level: Level
 
 	slow_render: bool = False
-	editor_mode: bool = False
+	editor_mode: bool = EDITOR_MODE
 
 I: Game
 
@@ -35,7 +35,7 @@ def init(level: str | None = None) -> None:
 
 	global I
 	I = Game(level=level)
-	if EDITOR_MODE: set_editor(True)
+	if I.editor_mode: set_editor(True)
 
 def get_level() -> Level:
 	return I.level

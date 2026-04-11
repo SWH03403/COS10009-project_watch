@@ -50,7 +50,7 @@ I: Player
 
 def init(spawn: Spawn) -> None:
 	global I
-	I = Player(position=spawn.position, sector=spawn.sector, aim=spawn.angle)
+	I = Player(position=spawn.position.copy(), sector=spawn.sector, aim=spawn.angle)
 
 def is_god() -> bool:
 	return I.god_mode
