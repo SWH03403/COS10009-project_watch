@@ -49,6 +49,7 @@ def execute(cause: Cause = Cause.SYSTEM) -> None:
 			origin = (Vector2(screen.size) - Vector2(eye.size)) / 2
 			library.get_image(Image.NOISE) # preload
 			until = monotonic() + NOISE_DUR
+			pygame.mixer.stop()
 			library.play_sound(Sound.DEATH_CAUGHT)
 			pygame.display.set_gamma(2, .2, .2)
 			now = 0
