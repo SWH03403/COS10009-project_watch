@@ -56,6 +56,7 @@ def init() -> None:
 # teleport behind player
 def move_to_behind_player(is_init: bool = False) -> None:
 	relative = player.get_relative(I.position).rotate(random.uniform(90, 270))
+	if relative.length_squared() == 0: relative = Vector2(1, 0)
 	if is_init: relative.scale_to_length(random.uniform(FOLLOW_DISTANCE, MAX_INIT_DIST))
 	I.position = relative + player.get_position()[0]
 

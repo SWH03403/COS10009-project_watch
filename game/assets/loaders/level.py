@@ -1,3 +1,4 @@
+from os.path import exists
 from pygame import Vector2
 from game.world import Fog, Level, Plane, Sector, Spawn, Wall, default_fog
 from game.world.sector import CEILING_COLOR, FLOOR_COLOR, WALL_COLOR
@@ -41,12 +42,14 @@ def parse_sector(args: list[str]) -> Sector:
 	fog = default_fog() if len(args) < 6 else parse_fog(args[5].split(","))
 	return Sector(floor=floor, ceiling=ceiling, walls=walls, fog=fog)
 
-def load(name: str) -> Level:
+def load(name: str) -> Level | None:
 	spawns = []
 	vertexes = []
 	sectors = []
 
-	with open(f"assets/levels/{name}.txt", "r", encoding="utf-8") as file:
+	path = f"assets/levels/{name}.txt"
+	if not exists(path): return None
+	with open(path, "r", encoding="utf-8") as file:
 		for num, line in enumerate(file.readlines()):
 			line = line.split("#", 1)[0].strip()
 			if len(line) == 0: continue

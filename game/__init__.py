@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from os import environ
 from random import randrange
 from typing import NoReturn
 import pygame
@@ -7,31 +8,31 @@ from . import assets, editor, engine, entities, render
 from .assets import Cause, Image, Sound, library, loaders
 from .assets.deaths import execute as die
 from .entities import creature, player
-from .world import Level
+from .world import Level, default_level
 
 SENSITIVITY: float = .5
 DEFAULT_LEVEL: str = "test/cafe"
-EDITOR_MODE: bool = True
+EDITOR_MODE: bool = "EDITOR" in environ
 
 @dataclass
 class Game:
 	level: Level
 	level_name: str
-
 	slow_render: bool = False
 	editor_mode: bool = EDITOR_MODE
 
 I: Game
 
-def init(level: str | None = None) -> None:
+def init(name: str | None = None) -> None:
 	engine.init() # NOTE: must be run first
 	assets.init()
 	render.init()
 
 	pygame.display.set_icon(library.get_image(Image.WINDOW_ICON))
 	library.play_sound(Sound.AMBIENT_WINDY, True)
-	name = level or DEFAULT_LEVEL
+	name = name or DEFAULT_LEVEL
 	level = loaders.level(name)
+	if level is None: level = default_level()
 	player.init(level.spawns[randrange(len(level.spawns))])
 	creature.init()
 
