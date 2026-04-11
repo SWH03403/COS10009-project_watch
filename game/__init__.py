@@ -6,7 +6,7 @@ from pygame import Color, Surface, Vector2
 from . import assets, editor, engine, entities, render
 from .assets import Cause, Image, Sound, library, loaders
 from .assets.deaths import execute as die
-from .entities import player
+from .entities import creature, player
 from .world import Level
 
 SENSITIVITY: float = .5
@@ -31,6 +31,7 @@ def init(level: str | None = None) -> None:
 	library.play_sound(Sound.AMBIENT_WINDY, True)
 	level = loaders.level(level or DEFAULT_LEVEL)
 	player.init(level.spawns[randrange(len(level.spawns))])
+	creature.init()
 
 	global I
 	I = Game(level=level)

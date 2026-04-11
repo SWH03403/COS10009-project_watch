@@ -1,14 +1,18 @@
 from dataclasses import dataclass, field
 import random
 from time import monotonic
-from pygame import Vector2
+from pygame import Sound as SoundFile, Vector2
+from pygame.math import remap
 
 import game
 from game import engine
-from game.assets import Cause
+from game.assets import Cause, Sound, library
 from . import player
 
 KILL_DIST: float = 5
+CUE_FADE: float = 800
+CUE_DIST: float = 300 # nothing will be heard at this distance
+CUE_VOLUME: float = .5
 MIN_WATCHED_DUR: float = 1
 MAX_WATCHED_DUR: float = 2
 
@@ -38,8 +42,16 @@ class Creature:
 	invis_until: float = field(default_factory=lambda: get_invis_dur() + monotonic())
 	patience: float = INIT_PATIENCE
 	gained_patience: bool = False
+	playing_cue: bool = False
 
 I: Creature = Creature()
+
+def init() -> None:
+	# preload to avoid lag giving player cues
+	get_audio_cue()
+
+def get_audio_cue() -> SoundFile:
+	return library.get_sounds(Sound.AMBIENT_AFTERNOON)[0] # there is only one variant
 
 def get_position() -> Vector2:
 	return I.position
@@ -66,12 +78,18 @@ def update() -> None:
 	to_player.normalize_ip()
 	delta = engine.get_delta()
 	now = monotonic()
+	cue = get_audio_cue()
 
 	if is_aggressive():
 		if dist < KILL_DIST: game.die(Cause.CAUGHT)
 		player_can_run = player.get_stamina() > 0
 		speed = SPEED_AGRESSIVE if player_can_run else SPEED_PREDATOR
 		I.position += to_player * speed * delta
+
+		cue.set_volume((1 - min((dist / CUE_DIST)**2, 1)) * CUE_VOLUME)
+		if not I.playing_cue:
+			I.playing_cue = True
+			cue.play(-1, fade_ms=CUE_FADE)
 
 		decay_rate = AGGRESSION_DECAY if is_watched() else AGGRESSION_DECAY_IGNORED
 		if not player_can_run: decay_rate = 0 # it's joever
@@ -81,6 +99,10 @@ def update() -> None:
 			I.patience = INIT_PATIENCE
 		I.invis_until = now + get_invis_dur() * 2
 		return
+
+	if I.playing_cue:
+		I.playing_cue = False
+		cue.fadeout(CUE_FADE)
 
 	# only move if agresive or not being watched
 	if not is_watched():

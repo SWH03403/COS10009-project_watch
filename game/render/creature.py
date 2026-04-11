@@ -19,6 +19,7 @@ class CreatureRenderer:
 I: CreatureRenderer
 
 def init() -> None:
+	# preload to avoid giving player cues
 	default = library.get_image(Image.CREATURE_FLOAT)
 	library.get_image(Image.CREATURE_GRAB)
 
