@@ -4,7 +4,6 @@ from pygame import Vector2
 
 from .. import editor
 
-SNAP_STEP: float = 5
 ZOOM_STEP: float = .2
 
 SELECTION_PADDING: int = 20
@@ -28,19 +27,23 @@ def screen_to_world(p: Vector2) -> Vector2:
 	p.y *= -1
 	return p / editor.get_scale()
 
-def is_alt_held() -> bool:
-	keys = pygame.key.get_pressed()
-	return keys[pygame.K_LALT] or keys[pygame.K_RALT]
-
 def is_shift_held() -> bool:
 	keys = pygame.key.get_pressed()
 	return keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
 
+def get_snap_step() -> float:
+	if is_shift_held(): return 1
+	keys = pygame.key.get_pressed()
+	if keys[pygame.K_LALT] or keys[pygame.K_RALT]: return 0
+	if keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]: return 20
+	return 5
+
 # get closest screen coordinate that is on the snap grid of the world
 def snap_to_grid(p: Vector2, is_screen: bool = False) -> Vector2:
-	if is_alt_held(): return p.copy()
+	step = get_snap_step()
+	if step == 0: return p.copy()
 	if is_screen: p = screen_to_world(p)
-	diff_x, diff_y = p.x % SNAP_STEP, p.y % SNAP_STEP
-	p.x -= (diff_x - SNAP_STEP) if diff_x > SNAP_STEP / 2 else diff_x
-	p.y -= (diff_y - SNAP_STEP) if diff_y > SNAP_STEP / 2 else diff_y
+	diff_x, diff_y = p.x % step, p.y % step
+	p.x -= (diff_x - step) if diff_x > step / 2 else diff_x
+	p.y -= (diff_y - step) if diff_y > step / 2 else diff_y
 	return world_to_screen(p) if is_screen else p

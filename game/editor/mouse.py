@@ -120,22 +120,23 @@ def add_sector() -> None:
 
 def select(mouse: Vector2) -> None:
 	sel = selection.get_nearest(mouse)
+	cur = editor.get_selection()
 	mode = editor.get_mode()
-	in_extend = mode == EditMode.ADD
-	if sel is None and not in_extend:
+	add_mode = mode == EditMode.ADD
+	if sel is None and not add_mode:
 		drag(mouse, start=DragMode.PANNING)
 		editor.set_selection(sel)
 		return
-	else:
+	elif sel is not None and sel == cur:
 		drag(mouse, start=DragMode.MOVING)
 
 	if mode == EditMode.DIVIDE:
 		if isinstance(sel, selection.Vertex): divide_sector(sel)
 		editor.set_mode(EditMode.NORMAL)
-	elif in_extend:
+	elif add_mode:
 		buf = editor.get_extensions()
 		if isinstance(sel, selection.Vertex):
-			if sel == editor.get_selection():
+			if sel == cur:
 				add_sector()
 				editor.set_mode(EditMode.NORMAL)
 			else:
