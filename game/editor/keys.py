@@ -3,7 +3,7 @@ from pygame import Vector2
 
 import game
 from game.assets import savers
-from game.world.sector import WallType, set_wall_type
+from game.world.sector import Wall, WallType, set_wall_type
 from .. import editor
 from . import cache, selection
 from .cache import SectorRef
@@ -22,11 +22,37 @@ def get_neighbor_ref() -> SectorRef | None:
 		if ref.id != sel.sector_id: return ref
 
 def insert_vertex() -> None:
-	if editor.get_selection() is None:
+	sel = editor.get_selection()
+	level = game.get_level()
+	if sel is None:
 		cache.set_expired_walls()
 		vertex = snap_to_grid(screen_to_world(Vector2(pygame.mouse.get_pos())))
 		game.get_level().vertexes.append(vertex)
 		return
+
+	# expand selection
+	vertex_id = len(level.vertexes)
+	sector = level.sectors[sel.sector_id]
+	wall = sector.walls[sel.wall_idx]
+
+	# insert new vertex in middle of wall
+	left = level.vertexes[wall.vertex]
+	right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
+	level.vertexes.append(snap_to_grid((left + right) / 2))
+
+	# create wall for selected sector
+	new_wall = Wall(vertex=vertex_id, neighbor=wall.neighbor, color=wall.color)
+	sector.walls.insert(sel.wall_idx + 1, new_wall)
+
+	# patch neighbor
+	ref = get_neighbor_ref()
+	if ref is None: return
+	sector = level.sectors[ref.id]
+	wall = sector.walls[ref.wall_idx]
+	new_wall = Wall(vertex=vertex_id, neighbor=wall.neighbor, color=wall.color)
+	sector.walls.insert(ref.wall_idx + 1, new_wall)
+
+	cache.set_expired()
 
 def delete() -> None:
 	level = game.get_level()
