@@ -126,6 +126,10 @@ def render_level() -> None:
 			elif typ == WallType.SOLID: pygame.draw.line(screen, "white", start, end, solid_wall)
 			else: line_dashes("goldenrod3", start, end, non_solid_wall)
 
+	for i in cache.get_dangling_vertexes():
+		vertex = world_to_screen(level.vertexes[i])
+		pygame.draw.circle(screen, "white", vertex, solid_wall)
+
 	hlen = SPAWNPOINT_SIZE * editor.get_scale() / 2
 	spawn_lw = non_solid_wall
 	for spawn in level.spawns:

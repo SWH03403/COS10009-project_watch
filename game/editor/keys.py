@@ -1,44 +1,13 @@
 import pygame
+from pygame import Vector2
 
 import game
 from game.assets import savers
-from game.world import Wall
 from game.world.sector import WallType, set_wall_type
 from .. import editor
 from . import cache, selection
 from .cache import SectorRef
-from .common import EditMode, is_shift_held
-
-def insert_vertex() -> None:
-	sel = editor.get_selection()
-	if not isinstance(sel, selection.Wall): return
-	level = game.get_level()
-
-	vertex_id = len(level.vertexes)
-	sector = level.sectors[sel.sector_id]
-	wall = sector.walls[sel.wall_idx]
-
-	# patch neighbor sector
-	if wall.neighbor is not None:
-		neighbor = level.sectors[wall.neighbor]
-		nb_wall_idx = 0
-		for i in range(1, len(neighbor.walls)):
-			if neighbor.walls[i].neighbor == sel.sector_id:
-				nb_wall_idx = i
-				break
-		neighbor.walls.insert(
-			nb_wall_idx + 1,
-			Wall(vertex=vertex_id, neighbor=sel.sector_id, color=neighbor.walls[nb_wall_idx].color)
-		)
-
-	left = level.vertexes[wall.vertex]
-	right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
-	level.vertexes.append((left + right) / 2)
-
-	new_wall = Wall(vertex=vertex_id, neighbor=wall.neighbor, color=wall.color)
-	sector.walls.insert(sel.wall_idx + 1, new_wall)
-
-	editor.set_selection(selection.Vertex(id=vertex_id))
+from .common import EditMode, is_shift_held, screen_to_world, snap_to_grid
 
 def get_neighbor_ref() -> SectorRef | None:
 	sel = editor.get_selection()
@@ -51,6 +20,13 @@ def get_neighbor_ref() -> SectorRef | None:
 	for ref in cache.get_sectors(left, right):
 		# FIX: verify walls are opposite facing
 		if ref.id != sel.sector_id: return ref
+
+def insert_vertex() -> None:
+	if editor.get_selection() is None:
+		cache.set_expired_walls()
+		vertex = snap_to_grid(screen_to_world(Vector2(pygame.mouse.get_pos())))
+		game.get_level().vertexes.append(vertex)
+		return
 
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	sel = editor.get_selection()
