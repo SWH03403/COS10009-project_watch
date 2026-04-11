@@ -16,6 +16,7 @@ EDITOR_MODE: bool = True
 @dataclass
 class Game:
 	level: Level
+	level_name: str
 
 	slow_render: bool = False
 	editor_mode: bool = EDITOR_MODE
@@ -29,16 +30,20 @@ def init(level: str | None = None) -> None:
 
 	pygame.display.set_icon(library.get_image(Image.WINDOW_ICON))
 	library.play_sound(Sound.AMBIENT_WINDY, True)
-	level = loaders.level(level or DEFAULT_LEVEL)
+	name = level or DEFAULT_LEVEL
+	level = loaders.level(name)
 	player.init(level.spawns[randrange(len(level.spawns))])
 	creature.init()
 
 	global I
-	I = Game(level=level)
+	I = Game(level=level, level_name=name)
 	if I.editor_mode: set_editor(True)
 
 def get_level() -> Level:
 	return I.level
+
+def get_named_level() -> tuple[str, Level]:
+	return I.level_name, I.level
 
 def is_slow_render() -> bool:
 	return I.slow_render

@@ -1,6 +1,7 @@
 import pygame
 
 import game
+from game.assets import savers
 from game.world import Wall
 from game.world.sector import WallType, set_wall_type
 from .. import editor
@@ -78,12 +79,17 @@ def switch_wall_side() -> None:
 	if ref is None: return
 	editor.set_selection(selection.Wall(sector_id=ref.id, wall_idx=ref.wall_idx))
 
+def save_level() -> None:
+	path = savers.level(*game.get_named_level())
+	print(f"saved to: {path}")
+
 def handle_keydown(key: int) -> None:
 	shift = is_shift_held()
 
 	match key:
 		case pygame.K_q | pygame.K_ESCAPE:
 			if editor.get_mode() == EditMode.NORMAL:
+				save_level()
 				game.die()
 				return
 			editor.set_mode(EditMode.NORMAL)
@@ -99,8 +105,10 @@ def handle_keydown(key: int) -> None:
 			sel = editor.get_selection()
 			if isinstance(sel, (selection.Vertex, selection.Wall)):
 				editor.set_mode(EditMode.ADD)
-		case pygame.K_s:
+		case pygame.K_e:
 			switch_wall_side()
+		case pygame.K_s:
+			save_level()
 		case pygame.K_1:
 			set_selection_wall_type(WallType.SOLID, shift)
 		case pygame.K_2:
