@@ -72,9 +72,11 @@ def update() -> None:
 		if dist < KILL_DIST: game.die(Cause.CAUGHT)
 		return
 
-	speed = SPEED_PATIENCE * delta
-	if dist < AVOID_DISTANCE: I.position -= to_player * speed
-	elif dist > FOLLOW_DISTANCE: I.position += to_player * speed
+	# only move if agresive or not being watched
+	if not is_watched():
+		speed = SPEED_PATIENCE * delta
+		if dist < AVOID_DISTANCE: I.position -= to_player * speed
+		elif dist > FOLLOW_DISTANCE: I.position += to_player * speed
 
 	if is_invisible(): return
 	decay_rate = PATIENCE_DECAY
