@@ -24,7 +24,7 @@ def parse_sector(sector: Sector) -> str:
 	for wall in sector.walls:
 		if wall.color is None: neighbor = "-"
 		elif wall.neighbor is None: neighbor = "x"
-		else: neighbor = str(neighbor)
+		else: neighbor = str(wall.neighbor)
 		walls.append((str(wall.vertex), neighbor))
 	vertexes, neighbors = zip(*walls)
 	vertexes = ",".join(vertexes)
@@ -34,11 +34,9 @@ def parse_sector(sector: Sector) -> str:
 
 def save(name: str, level: Level) -> str:
 	path = f"assets/levels/{name}.txt"
-	if exists(path):
-		now = datetime.now().strftime("%y%m%d-%H%M%S")
-		path = f"assets/levels/{name}-{now}.txt"
-	if exists(path): raise RuntimeError("Both save paths exist")
+	header = f"# created in \"watch\" v0.1.0\n# on: {datetime.now()}\n\n"
 	with open(path, "w", encoding="utf-8") as file:
+		file.write(header)
 		for spawn in level.spawns:
 			file.write(parse_spawn(spawn))
 		file.write("\n")
