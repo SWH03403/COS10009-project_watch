@@ -137,6 +137,7 @@ def update() -> None:
 	I.stamina = clamp(I.stamina + stamina_rate * engine.get_delta(), 0, 1)
 	# apply extra delay if stamina reaches 0 this frame
 	if last_stamina > 0 and I.stamina == 0: I.last_sprint += STAMINA_TIRED_DELAY
+	if is_god(): I.stamina = 1
 
 	# Get walls of current sector and immediate neighbors
 	level = game.get_level()
@@ -164,7 +165,7 @@ def update() -> None:
 		has_neighbor = get_wall_type(info) == WallType.NEIGHBOR
 		if has_neighbor:
 			floor_height_diff = level.sectors[info.neighbor].floor.z - level.sectors[I.sector].floor.z
-			has_collision &= floor_height_diff > CLIMPABLE_HEIGHT
+			has_collision &= floor_height_diff > CLIMPABLE_HEIGHT and not is_god()
 
 		if dist < HITBOX_SIZE and has_collision:
 			new_position = nearest + dist_vec * HITBOX_SIZE

@@ -38,6 +38,7 @@ def init() -> None:
 	I = UIRenderer(stamina=stamina)
 
 def render() -> None:
+	if player.is_god(): return
 	screen = engine.get_screen()
 	stamina = player.get_stamina()
 	bar = I.stamina.surface
