@@ -8,6 +8,7 @@ class Image(Enum):
 	CREATURE_FLOAT = "creature/float"
 	CREATURE_GRAB = "creature/grab"
 	EYE = "watched"
+	NOISE = "noise"
 	SKYBOX_CLOUDY = "skybox/cloudy"
 	SKYBOX_STARRY = "skybox/starry"
 	VIGNETTE = "vignette"
