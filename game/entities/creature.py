@@ -25,6 +25,7 @@ FOLLOW_DISTANCE: float = 200 # max distance when patient
 SPEED_PATIENCE: float = 15
 
 INIT_AGGRESSION: float = 500
+AGGRESSION_ACCEL: float = 50
 AGGRESSION_DECAY: float = 40
 AGGRESSION_GAIN_IGNORED: float = 10
 SPEED_AGRESSIVE: float = 10
@@ -40,6 +41,7 @@ class Creature:
 	watched_since: float | None = None # when the eye staring contest starts
 	# can only be seen after this time
 	invis_until: float = field(default_factory=lambda: get_invis_dur() + monotonic())
+	aggression: float = INIT_AGGRESSION
 	patience: float = INIT_PATIENCE
 	gained_patience: bool = False
 	playing_cue: bool = False
@@ -131,4 +133,6 @@ def update() -> None:
 		I.gained_patience = False
 	I.patience -= decay_rate * delta
 
-	if I.patience < 0: I.patience = -INIT_AGGRESSION
+	if I.patience < 0:
+		I.patience = -I.aggression
+		I.aggression += AGGRESSION_ACCEL
