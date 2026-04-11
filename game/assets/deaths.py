@@ -2,9 +2,10 @@ from enum import Enum, auto
 import sys
 from time import sleep
 import pygame
+from pygame import Vector2
 
 from . import library
-from .library import Sound
+from .library import Image, Sound
 
 class Cause(Enum):
 	SYSTEM = auto()
@@ -24,10 +25,21 @@ def flash(color: str, delay: float) -> None:
 	sleep(delay)
 
 def execute(cause: Cause = Cause.SYSTEM) -> None:
+	from game import engine
 
 	match cause:
 		case Cause.SYSTEM:
 			kill_application(True)
+		case Cause.CAUGHT:
+			library.play_sound(Sound.DEATH_CAUGHT)
+			pygame.display.set_gamma(2, .2, .2)
+			eye = library.get_image(Image.EYE)
+			screen = engine.get_screen()
+			screen.blit(eye, (Vector2(screen.size) - Vector2(eye.size)) / 2)
+			engine.update()
+			sleep(3.5)
+			pygame.display.set_gamma(1, 1, 1)
+			kill_application()
 		case Cause.FALL:
 			library.play_sound(Sound.DEATH_FALL)
 			flash("red3", .1)

@@ -72,10 +72,8 @@ def handle_events() -> None:
 def run() -> NoReturn:
 	while True:
 		handle_events()
+		if not I.editor_mode: entities.update()
 		engine.clear()
-		if I.editor_mode:
-			editor.render.perform()
-		else:
-			entities.update()
-			render.perform()
+		if I.editor_mode: editor.render.perform()
+		else: render.perform()
 		engine.update()
