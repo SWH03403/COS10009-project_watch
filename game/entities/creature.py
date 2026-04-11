@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from random import triangular
+import random
 from time import monotonic
 from pygame import Vector2
 
@@ -28,7 +28,7 @@ SPEED_PREDATOR: float = 30 # player ran out of stamina
 
 # favors shorter duration
 def get_invis_dur() -> float:
-	return triangular(10, 60, 20)
+	return random.triangular(10, 60, 20)
 
 @dataclass
 class Creature:
@@ -85,7 +85,8 @@ def update() -> None:
 			I.patience += PATIENCE_GAIN
 			I.gained_patience = True
 	elif I.gained_patience:
-		# TODO: maybe jump to a different angle to the player to randomize appearance spot
+		# teleport behind player but maintain distance
+		I.position = player.get_relative(I.position).rotate(random.uniform(90, 270)) + player_pos
 		I.invis_until = now + get_invis_dur()
 		I.gained_patience = False
 	I.patience -= decay_rate * delta
