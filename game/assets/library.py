@@ -16,6 +16,7 @@ class Image(Enum):
 
 class Sound(Enum):
 	AMBIENT_WINDY = "windy"
+	AMBIENT_AFTERNOON = "late_afternoon"
 	DEATH_CAUGHT = "death/caught"
 	DEATH_FALL = "death/fall"
 	STEP_CONCRETE = "footsteps/concrete"
