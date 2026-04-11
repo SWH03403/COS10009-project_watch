@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import random
 from time import monotonic
 from pygame import Sound as SoundFile, Vector2
-from pygame.math import remap
 
 import game
 from game import engine
@@ -15,6 +14,7 @@ CUE_DIST: float = 300 # nothing will be heard at this distance
 CUE_VOLUME: float = .5
 MIN_WATCHED_DUR: float = 1
 MAX_WATCHED_DUR: float = 2
+MAX_INIT_DIST: float = 500
 
 INIT_PATIENCE: float = 300
 PATIENCE_DECAY: float = 10
@@ -49,6 +49,13 @@ I: Creature = Creature()
 def init() -> None:
 	# preload to avoid lag giving player cues
 	get_audio_cue()
+	move_to_behind_player(True)
+
+# teleport behind player
+def move_to_behind_player(is_init: bool = False) -> None:
+	relative = player.get_relative(I.position).rotate(random.uniform(90, 270))
+	if is_init: relative.scale_to_length(random.uniform(FOLLOW_DISTANCE, MAX_INIT_DIST))
+	I.position = relative + player.get_position()[0]
 
 def get_audio_cue() -> SoundFile:
 	return library.get_sounds(Sound.AMBIENT_AFTERNOON)[0] # there is only one variant
@@ -119,8 +126,7 @@ def update() -> None:
 			I.patience += PATIENCE_GAIN
 			I.gained_patience = True
 	elif I.gained_patience:
-		# teleport behind player but maintain distance
-		I.position = player.get_relative(I.position).rotate(random.uniform(90, 270)) + player_pos
+		move_to_behind_player()
 		I.invis_until = now + get_invis_dur()
 		I.gained_patience = False
 	I.patience -= decay_rate * delta
