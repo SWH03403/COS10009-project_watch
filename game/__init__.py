@@ -58,6 +58,8 @@ def handle_keydown(key: int) -> None:
 			I.slow_render = True
 		case pygame.K_LEFTBRACKET:
 			set_editor(True)
+		case pygame.K_BACKSLASH:
+			player.toggle_god_mode()
 
 def handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)

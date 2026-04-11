@@ -84,6 +84,9 @@ def get_relative(target: Vector2) -> Vector2:
 def get_stamina() -> float:
 	return I.stamina
 
+def toggle_god_mode() -> None:
+	I.god_mode = not I.god_mode
+
 def turn_aim(by: float) -> None:
 	I.aim -= by
 
