@@ -34,8 +34,8 @@ def init() -> None:
 	global I
 	I = WorldRenderer(queue=[], mask=[])
 
-def debug_delay() -> None:
-	if game.is_scan_mode():
+def slow_render() -> None:
+	if game.is_slow_render():
 		sleep(1e-3)
 		pygame.display.update()
 
@@ -48,7 +48,7 @@ def xyz_to_screen(p: Vector2, z: float) -> Vector2:
 def line(color: Color, x: float, y1: float, y2: float) -> None:
 	screen = engine.get_screen()
 	draw.line(screen, color, offset(x, y1), offset(x, y2))
-	debug_delay()
+	slow_render()
 
 def render_floor(
 	eye_diff: float,
@@ -90,7 +90,7 @@ def render_floor(
 			fog_fact = invlerp(fog.near, fog.far, dist)
 			blended = blended.lerp(fog.color, fog_fact)
 		draw.line(screen, blended, offset(min_x, y), offset(max_x, y))
-		debug_delay()
+		slow_render()
 
 def render_sector(scoped: ScopedSector) -> None:
 	level = game.get_level()
@@ -183,7 +183,7 @@ def render_sector(scoped: ScopedSector) -> None:
 			nb_top = int(clamp(lerp(nb_left_top.y, nb_right_top.y, fact), min_y, max_y))
 			nb_bottom = int(clamp(lerp(nb_left_bottom.y, nb_right_bottom.y, fact), min_y, max_y))
 			I.mask[x] = (max(top, nb_top), min(bottom, nb_bottom))
-			if game.is_scan_mode(): line("crimson", x, *I.mask[x])
+			if game.is_slow_render(): line("crimson", x, *I.mask[x])
 			if nb_top > top: line(blended, x, top, nb_top)
 			if nb_bottom < bottom: line(blended, x, nb_bottom, bottom)
 

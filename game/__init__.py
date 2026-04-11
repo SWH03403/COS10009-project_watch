@@ -17,7 +17,7 @@ EDITOR_MODE: bool = False
 class Game:
 	level: Level
 
-	scan_frame: bool = False
+	slow_render: bool = False
 	editor_mode: bool = False
 
 I: Game
@@ -40,8 +40,8 @@ def init(level: str | None = None) -> None:
 def get_level() -> Level:
 	return I.level
 
-def is_scan_mode() -> bool:
-	return I.scan_frame
+def is_slow_render() -> bool:
+	return I.slow_render
 
 def set_editor(enabled: bool) -> None:
 	I.editor_mode = enabled
@@ -55,7 +55,7 @@ def handle_keydown(key: int) -> None:
 		case pygame.K_ESCAPE | pygame.K_q:
 			die()
 		case pygame.K_p:
-			I.scan_frame = True
+			I.slow_render = True
 		case pygame.K_LEFTBRACKET:
 			set_editor(True)
 
@@ -63,7 +63,7 @@ def handle_mouse(diff: float) -> None:
 	player.turn_aim(diff * SENSITIVITY)
 
 def handle_events() -> None:
-	I.scan_frame = False # reset next frame
+	I.slow_render = False # reset next frame
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT: die()
 		elif I.editor_mode: editor.handle_event(event)
