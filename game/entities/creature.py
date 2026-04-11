@@ -68,8 +68,18 @@ def update() -> None:
 	now = monotonic()
 
 	if is_aggressive():
-		I.position.move_towards_ip(player_pos, 10 * delta)
 		if dist < KILL_DIST: game.die(Cause.CAUGHT)
+		player_can_run = player.get_stamina() > 0
+		speed = SPEED_AGRESSIVE if player_can_run else SPEED_PREDATOR
+		I.position += to_player * speed * delta
+
+		decay_rate = AGGRESSION_DECAY if is_watched() else AGGRESSION_DECAY_IGNORED
+		if not player_can_run: decay_rate = 0 # it's joever
+		I.patience += decay_rate * delta
+
+		if I.patience > 0:
+			I.patience = INIT_PATIENCE
+		I.invis_until = now + get_invis_dur() * 2
 		return
 
 	# only move if agresive or not being watched
