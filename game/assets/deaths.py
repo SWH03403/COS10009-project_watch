@@ -15,12 +15,6 @@ class Cause(Enum):
 	FALL = auto()
 	CAUGHT = auto()
 
-def kill_application(ignore_god: bool = False) -> None:
-	from game.entities import player
-	if player.is_god() and not ignore_god: return
-	pygame.quit()
-	sys.exit()
-
 def flash(color: str, delay: float) -> None:
 	from game import engine
 	engine.get_screen().fill(color)
@@ -41,8 +35,6 @@ def execute(cause: Cause = Cause.SYSTEM) -> None:
 	from game import engine
 
 	match cause:
-		case Cause.SYSTEM:
-			kill_application(True)
 		case Cause.CAUGHT:
 			eye = library.get_image(Image.EYE)
 			screen = engine.get_screen()
@@ -59,9 +51,10 @@ def execute(cause: Cause = Cause.SYSTEM) -> None:
 				pygame.display.update()
 				now = monotonic()
 			pygame.display.set_gamma(1, 1, 1)
-			kill_application()
 		case Cause.FALL:
 			library.play_sound(Sound.DEATH_FALL)
 			flash("red3", .1)
 			flash("black", .4)
-			kill_application()
+
+	pygame.quit()
+	sys.exit()
