@@ -28,6 +28,21 @@ def insert_vertex() -> None:
 		game.get_level().vertexes.append(vertex)
 		return
 
+def delete() -> None:
+	level = game.get_level()
+	sel = editor.get_selection()
+	if isinstance(sel, selection.Vertex):
+		level.vertexes.pop(sel.id)
+		for sector in level.sectors:
+			for i in range(len(sector.walls) - 1, -1, -1):
+				wall = sector.walls[i]
+				if wall.vertex == sel.id: sector.walls.pop(i)
+				elif wall.vertex > sel.id: wall.vertex -= 1
+	elif isinstance(sel, selection.Sector):
+		level.sectors.pop()
+	editor.set_selection(None)
+	cache.set_expired()
+
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Wall): return
@@ -72,7 +87,9 @@ def handle_keydown(key: int) -> None:
 
 		case pygame.K_LEFTBRACKET:
 			game.set_editor(False)
-		case pygame.K_i:
+		case pygame.K_DELETE:
+			delete()
+		case pygame.K_a:
 			insert_vertex()
 		case pygame.K_d:
 			if isinstance(editor.get_selection(), selection.Vertex):
