@@ -16,7 +16,6 @@ class CreatureRenderer:
 	passive_size: Vector2
 	aggressive_size: Vector2
 	current: Surface # image currently being shown
-	watched: bool = False # is being looked at by the player
 	to_change: float = 0
 
 I: CreatureRenderer
@@ -45,7 +44,7 @@ def render() -> None:
 	rw, rh = region.get_size()
 	xs = (-size.x, rx, rx + rw - size.x, screen.width)
 	if pos.x < xs[0] or xs[3] < pos.x or xs[1] < pos.x < xs[2]:
-		I.watched = False
+		creature.set_watched(False)
 		return
 
 	if xs[0] <= pos.x <= xs[1]:
@@ -63,10 +62,10 @@ def render() -> None:
 
 	now = monotonic()
 	should_change = now >= I.to_change or creature.is_aggressive()
-	if not I.watched and should_change:
+	if not creature.is_watched() and should_change:
 		typ = Image.CREATURE_GRAB if creature.is_aggressive() else Image.CREATURE_FLOAT
 		I.current = library.get_image(typ)
-	I.watched = True
+	creature.set_watched(True)
 	I.to_change = now + MIN_UNSEEN_DURATION
 
 	sprite = pygame.transform.scale_by(I.current, scaling_factor)
