@@ -3,6 +3,7 @@ from pygame import Vector2
 
 import game
 from game import engine
+from game.assets import Cause
 from . import player
 
 KILL_DIST: float = 5
@@ -20,7 +21,7 @@ def get_position() -> Vector2:
 	return I.position
 
 def is_aggressive() -> bool:
-	return I.aggressive
+	return I.aggressive and not player.is_god()
 
 def is_invisible() -> bool:
 	return I.invisible and not is_aggressive()
@@ -29,4 +30,4 @@ def update() -> None:
 	if is_aggressive():
 		target, _ = player.get_position()
 		I.position.move_towards_ip(target, 10 * engine.get_delta())
-		if (I.position - target).length() < KILL_DIST: game.die()
+		if (I.position - target).length() < KILL_DIST: game.die(Cause.CAUGHT)

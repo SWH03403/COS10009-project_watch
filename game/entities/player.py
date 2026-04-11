@@ -6,7 +6,7 @@ from pygame.math import Vector2, clamp
 
 import game
 from game import engine
-from game.assets import Sound, library
+from game.assets import Cause, Sound, library
 from game.utils.math import is_facing
 from game.world import Spawn, get_walls
 from game.world.sector import WallType, get_wall_type
@@ -44,12 +44,16 @@ class Player:
 	last_sprint: float = 0 # the last time the player sprints
 	bob: Bobbing = field(default_factory=lambda: STANDING)
 	bob_phase: float = 0
+	god_mode: bool = False
 
 I: Player
 
 def init(spawn: Spawn) -> None:
 	global I
 	I = Player(position=spawn.position, sector=spawn.sector, aim=spawn.angle)
+
+def is_god() -> bool:
+	return I.god_mode
 
 def get_position() -> tuple[Vector2, int]:
 	return I.position, I.sector
@@ -171,10 +175,7 @@ def update() -> None:
 		z_cur = level.sectors[I.sector].floor.z
 		if z_new > z_cur: I.bob_phase = -math.pi # lowest point
 		elif z_new < z_cur:
-			if z_cur - z_new > SURVIABLE_FALL_HEIGHT:
-				library.play_sound(Sound.DEATH_FALL)
-				game.set_death_delay(.4) # TODO: refactor as asset
-				game.die()
+			if z_cur - z_new > SURVIABLE_FALL_HEIGHT and not is_god(): game.die(Cause.FALL)
 			I.bob_phase = 0 # highest point
 		if z_new != z_cur: play_footstep()
 

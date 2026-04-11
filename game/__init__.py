@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from random import randrange
-from time import sleep
+from typing import NoReturn
 import pygame
 from pygame import Color, Surface, Vector2
 from . import assets, editor, engine, entities, render
-from .assets import Image, Sound, library, loaders
+from .assets import Cause, Image, Sound, library, loaders
+from .assets.deaths import execute as die
 from .entities import player
 from .world import Level
 
@@ -14,12 +15,10 @@ EDITOR_MODE: bool = False
 
 @dataclass
 class Game:
-	running: bool
 	level: Level
 
-	scan_frame: bool
-	editor_mode: bool
-	death_delay: float
+	scan_frame: bool = False
+	editor_mode: bool = False
 
 I: Game
 
@@ -34,7 +33,7 @@ def init(level: str | None = None) -> None:
 	player.init(level.spawns[randrange(len(level.spawns))])
 
 	global I
-	I = Game(running=True, level=level, scan_frame=False, editor_mode=False, death_delay=0)
+	I = Game(level=level)
 	if EDITOR_MODE: set_editor(True)
 
 def get_level() -> Level:
@@ -49,12 +48,6 @@ def set_editor(enabled: bool) -> None:
 	engine.set_editor_mode(enabled)
 	if enabled: pygame.mixer.pause()
 	else: pygame.mixer.unpause()
-
-def set_death_delay(delay: float) -> None:
-	I.death_delay = max(delay, 0)
-
-def die() -> None:
-	I.running = False
 
 def handle_keydown(key: int) -> None:
 	match key:
@@ -76,21 +69,11 @@ def handle_events() -> None:
 		elif event.type == pygame.KEYDOWN: handle_keydown(event.key)
 		elif event.type == pygame.MOUSEMOTION: handle_mouse(event.rel[0])
 
-def run() -> None:
-	while I.running:
+def run() -> NoReturn:
+	while True:
 		handle_events()
+		if not I.editor_mode: entities.update()
 		engine.clear()
-		if I.editor_mode:
-			editor.render.perform()
-		else:
-			entities.update()
-			render.perform()
+		if I.editor_mode: editor.render.perform()
+		else: render.perform()
 		engine.update()
-
-	blackout = min(I.death_delay, .1)
-	pygame.display.set_gamma(2, .2, .2)
-	sleep(blackout)
-	engine.clear()
-	engine.update()
-	sleep(I.death_delay - blackout)
-	pygame.quit()
