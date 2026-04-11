@@ -15,7 +15,7 @@ from .selection import Selection
 
 DEFAULT_ZOOM = 2
 MIN_ZOOM: float = -1
-MAX_ZOOM: float = 3
+MAX_ZOOM: float = 4
 
 @dataclass
 class MapEditor:
