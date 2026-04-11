@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import pygame
 from pygame import FULLSCREEN, SCALED, Surface
 from pygame.time import Clock
-from game.assets import Image, library
 
 TITLE: str = "watch"
 LOW_RES: tuple[int, int] = 800, 450

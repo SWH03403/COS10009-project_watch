@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from random import randrange
+from random import random, randrange
 import sys
 from time import monotonic, sleep
 import pygame
@@ -9,15 +9,36 @@ from . import library
 from .library import Image, Sound
 
 NOISE_DUR: float = 3.5
+EYE_ORIGIN: Vector2 = None
+EYE_CHANCE: float = .2
 
 class Cause(Enum):
 	SYSTEM = auto()
 	FALL = auto()
 	CAUGHT = auto()
 
+def init() -> None:
+	from game.engine import LOW_RES
+
+	eye = library.get_image(Image.EYE) # preload
+	global EYE_ORIGIN
+	EYE_ORIGIN = (Vector2(LOW_RES) - Vector2(eye.size)) / 2
+
+def flash_eye() -> None:
+	from game import engine
+	eye = library.get_image(Image.EYE)
+	screen = engine.get_screen()
+	screen.blit(eye, EYE_ORIGIN, special_flags=pygame.BLEND_ALPHA_SDL2)
+
 def flash(color: str, delay: float) -> None:
 	from game import engine
-	engine.get_screen().fill(color)
+	screen = engine.get_screen()
+	screen.fill(color)
+	if color == "black" and random() <= EYE_CHANCE:
+		flash_eye()
+		engine.update()
+		sleep(.01)
+		screen.fill(color)
 	engine.update()
 	sleep(delay)
 
@@ -32,21 +53,17 @@ def noise(alpha: float) -> None:
 	engine.get_screen().blit(img_small, region.get_origin())
 
 def execute(cause: Cause = Cause.SYSTEM) -> None:
-	from game import engine
-
 	match cause:
+		case Cause.SYSTEM:
+			flash("black", .1)
 		case Cause.CAUGHT:
-			eye = library.get_image(Image.EYE)
-			screen = engine.get_screen()
-			origin = (Vector2(screen.size) - Vector2(eye.size)) / 2
-			library.get_image(Image.NOISE) # preload
 			until = monotonic() + NOISE_DUR
 			pygame.mixer.stop()
 			library.play_sound(Sound.DEATH_CAUGHT)
 			pygame.display.set_gamma(2, .2, .2)
 			now = 0
 			while now < until:
-				screen.blit(eye, origin, special_flags=pygame.BLEND_ALPHA_SDL2)
+				flash_eye()
 				noise(((1 - (until - now) / NOISE_DUR)**2) * .7 + .1)
 				pygame.display.update()
 				now = monotonic()
