@@ -9,27 +9,25 @@ from game.entities import creature, player
 from . import region, world
 
 ENLARGE: float = 10
-MIN_UNSEEN_DURATION: float = 3 # for the sprite to change
 
 @dataclass
 class CreatureRenderer:
-	passive_size: Vector2
-	aggressive_size: Vector2
-	current: Surface # image currently being shown
+	current: Surface
 	to_change: float = 0
+	was_agressive: bool = False
 
 I: CreatureRenderer
 
 def init() -> None:
-	current = library.get_image(Image.CREATURE_FLOAT)
-	passive_size = Vector2(current.size)
-	aggressive_size = Vector2(library.get_image(Image.CREATURE_GRAB).size)
+	default = library.get_image(Image.CREATURE_FLOAT)
+	library.get_image(Image.CREATURE_GRAB)
 
 	global I
-	I = CreatureRenderer(passive_size, aggressive_size, current)
+	I = CreatureRenderer(default)
 
 def render() -> None:
 	if creature.is_invisible(): return
+	is_aggressive = creature.is_aggressive()
 
 	screen = engine.get_screen()
 	world_pos = player.get_relative(creature.get_position())
@@ -37,7 +35,9 @@ def render() -> None:
 	pos = world.xyz_to_screen(world_pos, -player.get_bob_factor() / 2)
 	pos = Vector2(region.offset(*pos))
 	scaling_factor = ENLARGE / world_pos.y
-	size = (I.aggressive_size if creature.is_aggressive() else I.passive_size) * scaling_factor
+	typ = Image.CREATURE_GRAB if is_aggressive else Image.CREATURE_FLOAT
+	sprite = library.get_image(typ)
+	size = Vector2(sprite.size) * scaling_factor
 	pos -= size / 2
 
 	rx, _ = region.get_origin()
@@ -61,12 +61,12 @@ def render() -> None:
 	if sub_y > 0: pos.y += sub_y
 
 	now = monotonic()
-	should_change = now >= I.to_change or creature.is_aggressive()
-	if not creature.is_watched() and should_change:
-		typ = Image.CREATURE_GRAB if creature.is_aggressive() else Image.CREATURE_FLOAT
-		I.current = library.get_image(typ)
+	change = (now >= I.to_change or creature.is_aggressive()) and not creature.is_watched()
+	change |= I.was_agressive != is_aggressive
+	if change: I.current = sprite
 	creature.set_watched(True)
-	I.to_change = now + MIN_UNSEEN_DURATION
+	I.to_change = now + creature.MIN_WATCHED_DUR
+	I.was_agressive = is_aggressive
 
 	sprite = pygame.transform.scale_by(I.current, scaling_factor)
 	screen.blit(sprite.subsurface((sub_x, sub_y, sub_width, sub_height)), pos)
