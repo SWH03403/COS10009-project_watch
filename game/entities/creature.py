@@ -26,7 +26,7 @@ SPEED_PATIENCE: float = 15
 
 INIT_AGGRESSION: float = 500
 AGGRESSION_DECAY: float = 40
-AGGRESSION_DECAY_IGNORED: float = 10
+AGGRESSION_GAIN_IGNORED: float = 10
 SPEED_AGRESSIVE: float = 10
 SPEED_PREDATOR: float = 30 # player ran out of stamina
 
@@ -98,13 +98,13 @@ def update() -> None:
 			I.playing_cue = True
 			cue.play(-1, fade_ms=CUE_FADE)
 
-		decay_rate = AGGRESSION_DECAY if is_watched() else AGGRESSION_DECAY_IGNORED
+		decay_rate = AGGRESSION_DECAY if is_watched() else -AGGRESSION_GAIN_IGNORED
 		if not player_can_run: decay_rate = 0 # it's joever
 		I.patience += decay_rate * delta
 
 		if I.patience > 0:
 			I.patience = INIT_PATIENCE
-		I.invis_until = now + get_invis_dur() * 2
+		I.invis_until = now + get_invis_dur() * 1.2
 		return
 
 	if I.playing_cue:
