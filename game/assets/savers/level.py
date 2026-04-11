@@ -1,13 +1,12 @@
 from datetime import datetime
-from os.path import exists
 from pygame import Vector2
 from game.world import Level, Plane, Sector, Spawn
 
 def parse_spawn(spawn: Spawn) -> str:
-	return f"spawn {spawn.sector} {spawn.position.x:.2f} {spawn.position.y:.2f} {spawn.angle:.2f}\n"
+	return f"spawn {spawn.sector} {spawn.position.x:.1f} {spawn.position.y:.1f} {spawn.angle:.1f}\n"
 
 def parse_vertex(vertex: Vector2) -> str:
-	return f"vertex {vertex.x:.2f} {vertex.y:.2f}\n"
+	return f"vertex {vertex.x:.1f} {vertex.y:.1f}\n"
 
 def parse_color(color: str | None) -> str:
 	return "-" if color is None else color
@@ -25,10 +24,11 @@ def parse_sector(sector: Sector) -> str:
 		if wall.color is None: neighbor = "-"
 		elif wall.neighbor is None: neighbor = "x"
 		else: neighbor = str(wall.neighbor)
-		walls.append((str(wall.vertex), neighbor))
+		color = "" if wall.color is None else f":{wall.color}"
+		walls.append((f"{wall.vertex}{color}", neighbor))
 	vertexes, neighbors = zip(*walls)
 	vertexes = ",".join(vertexes)
-	neighbors = ",".join(neighbor)
+	neighbors = ",".join(neighbors)
 
 	return f"{init} {vertexes} {neighbors}\n"
 
