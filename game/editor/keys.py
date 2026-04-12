@@ -32,6 +32,7 @@ def insert_vertex() -> None:
 		return
 
 	if not isinstance(sel, selection.Wall): return
+	ref = get_neighbor_ref() # NOTE: find connection **only** before the wall is separated
 
 	# expand selection
 	vertex_id = len(level.vertexes)
@@ -48,7 +49,6 @@ def insert_vertex() -> None:
 	sector.walls.insert(sel.wall_idx + 1, new_wall)
 
 	# patch neighbor
-	ref = get_neighbor_ref()
 	if ref is None: return
 	sector = level.sectors[ref.id]
 	wall = sector.walls[ref.wall_idx]
