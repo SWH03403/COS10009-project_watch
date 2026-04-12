@@ -11,7 +11,13 @@ from game.world.sector import CEILING_COLOR, FLOOR_COLOR
 from .. import ui
 
 TEXT_WIDTH: int = 50
-Z_STEP: float = .5
+
+def get_value_step() -> float: # TODO: use this as common function
+	keys = pygame.key.get_pressed()
+	if keys[pygame.K_LALT] or keys[pygame.K_RALT]: return .01
+	if keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]: return 20
+	if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]: return 5
+	return .5
 
 class Interaction(IntEnum):
 	TOGGLE_VISIBILITY = auto()
@@ -48,8 +54,10 @@ def on_mouse_event(sector_id: int, event: Event) -> bool:
 		if interaction == Interaction.TOGGLE_VISIBILITY:
 			solid = CEILING_COLOR if is_ceil else FLOOR_COLOR
 			plane.color = solid if plane.color is None else None
-		else:
-			plane.height += Z_STEP if interaction == Interaction.INCREASE_HEIGHT else -Z_STEP
+		elif interaction == Interaction.INCREASE_HEIGHT:
+			plane.height += get_value_step()
+		elif interaction == Interaction.DECREASE_HEIGHT:
+			plane.height -= get_value_step()
 		return True
 	return False
 
