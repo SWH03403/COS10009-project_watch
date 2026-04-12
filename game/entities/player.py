@@ -149,6 +149,7 @@ def update() -> None:
 		walls.extend(get_walls(level, neighbor, False))
 
 	# collision check against wall
+	nearest_neighbor: float = 1e10 # enter the sector of the closest wall
 	for idx, (left, right, info) in enumerate(walls):
 		wall = left - right
 		to_left = left - new_position
@@ -170,7 +171,9 @@ def update() -> None:
 		if dist < HITBOX_SIZE and has_collision:
 			new_position = nearest + dist_vec * HITBOX_SIZE
 		elif has_neighbor and not is_facing_player:
-			if new_sector is None and idx < n_crossable_walls: new_sector = info.neighbor
+			if idx < n_crossable_walls and dist < nearest_neighbor:
+				new_sector = info.neighbor
+				nearest_neighbor = dist
 
 	I.position = new_position
 	if new_sector is not None:

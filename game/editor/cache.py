@@ -16,6 +16,7 @@ type WallCache = dict[tuple[int, int], list[SectorRef]]
 @dataclass
 class Cache:
 	walls: WallCache # for faster neighbor lookup
+	dangling_vertexes: set[int]
 	sectors_convex: list[bool]
 
 	walls_expired: bool = True
@@ -25,12 +26,14 @@ I: Cache
 
 def init() -> None:
 	global I
-	I = Cache(walls=defaultdict(list), sectors_convex=[])
+	I = Cache(walls=defaultdict(list), dangling_vertexes=set(), sectors_convex=[])
 
 def _cache_walls() -> None:
 	if not I.walls_expired: return
 	I.walls_expired = False
 	I.walls.clear()
+
+	connected = set()
 
 	level = game.get_level()
 	for sector_id, sector in enumerate(level.sectors):
@@ -42,6 +45,10 @@ def _cache_walls() -> None:
 			ref = SectorRef(id=sector_id, wall_idx=wall_idx, typ=get_wall_type(wall))
 			if (right, left) in I.walls: I.walls[right, left].append(ref)
 			else: I.walls[left, right].append(ref)
+			connected.add(left)
+			connected.add(right)
+
+	I.dangling_vertexes = [i for i in range(len(level.vertexes)) if i not in connected]
 
 def _cache_sectors_convex() -> None:
 	if not I.sectors_convex_expired: return
@@ -52,6 +59,10 @@ def _cache_sectors_convex() -> None:
 	for sector in level.sectors:
 		points = [level.vertexes[wall.vertex] for wall in sector.walls]
 		I.sectors_convex.append(is_polygon_clockwise(points))
+
+def get_dangling_vertexes() -> set[int]:
+	_cache_walls()
+	return I.dangling_vertexes
 
 def get_walls() -> WallCache:
 	_cache_walls()

@@ -1,44 +1,13 @@
 import pygame
+from pygame import Vector2
 
 import game
 from game.assets import savers
-from game.world import Wall
-from game.world.sector import WallType, set_wall_type
+from game.world.sector import Wall, WallType, set_wall_type
 from .. import editor
 from . import cache, selection
 from .cache import SectorRef
-from .common import EditMode, is_shift_held
-
-def insert_vertex() -> None:
-	sel = editor.get_selection()
-	if not isinstance(sel, selection.Wall): return
-	level = game.get_level()
-
-	vertex_id = len(level.vertexes)
-	sector = level.sectors[sel.sector_id]
-	wall = sector.walls[sel.wall_idx]
-
-	# patch neighbor sector
-	if wall.neighbor is not None:
-		neighbor = level.sectors[wall.neighbor]
-		nb_wall_idx = 0
-		for i in range(1, len(neighbor.walls)):
-			if neighbor.walls[i].neighbor == sel.sector_id:
-				nb_wall_idx = i
-				break
-		neighbor.walls.insert(
-			nb_wall_idx + 1,
-			Wall(vertex=vertex_id, neighbor=sel.sector_id, color=neighbor.walls[nb_wall_idx].color)
-		)
-
-	left = level.vertexes[wall.vertex]
-	right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
-	level.vertexes.append((left + right) / 2)
-
-	new_wall = Wall(vertex=vertex_id, neighbor=wall.neighbor, color=wall.color)
-	sector.walls.insert(sel.wall_idx + 1, new_wall)
-
-	editor.set_selection(selection.Vertex(id=vertex_id))
+from .common import EditMode, is_shift_held, screen_to_world, snap_to_grid
 
 def get_neighbor_ref() -> SectorRef | None:
 	sel = editor.get_selection()
@@ -52,6 +21,55 @@ def get_neighbor_ref() -> SectorRef | None:
 		# FIX: verify walls are opposite facing
 		if ref.id != sel.sector_id: return ref
 
+def insert_vertex() -> None:
+	cache.set_expired()
+	sel = editor.get_selection()
+	level = game.get_level()
+	if sel is None:
+		cache.set_expired_walls()
+		vertex = snap_to_grid(screen_to_world(Vector2(pygame.mouse.get_pos())))
+		game.get_level().vertexes.append(vertex)
+		return
+
+	if not isinstance(sel, selection.Wall): return
+
+	# expand selection
+	vertex_id = len(level.vertexes)
+	sector = level.sectors[sel.sector_id]
+	wall = sector.walls[sel.wall_idx]
+
+	# insert new vertex in middle of wall
+	left = level.vertexes[wall.vertex]
+	right = level.vertexes[sector.walls[sel.wall_idx - len(sector.walls) + 1].vertex]
+	level.vertexes.append(snap_to_grid((left + right) / 2))
+
+	# create wall for selected sector
+	new_wall = Wall(vertex=vertex_id, neighbor=wall.neighbor, color=wall.color)
+	sector.walls.insert(sel.wall_idx + 1, new_wall)
+
+	# patch neighbor
+	ref = get_neighbor_ref()
+	if ref is None: return
+	sector = level.sectors[ref.id]
+	wall = sector.walls[ref.wall_idx]
+	new_wall = Wall(vertex=vertex_id, neighbor=wall.neighbor, color=wall.color)
+	sector.walls.insert(ref.wall_idx + 1, new_wall)
+
+def delete() -> None:
+	level = game.get_level()
+	sel = editor.get_selection()
+	if isinstance(sel, selection.Vertex):
+		level.vertexes.pop(sel.id)
+		for sector in level.sectors:
+			for i in range(len(sector.walls) - 1, -1, -1):
+				wall = sector.walls[i]
+				if wall.vertex == sel.id: sector.walls.pop(i)
+				elif wall.vertex > sel.id: wall.vertex -= 1
+	elif isinstance(sel, selection.Sector):
+		level.sectors.pop()
+	editor.set_selection(None)
+	cache.set_expired()
+
 def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Wall): return
@@ -64,7 +82,7 @@ def set_selection_wall_type(typ: WallType, onesided: bool) -> None:
 	onesided |= nb_wall is None
 	if typ == WallType.NEIGHBOR:
 		set_wall_type(wall, WallType.SOLID)
-		wall.neighbor = ref.id
+		wall.neighbor = None if ref is None else ref.id
 		if not onesided:
 			set_wall_type(nb_wall, WallType.SOLID)
 			nb_wall.neighbor = sel.sector_id
@@ -78,6 +96,22 @@ def switch_wall_side() -> None:
 	ref = get_neighbor_ref()
 	if ref is None: return
 	editor.set_selection(selection.Wall(sector_id=ref.id, wall_idx=ref.wall_idx))
+
+def reverse_sector_walls() -> None:
+	sel = editor.get_selection()
+	level = game.get_level()
+	if not isinstance(sel, selection.Sector): return
+
+	sector = level.sectors[sel.id]
+	n_walls = len(sector.walls)
+	for i in range(1, n_walls // 2):
+		a, b = sector.walls[i], sector.walls[-i]
+		a.vertex, b.vertex = b.vertex, a.vertex
+	for i in range(0, n_walls // 2):
+		a, b = sector.walls[i], sector.walls[-i - 1]
+		a.color, b.color = b.color, a.color
+		a.neighbor, b.neighbor = b.neighbor, a.neighbor
+	cache.set_expired()
 
 def save_level() -> None:
 	path = savers.level(*game.get_named_level())
@@ -96,7 +130,9 @@ def handle_keydown(key: int) -> None:
 
 		case pygame.K_LEFTBRACKET:
 			game.set_editor(False)
-		case pygame.K_i:
+		case pygame.K_DELETE:
+			delete()
+		case pygame.K_a:
 			insert_vertex()
 		case pygame.K_d:
 			if isinstance(editor.get_selection(), selection.Vertex):
@@ -107,6 +143,8 @@ def handle_keydown(key: int) -> None:
 				editor.set_mode(EditMode.ADD)
 		case pygame.K_e:
 			switch_wall_side()
+		case pygame.K_r:
+			reverse_sector_walls()
 		case pygame.K_s:
 			save_level()
 		case pygame.K_1:
