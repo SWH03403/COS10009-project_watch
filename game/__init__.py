@@ -12,7 +12,7 @@ from .world import Level, default_level
 
 SENSITIVITY: float = .5
 DEFAULT_LEVEL: str = "test/cafe"
-EDITOR_MODE: bool = "EDITOR" in environ
+EDITOR_MODE: bool = "WATCH_EDITOR" in environ
 
 @dataclass
 class Game:
