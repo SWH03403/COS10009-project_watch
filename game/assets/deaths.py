@@ -3,7 +3,7 @@ from random import random, randrange
 import sys
 from time import monotonic, sleep
 import pygame
-from pygame import Vector2
+from pygame.math import Vector2, clamp
 
 from . import library
 from .library import Image, Sound
@@ -49,7 +49,7 @@ def noise(alpha: float) -> None:
 	w, h = region.get_size()
 	x, y = randrange(img.width - w), randrange(img.height - h)
 	img_small = img.subsurface((x, y, w, h))
-	img_small.set_alpha(255 * alpha)
+	img_small.set_alpha(int(255 * clamp(alpha, 0, 1)))
 	engine.get_screen().blit(img_small, region.get_origin())
 
 def execute(cause: Cause = Cause.SYSTEM) -> None:

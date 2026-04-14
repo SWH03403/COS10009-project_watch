@@ -1,4 +1,3 @@
-import pygame
 from game import engine
 from game.assets import Image, library
 from . import region
