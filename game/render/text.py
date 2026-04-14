@@ -34,7 +34,7 @@ def init() -> None:
 
 def render_title() -> None:
 	elapsed = monotonic() - I.begin
-	if elapsed < 0 or elapsed > BLUR_DUR + FADE_DUR: return
+	if elapsed <= 0 or elapsed > BLUR_DUR + FADE_DUR: return
 	screen = engine.get_screen()
 	blur = elapsed / BLUR_DUR # standard deviation
 	fade = 1
