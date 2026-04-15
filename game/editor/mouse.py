@@ -109,9 +109,6 @@ def add_sector() -> None:
 		level.vertexes.append(vertex)
 		new_ids.append(next_id)
 		next_id += 1
-
-	three = [level.vertexes[v] for v in new_ids]
-	if not is_polygon_clockwise(three): new_ids = new_ids[::-1]
 	new_vertexes.clear()
 
 	sector = default_sector()
