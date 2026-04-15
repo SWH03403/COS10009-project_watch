@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import IntEnum, auto
+from enum import Enum, auto
 from pygame import Vector2
 
 import game
@@ -9,7 +9,7 @@ from .common import EditMode, screen_to_world
 
 THRESHOLD: float = 50 # pixels
 
-class EntityType(IntEnum):
+class EntityType(Enum):
 	CREATURE = auto()
 	PLAYER = auto()
 

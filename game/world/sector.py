@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import IntEnum, auto
+from enum import Enum, auto
 from .fog import Fog, default_fog
 
 # default colors
@@ -7,7 +7,7 @@ CEILING_COLOR: str = "khaki4"
 FLOOR_COLOR: str = "darkslategrey"
 WALL_COLOR: str = "darkkhaki"
 
-class WallType(IntEnum):
+class WallType(Enum):
 	NEIGHBOR = auto()
 	SKY = auto()
 	SOLID = auto()

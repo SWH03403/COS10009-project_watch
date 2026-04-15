@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import Enum, auto
 import pygame
 from pygame import Vector2
 
@@ -8,11 +8,11 @@ ZOOM_STEP: float = .2
 
 SELECTION_PADDING: int = 20
 
-class DragMode(IntEnum):
+class DragMode(Enum):
 	MOVING = auto()
 	PANNING = auto()
 
-class EditMode(IntEnum):
+class EditMode(Enum):
 	ADD = auto()
 	DIVIDE = auto()
 	NORMAL = auto()

@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import Enum, auto
 import pygame
 from pygame import Rect, Vector2
 from pygame.event import Event
@@ -19,7 +19,7 @@ def get_value_step() -> float: # TODO: use this as common function
 	if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]: return 5
 	return .5
 
-class Interaction(IntEnum):
+class Interaction(Enum):
 	TOGGLE_VISIBILITY = auto()
 	INCREASE_HEIGHT = auto()
 	DECREASE_HEIGHT = auto()
