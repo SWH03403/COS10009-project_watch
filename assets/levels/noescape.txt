@@ -1,10 +1,11 @@
 # created in "watch" v0.1.0
-# on: 2026-04-15 20:51:39.616246
+# on: 2026-04-15 21:09:26.608119
 
 spawn 0 -42.0 67.0 0.0
 spawn 21 36.0 35.0 0.0
 spawn 77 207.0 167.0 0.0
 spawn 68 10.0 185.0 0.0
+spawn 90 400.0 75.0 0.0
 
 vertex -15.0 50.0
 vertex -10.0 135.0
@@ -231,6 +232,42 @@ vertex 435.0 345.0
 vertex 455.0 330.0
 vertex 395.0 335.0
 vertex 385.0 355.0
+vertex -100.0 160.0
+vertex -100.0 230.0
+vertex -120.0 210.0
+vertex -120.0 180.0
+vertex -140.0 210.0
+vertex -140.0 180.0
+vertex -150.0 185.0
+vertex -150.0 205.0
+vertex -165.0 185.0
+vertex -165.0 205.0
+vertex -175.0 180.0
+vertex -175.0 210.0
+vertex -190.0 180.0
+vertex -190.0 210.0
+vertex -165.0 175.0
+vertex -150.0 175.0
+vertex -165.0 215.0
+vertex -150.0 215.0
+vertex -165.0 218.0
+vertex -150.0 218.0
+vertex -150.0 172.0
+vertex -165.0 172.0
+vertex -190.0 185.0
+vertex -185.0 185.0
+vertex -185.0 188.0
+vertex -235.0 188.0
+vertex -250.0 200.0
+vertex -190.0 205.0
+vertex -185.0 205.0
+vertex -185.0 202.0
+vertex -175.0 195.0
+vertex -210.0 202.0
+vertex -250.0 240.0
+vertex -210.0 240.0
+vertex -250.0 250.0
+vertex -210.0 250.0
 
 sector 0.0:darkslategrey:tile 30.0:khaki4 0:darkkhaki,6:darkkhaki,30:darkkhaki,31:darkkhaki,75:darkkhaki,73:darkkhaki,74:darkkhaki,76:darkkhaki,85:darkkhaki,86:darkkhaki,22:darkkhaki,23:darkkhaki,3:darkkhaki,60:darkkhaki,12:darkkhaki 2,x,9,x,x,32,x,x,33,x,7,x,x,x,x 1.0,100.0,gray10,1.0
 sector 0.0:darkslategrey:tile 50.0:khaki4 1:darkkhaki,4:darkkhaki,5:darkkhaki,2:darkkhaki x,22,23,32 1.0,100.0,gray10,1.0
@@ -256,7 +293,7 @@ sector -40.0:darkslategrey:tile -10.0:khaki4 59:darkkhaki,54:darkkhaki,55:darkkh
 sector -40.0:darkslategrey:tile -10.0:khaki4 59:darkkhaki,56:darkkhaki,57:darkkhaki,58:darkkhaki 20,x,x,x 1.0,50.0,gray10,1.0
 sector 0.0:darkslategrey:tile 50.0:khaki4 4:darkkhaki,83:darkkhaki,62:darkkhaki,61:darkkhaki,5:darkkhaki x,x,24,29,1 1.0,100.0,gray10,1.0
 sector 0.0:darkslategrey:tile 50.0:khaki4 5:darkkhaki,63:darkkhaki,64:darkkhaki,79:darkkhaki,2:darkkhaki 29,26,x,x,1 1.0,100.0,gray10,1.0
-sector 0.0:darkslategrey:tile 50.0:khaki4 62:darkkhaki,84:darkkhaki,77:darkkhaki,65:darkkhaki,66:darkkhaki,61:darkkhaki x,x,x,25,28,22 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 50.0:khaki4 62:darkkhaki,84:darkkhaki,225:darkkhaki,226:darkkhaki,77:darkkhaki,65:darkkhaki,66:darkkhaki,61:darkkhaki x,x,102,x,x,25,28,22 1.0,100.0,gray10,1.0
 sector 0.0:darkslategrey:tile 50.0:khaki4 65:darkkhaki,78:darkkhaki,81:darkkhaki,67:darkkhaki,68:darkkhaki,66:darkkhaki x,x,x,26,27,24 1.0,100.0,gray10,1.0
 sector 0.0:darkslategrey:tile 50.0:khaki4 63:darkkhaki,68:darkkhaki,67:darkkhaki,82:darkkhaki,97:darkkhaki,98:darkkhaki,99:darkkhaki,100:darkkhaki,80:darkkhaki,64:darkkhaki 30,25,x,x,45,x,37,x,x,23 1.0,100.0,gray10,1.0
 sector 8.0:darkslategrey:tile 50.0:khaki4 68:darkkhaki,70:darkkhaki,69:darkkhaki,66:darkkhaki 30,31,28,25 1.0,100.0,gray10,1.0
@@ -316,21 +353,37 @@ sector 0.0:darkslategrey:tile 30.0:khaki4 179:darkkhaki,190:darkkhaki,191:darkkh
 sector 0.0:darkslategrey:tile 30.0:khaki4 181:darkkhaki,182:darkkhaki,183:darkkhaki,184:darkkhaki,185:darkkhaki,186:darkkhaki 83,x,x,x,82,x 1.0,100.0,gray10,1.0
 sector 0.0:darkslategrey:tile 30.0:khaki4 185:darkkhaki,189:darkkhaki,188:darkkhaki,187:darkkhaki,186:darkkhaki x,89,88,x,81 1.0,100.0,gray10,1.0
 sector 0.0:darkslategrey:tile 30.0:khaki4 191:darkkhaki,182:darkkhaki,181:darkkhaki,180:darkkhaki x,81,x,80 1.0,100.0,gray10,1.0
-sector 5.0:darkslategrey:tile 20:khaki4 190:darkkhaki,192,193:darkkhaki,191:darkkhaki x,-,x,80 1,100,gray10,1
-sector 5:darkslategrey:tile 20:khaki4 195:darkkhaki,197,196:darkkhaki,194:darkkhaki x,-,x,79 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 180:darkkhaki,200:darkkhaki,199:darkkhaki,198:darkkhaki x,87,x,80 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 200:darkkhaki,202:darkkhaki,201:darkkhaki,199:darkkhaki x,91,x,86 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 188:darkkhaki,204:darkkhaki,203:darkkhaki,187:darkkhaki x,x,x,82 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 189:darkkhaki,205:darkkhaki,206:darkkhaki,188:darkkhaki x,90,x,82 1,100,gray10,1
-sector 10:darkslategrey:tile 40:- 205:darkkhaki,207:darkkhaki,208:darkkhaki,206:darkkhaki x,x,x,89 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 202:darkkhaki,213:darkkhaki,214:darkkhaki,201:darkkhaki 93,95,94,87 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 210:darkkhaki,211:darkkhaki,224:darkkhaki,223:darkkhaki,215:darkkhaki,213:darkkhaki x,97,101,100,95,93 1,100,gray10,1
-sector -100:darkslategrey:tile 35:khaki4 202:darkkhaki,210:darkkhaki,213:darkkhaki x,92,91 1,100,gray10,1
-sector -100:darkslategrey:tile 35:khaki4 214:darkkhaki,209:darkkhaki,201:darkkhaki 96,x,91 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 215:darkkhaki,216:darkkhaki,214:darkkhaki,213:darkkhaki 98,96,91,92 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 216:darkkhaki,212:darkkhaki,209:darkkhaki,214:darkkhaki 99,x,94,95 1,100,gray10,1
-sector -100:darkslategrey:tile 35:khaki4 211:darkkhaki,217:darkkhaki,224:darkkhaki x,101,92 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 220:darkkhaki,222:darkkhaki,218:darkkhaki,216:darkkhaki,215:darkkhaki x,x,99,95,100 1,100,gray10,1
-sector -100:darkslategrey:tile 35:khaki4 218:darkkhaki,212:darkkhaki,216:darkkhaki x,96,98 1,100,gray10,1
-sector -100:darkslategrey:tile 35:khaki4 221:darkkhaki,220:darkkhaki,215:darkkhaki,223:darkkhaki x,98,92,101 1,100,gray10,1
-sector 0:darkslategrey:tile 30:khaki4 217:darkkhaki,219:darkkhaki,221:darkkhaki,223:darkkhaki,224:darkkhaki x,x,100,92,97 1,100,gray10,1
+sector 5.0:darkslategrey:tile 20.0:khaki4 190:darkkhaki,192,193:darkkhaki,191:darkkhaki x,-,x,80 1.0,100.0,gray10,1.0
+sector 5.0:darkslategrey:tile 20.0:khaki4 195:darkkhaki,197,196:darkkhaki,194:darkkhaki x,-,x,79 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 180:darkkhaki,200:darkkhaki,199:darkkhaki,198:darkkhaki x,87,x,80 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 200:darkkhaki,202:darkkhaki,201:darkkhaki,199:darkkhaki x,91,x,86 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 188:darkkhaki,204:darkkhaki,203:darkkhaki,187:darkkhaki x,x,x,82 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 189:darkkhaki,205:darkkhaki,206:darkkhaki,188:darkkhaki x,90,x,82 1.0,100.0,gray10,1.0
+sector 10.0:darkslategrey:tile 40.0:- 205:darkkhaki,207:darkkhaki,208:darkkhaki,206:darkkhaki x,x,x,89 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 202:darkkhaki,213:darkkhaki,214:darkkhaki,201:darkkhaki 93,95,94,87 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 210:darkkhaki,211:darkkhaki,224:darkkhaki,223:darkkhaki,215:darkkhaki,213:darkkhaki x,97,101,100,95,93 1.0,100.0,gray10,1.0
+sector -100.0:darkslategrey:tile 35.0:khaki4 202:darkkhaki,210:darkkhaki,213:darkkhaki x,92,91 1.0,100.0,gray10,1.0
+sector -100.0:darkslategrey:tile 35.0:khaki4 214:darkkhaki,209:darkkhaki,201:darkkhaki 96,x,91 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 215:darkkhaki,216:darkkhaki,214:darkkhaki,213:darkkhaki 98,96,91,92 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 216:darkkhaki,212:darkkhaki,209:darkkhaki,214:darkkhaki 99,x,94,95 1.0,100.0,gray10,1.0
+sector -100.0:darkslategrey:tile 35.0:khaki4 211:darkkhaki,217:darkkhaki,224:darkkhaki x,101,92 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 220:darkkhaki,222:darkkhaki,218:darkkhaki,216:darkkhaki,215:darkkhaki x,x,99,95,100 1.0,100.0,gray10,1.0
+sector -100.0:darkslategrey:tile 35.0:khaki4 218:darkkhaki,212:darkkhaki,216:darkkhaki x,96,98 1.0,100.0,gray10,1.0
+sector -100.0:darkslategrey:tile 35.0:khaki4 221:darkkhaki,220:darkkhaki,215:darkkhaki,223:darkkhaki x,98,92,101 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 30.0:khaki4 217:darkkhaki,219:darkkhaki,221:darkkhaki,223:darkkhaki,224:darkkhaki x,x,100,92,97 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 40.0:khaki4 226:darkkhaki,225:darkkhaki,228:darkkhaki,227:darkkhaki 24,x,103,x 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 35.0:khaki4 227:darkkhaki,228:darkkhaki,230:darkkhaki,229:darkkhaki 102,x,104,x 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 40.0:khaki4 230:darkkhaki,231:darkkhaki,232:darkkhaki,229:darkkhaki 108,105,109,103 1.0,100.0,gray10,1.0
+sector 5.0:darkslategrey:tile 40.0:khaki4 231:darkkhaki,233:darkkhaki,234:darkkhaki,232:darkkhaki 108,106,109,104 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 40.0:khaki4 233:darkkhaki,235:darkkhaki,255:darkkhaki,236:darkkhaki,234:darkkhaki 108,107,115,109,105 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 35.0:khaki4 235:darkkhaki,248:darkkhaki,249:darkkhaki,255:darkkhaki 112,x,114,106 1.0,100.0,gray10,1.0
+sector 8.0:darkslategrey:tile 40.0:khaki4 235:darkkhaki,233:darkkhaki,231:darkkhaki,230:darkkhaki,240:darkkhaki,239:darkkhaki 106,105,104,x,111,x 1.0,100.0,gray10,1.0
+sector 8.0:darkslategrey:tile 40.0:khaki4 236:darkkhaki,241:darkkhaki,242:darkkhaki,229:darkkhaki,232:darkkhaki,234:darkkhaki x,110,x,104,105,106 1.0,100.0,gray10,1.0
+sector 10.0:darkslategrey:tile 25.0:khaki4 241:darkkhaki,243,244:darkkhaki,242:darkkhaki x,-,x,109 1.0,100.0,gray10,1.0
+sector 10.0:darkslategrey:tile 25.0:khaki4 239:darkkhaki,240:darkkhaki,245,246:darkkhaki 108,x,-,x 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 35.0:khaki4 235:darkkhaki,237:darkkhaki,247:darkkhaki,248:darkkhaki x,x,x,107 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 35.0:khaki4 253:darkkhaki,252:darkkhaki,238:darkkhaki,236:darkkhaki x,x,x,115 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 35.0:khaki4 249:darkkhaki,250:darkkhaki,251:darkkhaki,256:darkkhaki,254:darkkhaki,255:darkkhaki x,x,116,x,115,107 1.0,100.0,gray10,1.0
+sector 0.0:darkslategrey:tile 35.0:khaki4 254:darkkhaki,253:darkkhaki,236:darkkhaki,255:darkkhaki x,113,106,114 1.0,100.0,gray10,1.0
+sector 0:darkslategrey:tile 30:khaki4 251:darkkhaki,257:darkkhaki,258:darkkhaki,256:darkkhaki x,x,x,114 1,100,gray10,1
+sector 0:darkslategrey:tile 30:khaki4 257:darkkhaki,259:darkkhaki,260:darkkhaki,258:darkkhaki x,x,x,x 1,100,gray10,1
