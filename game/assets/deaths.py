@@ -44,13 +44,13 @@ def flash(color: str, delay: float) -> None:
 
 def noise(alpha: float) -> None:
 	from game import engine
-	from game.render import region
+	from game.engine import LOW_RES
 	img = library.get_image(Image.NOISE)
-	w, h = region.get_size()
+	w, h = LOW_RES
 	x, y = randrange(img.width - w), randrange(img.height - h)
-	img_small = img.subsurface((x, y, w, h))
-	img_small.set_alpha(int(255 * clamp(alpha, 0, 1)))
-	engine.get_screen().blit(img_small, region.get_origin())
+	small = img.subsurface((x, y, w, h))
+	small.set_alpha(int(255 * clamp(alpha, 0, 1)))
+	engine.get_screen().blit(small, (0, 0))
 
 def execute(cause: Cause = Cause.SYSTEM) -> None:
 	match cause:
