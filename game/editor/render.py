@@ -6,6 +6,7 @@ from pygame.typing import ColorLike
 
 import game
 from game import engine
+from game.engine import HIGH_RES
 from game.entities import creature, player
 from game.utils import TextRenderer, render
 from game.world.sector import WallType
@@ -49,6 +50,9 @@ def init() -> None:
 
 def get_line_width(adhoc_scale: float = 1, min_width: int = 1) -> int:
 	return max(round(editor.get_scale() * adhoc_scale), min_width)
+
+def is_visible(points: list[Vector2]) -> bool:
+	return any(0 < p.x < HIGH_RES[0] and 0 < p.y < HIGH_RES[1] for p in points)
 
 def render_grid() -> None:
 	screen = engine.get_screen()
@@ -113,6 +117,7 @@ def render_level() -> None:
 		is_convex = cache.is_sector_convex(sector_id)
 		color = "white" if is_convex else "red"
 		points = [vertexes[wall.vertex] for wall in sector.walls]
+		if not is_visible(points): continue
 		render.polygon(screen, color, points, 50)
 
 	for (left, right), refs in cache.get_walls().items():
@@ -122,12 +127,14 @@ def render_level() -> None:
 		for sector_id, typ in enumerate(types):
 			start = left.lerp(right, sector_id / len(types))
 			end = left.lerp(right, (sector_id + 1) / len(types))
+			if not is_visible([left, right]): continue
 			if typ == WallType.SKY: line_dashes("firebrick3", start, end, non_solid_wall)
 			elif typ == WallType.SOLID: pygame.draw.line(screen, "white", start, end, solid_wall)
 			else: line_dashes("goldenrod3", start, end, non_solid_wall)
 
 	for i in cache.get_dangling_vertexes():
 		vertex = world_to_screen(level.vertexes[i])
+		if not is_visible([vertex]): continue
 		pygame.draw.circle(screen, "white", vertex, solid_wall)
 
 	hlen = SPAWNPOINT_SIZE * editor.get_scale() / 2
@@ -176,12 +183,14 @@ def render_entities() -> None:
 
 	# player
 	position = world_to_screen(player.get_position()[0])
-	aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
-	pygame.draw.line(screen, "red", position, position + aim, lw)
-	pygame.draw.aacircle(screen, "white", position, size, lw)
+	if is_visible([position]):
+		aim = Vector2(0, -10).rotate(-player.get_aim()) * scale
+		pygame.draw.line(screen, "red", position, position + aim, lw)
+		pygame.draw.aacircle(screen, "white", position, size, lw)
 
 	# creature
 	position = world_to_screen(creature.get_position())
+	if not is_visible([position]): return
 	points = []
 	for i in range(4):
 		p = Vector2(math.sin(THIRD * i), -math.cos(THIRD * i))
@@ -192,9 +201,10 @@ def render_entities() -> None:
 	pygame.draw.polygon(screen, "red", points)
 
 def render_box_around(points: list[Vector2], selected: bool) -> None:
+	points = [world_to_screen(p) for p in points]
+	if not is_visible(points): return
 	screen = engine.get_screen()
 	w, h = screen.size
-	points = [world_to_screen(p) for p in points]
 	min_x, min_y = max_x, max_y = points.pop()
 	pad = SELECTION_PADDING
 	color = SELECTION_COLOR if selected else SELECTION_HOVER_COLOR
