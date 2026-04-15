@@ -1,6 +1,6 @@
 from datetime import datetime
 from pygame import Vector2
-from game.world import Level, Plane, Sector, Spawn
+from game.world import Fog, Level, Plane, Sector, Spawn
 
 def parse_spawn(spawn: Spawn) -> str:
 	return f"spawn {spawn.sector} {spawn.position.x:.1f} {spawn.position.y:.1f} {spawn.angle:.1f}\n"
@@ -14,10 +14,14 @@ def parse_color(color: str | None) -> str:
 def parse_plane(plane: Plane) -> str:
 	return f"{plane.height}:{parse_color(plane.color)}"
 
+def parse_fog(fog: Fog) -> str:
+	return f"{fog.near},{fog.far},{fog.color},{fog.intensity}"
+
 def parse_sector(sector: Sector) -> str:
 	material = sector.material.name.lower()
 	floor = parse_plane(sector.floor)
 	ceiling = parse_plane(sector.ceiling)
+	fog = parse_fog(sector.fog)
 	init = f"sector {floor}:{material} {ceiling}"
 
 	walls = []
@@ -31,7 +35,7 @@ def parse_sector(sector: Sector) -> str:
 	vertexes = ",".join(vertexes)
 	neighbors = ",".join(neighbors)
 
-	return f"{init} {vertexes} {neighbors}\n"
+	return f"{init} {vertexes} {neighbors} {fog}\n"
 
 def save(name: str, level: Level) -> str:
 	path = f"assets/levels/{name}.txt"

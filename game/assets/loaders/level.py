@@ -33,7 +33,9 @@ def parse_wall(data: tuple[str, str]) -> Wall:
 	return Wall(vertex=int(vertex), neighbor=neighbor, color=color)
 
 def parse_fog(args: list[str]) -> Fog:
-	raise NotImplementedError() # TODO:
+	near, far = float(args[0]), float(args[1])
+	intensity = float(args[3])
+	return Fog(near=near, far=far, color=args[2], intensity=intensity)
 
 def parse_sector(args: list[str]) -> Sector:
 	floor = parse_plane(args[1], FLOOR_COLOR)
