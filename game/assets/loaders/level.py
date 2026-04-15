@@ -21,7 +21,7 @@ def parse_vertex(args: list[str]) -> list[Vector2]:
 def parse_plane(arg: str, default_color: str) -> Plane:
 	if ":" not in arg:
 		return Plane(height=float(arg), color=default_color)
-	height, color = arg.split(":", 1)
+	height, color = arg.split(":", 2)[:2]
 	return Plane(height=float(height), color=None if color == "-" else color)
 
 def parse_wall(data: tuple[str, str]) -> Wall:
