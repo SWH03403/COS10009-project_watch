@@ -3,6 +3,7 @@ from pygame import Vector2
 
 import game
 from game.assets import savers
+from game.entities import player
 from game.world import Spawn
 from game.world.sector import Wall, WallType, set_wall_type
 from .. import editor
@@ -119,13 +120,20 @@ def save_level() -> None:
 	print(f"saved to: {path}")
 
 def place_spawn() -> None:
-	print("trying to place spawn")
 	sel = editor.get_selection()
 	if not isinstance(sel, selection.Sector): return
 	print("placing spawn")
 	position = snap_to_grid(screen_to_world(Vector2(pygame.mouse.get_pos())))
 	spawn = Spawn(sector=sel.id, position=position, angle=0)
 	game.get_level().spawns.append(spawn)
+
+def move_player() -> None:
+	sel = editor.get_selection()
+	if isinstance(sel, selection.Sector):
+		player.set_position(screen_to_world(Vector2(pygame.mouse.get_pos())), sel.id)
+	elif isinstance(sel, selection.Spawn):
+		spawn = game.get_level().spawns[sel.id]
+		player.set_position(spawn.position, spawn.sector)
 
 def handle_keydown(key: int) -> None:
 	shift = is_shift_held()
@@ -159,6 +167,8 @@ def handle_keydown(key: int) -> None:
 			save_level()
 		case pygame.K_b:
 			place_spawn()
+		case pygame.K_p:
+			move_player()
 		case pygame.K_1:
 			set_selection_wall_type(WallType.SOLID, shift)
 		case pygame.K_2:
