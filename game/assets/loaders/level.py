@@ -1,7 +1,7 @@
 from os.path import exists
 from pygame import Vector2
 from game.world import Fog, Level, Plane, Sector, Spawn, Wall, default_fog
-from game.world.sector import CEILING_COLOR, FLOOR_COLOR, WALL_COLOR
+from game.world.sector import CEILING_COLOR, FLOOR_COLOR, Material, WALL_COLOR
 
 def parse_spawn(args: list[str]) -> Spawn:
 	sector = int(args[1])
@@ -28,7 +28,7 @@ def parse_wall(data: tuple[str, str]) -> Wall:
 	vertex, neighbor = data
 	color = WALL_COLOR
 	if ":" in vertex: vertex, color = vertex.split(":", 1)
-	color = None if neighbor == "-" else color
+	color = None if neighbor == "-" else color.split(":", 1)[0]
 	neighbor = None if neighbor in ["-", "x"] else int(neighbor)
 	return Wall(vertex=int(vertex), neighbor=neighbor, color=color)
 
@@ -37,10 +37,15 @@ def parse_fog(args: list[str]) -> Fog:
 
 def parse_sector(args: list[str]) -> Sector:
 	floor = parse_plane(args[1], FLOOR_COLOR)
+	material = Material.TILE
+	floor_args = args[1].split(":", 2)
+	if len(floor_args) > 2:
+		material = Material[floor_args[2].upper()]
+
 	ceiling = parse_plane(args[2], CEILING_COLOR)
 	walls = [parse_wall(data) for data in zip(args[3].split(","), args[4].split(","))]
 	fog = default_fog() if len(args) < 6 else parse_fog(args[5].split(","))
-	return Sector(floor=floor, ceiling=ceiling, walls=walls, fog=fog)
+	return Sector(floor=floor, ceiling=ceiling, walls=walls, material=material, fog=fog)
 
 def load(name: str) -> Level | None:
 	spawns = []
