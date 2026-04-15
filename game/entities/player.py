@@ -9,7 +9,7 @@ from game import engine
 from game.assets import Cause, Sound, library
 from game.utils.math import is_facing
 from game.world import Spawn, get_walls
-from game.world.sector import WallType, get_wall_type
+from game.world.sector import Material, WallType, get_wall_type
 
 WALK_SPEED: float = 20
 SPRINT_SPEED: float = 50
@@ -23,6 +23,17 @@ STAMINA_REGEN: float = .15
 STAMINA_REGEN_DELAY: float = 2
 STAMINA_TIRED_DELAY: float = 3 # extra time penalty if running out of stamina
 STAMINA_REGEN_PENALTY: float = .35 # applied when walking
+
+FOOTSTEP_SOUNDS: dict[Material, Sound] = {
+	Material.CONCRETE: Sound.STEP_CONCRETE,
+	Material.DIRT: Sound.STEP_DIRT,
+	Material.DUCT: Sound.STEP_DUCT,
+	Material.GRAVEL: Sound.STEP_GRAVEL,
+	Material.METAL: Sound.STEP_METAL,
+	Material.METAL_GRATE: Sound.STEP_METAL_GRATE,
+	Material.TILE: Sound.STEP_TILE,
+	Material.WOOD: Sound.STEP_WOOD,
+}
 
 @dataclass
 class Bobbing:
@@ -91,8 +102,8 @@ def turn_aim(by: float) -> None:
 	I.aim -= by
 
 def play_footstep() -> None:
-	# TODO: play sound based on sector floor material
-	library.play_sound(Sound.STEP_TILE)
+	material = game.get_level().sectors[I.sector].material
+	library.play_sound(FOOTSTEP_SOUNDS[material])
 
 def update() -> None:
 	keys = pygame.key.get_pressed()

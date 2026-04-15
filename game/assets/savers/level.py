@@ -15,9 +15,10 @@ def parse_plane(plane: Plane) -> str:
 	return f"{plane.height}:{parse_color(plane.color)}"
 
 def parse_sector(sector: Sector) -> str:
+	material = sector.material.name.lower()
 	floor = parse_plane(sector.floor)
 	ceiling = parse_plane(sector.ceiling)
-	init = f"sector {floor} {ceiling}"
+	init = f"sector {floor}:{material} {ceiling}"
 
 	walls = []
 	for wall in sector.walls:

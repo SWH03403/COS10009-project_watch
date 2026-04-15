@@ -20,10 +20,13 @@ class Sound(Enum):
 	DEATH_CAUGHT = "death/caught"
 	DEATH_FALL = "death/fall"
 	STEP_CONCRETE = "footsteps/concrete"
+	STEP_DIRT = "footsteps/dirt"
+	STEP_DUCT = "footsteps/duct"
+	STEP_GRAVEL = "footsteps/gravel"
 	STEP_METAL = "footsteps/metal"
+	STEP_METAL_GRATE = "footsteps/metalgrate"
 	STEP_TILE = "footsteps/tile"
 	STEP_WOOD = "footsteps/wood"
-	STEP_WOOD_PANEL = "footsteps/woodpanel"
 
 @dataclass
 class Library:

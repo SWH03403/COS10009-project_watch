@@ -7,6 +7,16 @@ CEILING_COLOR: str = "khaki4"
 FLOOR_COLOR: str = "darkslategrey"
 WALL_COLOR: str = "darkkhaki"
 
+class Material(Enum):
+	CONCRETE = auto()
+	DIRT = auto()
+	DUCT = auto()
+	GRAVEL = auto()
+	METAL = auto()
+	METAL_GRATE = auto()
+	TILE = auto()
+	WOOD = auto()
+
 class WallType(Enum):
 	NEIGHBOR = auto()
 	SKY = auto()
@@ -32,6 +42,7 @@ class Sector:
 	floor: Plane
 	ceiling: Plane
 	walls: list[Wall]
+	material: Material
 	fog: Fog
 
 def default_sector() -> Sector:
@@ -39,6 +50,7 @@ def default_sector() -> Sector:
 		floor=Plane(height=0, color=FLOOR_COLOR),
 		ceiling=Plane(height=30, color=CEILING_COLOR),
 		walls=[],
+		material=Material.TILE,
 		fog=default_fog(),
 	)
 
