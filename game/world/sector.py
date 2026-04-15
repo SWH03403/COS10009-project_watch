@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from game.assets import Sound
 from .fog import Fog, default_fog
 
 # default colors
@@ -17,17 +16,6 @@ class Material(Enum):
 	METAL_GRATE = auto()
 	TILE = auto()
 	WOOD = auto()
-
-FOOTSTEP_SOUNDS: dict[Material, Sound] = {
-	Material.CONCRETE: Sound.STEP_CONCRETE,
-	Material.DIRT: Sound.STEP_DIRT,
-	Material.DUCT: Sound.STEP_DUCT,
-	Material.GRAVEL: Sound.STEP_GRAVEL,
-	Material.METAL: Sound.STEP_METAL,
-	Material.METAL_GRATE: Sound.STEP_METAL_GRATE,
-	Material.TILE: Sound.STEP_TILE,
-	Material.WOOD: Sound.STEP_WOOD,
-}
 
 class WallType(Enum):
 	NEIGHBOR = auto()
