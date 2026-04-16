@@ -11,7 +11,7 @@ from .entities import creature, player
 from .world import Level, default_level
 
 SENSITIVITY: float = .5
-DEFAULT_LEVEL: str = "test/cafe"
+DEFAULT_LEVEL: str = "noescape"
 EDITOR_MODE: bool = "WATCH_EDITOR" in environ
 
 @dataclass
