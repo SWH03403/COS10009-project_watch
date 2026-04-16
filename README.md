@@ -4,7 +4,25 @@
 It also features liminal constructs resembling malls or metropolitan areas to give the player a dreamlike, nostalga sensation.
 
 &nbsp;&nbsp;&nbsp;&nbsp; The game has a built-in map editor, so anyone could create their own or modify existing levels.
-The keybinds are explained below.
+The keybinds are explained [below](#keybinds-1).
+
+# Quick Start
+
+Dependencies were managed using `uv`. To run the game, .
+
+```sh
+git clone https://github.com/SWH03403/COS10009-project_watch watch_game
+cd watch_game
+uv run python .
+# or
+WATCH_EDITOR=1 uv run python . # to open in editor mode by default
+```
+
+Level name can be specified in the CLI, the list of all existing levels can be found [here](/assets/levels).
+
+```sh
+uv run python . test/cafe
+```
 
 # Gameplay
 
