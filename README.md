@@ -54,17 +54,22 @@ uv run python . test/cafe
 * **[**: Toggle the Map Editor
 * **Del**: Delete the selected item
 
-To pan around, simply click and drag on empty regions. Use scrollwheel to zoom in/out.
+To pan around, simply click and drag on empty regions.
+Hold **Space** for panning-only mode, selection remains unchanged.
+Use the Scrollwheel to zoom in and out.
 
-* **Space**: Hold for panning-only mode, selection remains unchanged.
+Click any element on the map and click it again before dragging to move it.
+The second click is needed to avoid snapping the selection to the grid.
 
-* **A**: Insert a vertex or middle of wall
-* **B**: Place a spawn in the selected sector
-* **C**: Create a new sector
-* **D**: Divide a sector by connecting vertexes
-* **E**: Choose the same wall belonging to a neighbor sector
-* **P**: Move the player to the selected sector or spawn
-* **R**: Reverse vertexes order of a sector
+Selection dependent actions: **.** for unselected, **V** for vertexes, **W** for walls, **S** for sectors, **@** for spawnpoints.
+
+* **A** (.W): Insert a vertex. If a wall is selected, the new vertex will be its midpoint.
+* **B** (S): Place a spawn in the selected sector
+* **C** (V): Create a new sector
+* **D** (V): Divide a sector by connecting its vertexes
+* **E** (W): Choose the same wall belonging to a neighbor sector
+* **P** (S@): Move the player to the selected sector or spawn
+* **R** (S): Reverse vertexes order of a sector
 
 Change properties of the selected wall, hold **Shift** to make on-sided change if wall is shared by multiple sectors.
 
