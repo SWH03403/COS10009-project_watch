@@ -14,10 +14,60 @@ The keybinds are explained below.
 | -- | -- |
 | ![Balcony](.github/screenshots/balcony.png) | ![Cliff](.github/screenshots/cliff.png) |
 
+## Keybinds
+
+&nbsp;&nbsp;&nbsp;&nbsp; Use WASD and mouse for basic movements.
+
+* **Q** or **Esc**: Quit the application
+* **[**: Toggle the Map Editor
+* **P**: Enable "Slow Render" for 1 Frame
+* **L-Shift**: Sprint
+* **\\**: Toggle God Mode
+
 # Map editor
 
 ![Editor preview](.github/screenshots/editor.png)
 
 ## Keybinds
 
-* **DISCLAMER**: These are expected to be changed. *
+***DISCLAMER**:* *These are currently experimental and expected to be changed.*
+
+* **Q** or **Esc**: Quit the application or Return to Normal Mode
+* **[**: Toggle the Map Editor
+* **Del**: Delete the selected item
+
+To pan around, simply click and drag on empty regions. Use scrollwheel to zoom in/out.
+
+* **Space**: Hold for panning-only mode, selection remains unchanged.
+
+* **A**: Insert a vertex or middle of wall
+* **B**: Place a spawn in the selected sector
+* **C**: Create a new sector
+* **D**: Divide a sector by connecting vertexes
+* **E**: Choose the same wall belonging to a neighbor sector
+* **P**: Move the player to the selected sector or spawn
+* **R**: Reverse vertexes order of a sector
+
+Change properties of the selected wall, hold **Shift** to make on-sided change if wall is shared by multiple sectors.
+
+* **1**: Make the selected wall solid
+* **2**: Make the selected wall passable if there is a neighbor sector.
+* **3**: Make the skybox visible through the selected wall.
+
+### Snapping
+
+Holding modifier keys will adjust the grid size, default is 5 units.
+
+* **Alt**: Disable snapping
+* **Ctrl**: 20 units
+* **Shift**: 1 unit
+
+### Sector properties
+
+&nbsp;&nbsp;&nbsp;&nbsp; Current, only the visibility and height of the selected sector is modifiable with the editor.
+
+* Use **LMB** to toggle visibility.
+* Use the scrollwheel to adjust height. Default step is 1 unit, which can be adjusted with modifier keys:
+  - **Alt**: 0.1 unit
+  - **Ctrl**: 20 units
+  - **Shift**: 5 units
